@@ -1,0 +1,6 @@
+#ifndef CRYPTOBENCH_LIBRARY_HPP
+#define CRYPTOBENCH_LIBRARY_HPP
+
+void hello();
+
+#endif //CRYPTOBENCH_LIBRARY_HPP
