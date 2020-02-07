@@ -9,4 +9,4 @@ enable_testing()
 # 'Google_Tests_run' is the target name
 # 'test1.cpp tests2.cpp' are source files with tests
 add_executable(Google_Tests_run gtest.cpp hello_world_test.cpp)
-target_link_libraries(Google_Tests_run gtest gtest_main CryptoBench)
+target_link_libraries(Google_Tests_run gtest gtest_main ${TARGET_NAME})

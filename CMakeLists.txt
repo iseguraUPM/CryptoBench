@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(CryptoBench)
+set(TARGET_NAME cryptobench)
+
+project(${TARGET_NAME})
 
 add_subdirectory(src)
 
