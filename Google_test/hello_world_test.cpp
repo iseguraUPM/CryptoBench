@@ -10,19 +10,16 @@ class HelloWorldFixture : public ::testing::Test {
 
 
 protected:
-    virtual void TearDown()
-    {
-        std::cout << "Setup" << "\n";
-    }
-
     virtual void SetUp()
     {
-
     }
 
+    virtual void TearDown()
+    {
+    }
 };
 
-TEST(HelloWorldFixture, Print)
+TEST_F(HelloWorldFixture, Print)
 {
     hello();
     ASSERT_TRUE(true);

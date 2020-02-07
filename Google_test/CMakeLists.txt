@@ -1,12 +1,14 @@
 project(Google_test)
 
+set(BUILD_GMOCK "" ON)
+set(INSTALL_GTEST "" OFF)
 # 'lib' is the folder with Google Test sources
 add_subdirectory(lib)
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} ../)
+include_directories(${gtest_SOURCE_DIR}/include ${gmock_SOURCE_DIR}/include ${gmock_SOURCE_DIR} ${gtest_SOURCE_DIR} ../)
 
 enable_testing()
 
 # 'Google_Tests_run' is the target name
 # 'test1.cpp tests2.cpp' are source files with tests
-add_executable(Google_Tests_run gtest.cpp hello_world_test.cpp)
+add_executable(Google_Tests_run gtest.cpp hello_world_test.cpp openssl_cipher_test.cpp)
 target_link_libraries(Google_Tests_run gtest gtest_main ${TARGET_NAME})

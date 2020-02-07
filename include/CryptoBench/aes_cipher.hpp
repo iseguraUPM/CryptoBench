@@ -10,12 +10,8 @@
 class AesCipher : public SymmetricCipher
 {
 public:
-    void encrypt();
-    void decrypt();
-
-protected:
-    void initialize() override;
-    void cleanup() override;
+    void encrypt() override;
+    void decrypt() override;
 
 };
 

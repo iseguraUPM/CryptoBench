@@ -11,16 +11,9 @@
 class SymmetricCipher
 {
 public:
-    SymmetricCipher();
-    ~SymmetricCipher();
 
     virtual void encrypt() = 0;
     virtual void decrypt() = 0;
-
-protected:
-
-    virtual void initialize() = 0;
-    virtual void cleanup() = 0;
 
 };
 

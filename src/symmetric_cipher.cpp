@@ -3,13 +3,3 @@
 //
 
 #include "CryptoBench/symmetric_cipher.hpp"
-
-SymmetricCipher::SymmetricCipher()
-{
-    initialize();
-}
-
-SymmetricCipher::~SymmetricCipher()
-{
-    cleanup();
-}

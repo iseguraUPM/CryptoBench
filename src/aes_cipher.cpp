@@ -17,13 +17,3 @@ void AesCipher::decrypt()
 {
 
 }
-
-void AesCipher::initialize()
-{
-
-}
-
-void AesCipher::cleanup()
-{
-
-}
