@@ -7,7 +7,6 @@
 #include <openssl/err.h>
 
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
 
 class OpenSSLFixture : public ::testing::Test
 {

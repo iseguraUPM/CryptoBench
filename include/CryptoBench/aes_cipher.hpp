@@ -1,19 +1,40 @@
 //
-// Created by ISU on 04/02/2020.
+// Created by ISU on 09/02/2020.
 //
 
 #ifndef CRYPTOBENCH_AES_CIPHER_HPP
 #define CRYPTOBENCH_AES_CIPHER_HPP
 
-#include "symmetric_cipher.hpp"
+#include "openssl_cipher.hpp"
 
-class AesCipher : public SymmetricCipher
+enum class Mode
 {
+    CBC, ECB, CFB
+};
+
+template <int KEY_SIZE>
+class AesCipher : public OpenSSLCipher<KEY_SIZE, 16>
+{
+private:
+
+    const Mode cipher_mode;
+
+
 public:
-    void encrypt() override;
-    void decrypt() override;
+
+    AesCipher(Mode mode);
+
+
+private:
+
+    const EVP_CIPHER* getCipherMode() override;
 
 };
+
+template<int KEY_SIZE>
+AesCipher<KEY_SIZE>::AesCipher(Mode mode) : cipher_mode(mode)
+{
+}
 
 
 #endif //CRYPTOBENCH_AES_CIPHER_HPP
