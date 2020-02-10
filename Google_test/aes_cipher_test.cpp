@@ -4,12 +4,14 @@
 
 #include "gtest/gtest.h"
 
-#include "CryptoBench/aes_cipher.hpp"
+#include "CryptoBench/open_ssl_cipher_factory.hpp"
 
 class AesCipherFixture : public ::testing::Test
 {
 
 protected:
+
+    OpenSSLCipherFactory factory;
 
     byte key[32];
     byte iv[16];
@@ -42,47 +44,15 @@ protected:
 
 TEST_F(AesCipherFixture, Aes256CBC)
 {
-    AesCipher<256 / 8> cipher(Mode::CBC);
+    CipherPtr cipher = factory.getCipher(Cipher::AES_256_CBC);
 
     security::secure_string output;
-    cipher.encrypt(key, iv, input, output);
+    cipher->encrypt(key, iv, input, output);
 
     std::cout << "\nCipher text: " << output << "\n";
 
     security::secure_string recovered;
-    cipher.decrypt(key, iv, output, recovered);
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
-}
-
-TEST_F(AesCipherFixture, Aes256CFB)
-{
-    AesCipher<256 / 8> cipher(Mode::CFB);
-
-    security::secure_string output;
-    cipher.encrypt(key, iv, input, output);
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    cipher.decrypt(key, iv, output, recovered);
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
-}
-
-TEST_F(AesCipherFixture, Aes256ECB)
-{
-    AesCipher<256 / 8> cipher(Mode::ECB);
-
-    security::secure_string output;
-    cipher.encrypt(key, iv, input, output);
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    cipher.decrypt(key, iv, output, recovered);
+    cipher->decrypt(key, iv, output, recovered);
 
     std::cout << "\nRecovered string: " << recovered << "\n";
     ASSERT_EQ(input, recovered);
@@ -90,47 +60,15 @@ TEST_F(AesCipherFixture, Aes256ECB)
 
 TEST_F(AesCipherFixture, Aes128CBC)
 {
-    AesCipher<128 / 8> cipher(Mode::CBC);
+    CipherPtr cipher = factory.getCipher(Cipher::AES_128_CBC);
 
     security::secure_string output;
-    cipher.encrypt(key, iv, input, output);
+    cipher->encrypt(key, iv, input, output);
 
     std::cout << "\nCipher text: " << output << "\n";
 
     security::secure_string recovered;
-    cipher.decrypt(key, iv, output, recovered);
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
-}
-
-TEST_F(AesCipherFixture, Aes128CFB)
-{
-    AesCipher<128 / 8> cipher(Mode::CFB);
-
-    security::secure_string output;
-    cipher.encrypt(key, iv, input, output);
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    cipher.decrypt(key, iv, output, recovered);
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
-}
-
-TEST_F(AesCipherFixture, Aes128ECB)
-{
-    AesCipher<128 / 8> cipher(Mode::ECB);
-
-    security::secure_string output;
-    cipher.encrypt(key, iv, input, output);
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    cipher.decrypt(key, iv, output, recovered);
+    cipher->decrypt(key, iv, output, recovered);
 
     std::cout << "\nRecovered string: " << recovered << "\n";
     ASSERT_EQ(input, recovered);

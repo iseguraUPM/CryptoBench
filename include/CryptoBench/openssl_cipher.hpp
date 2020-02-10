@@ -11,7 +11,7 @@
 #include <openssl/conf.h>
 
 template <int KEY_SIZE, int BLOCK_SIZE>
-class OpenSSLCipher : public SymmetricCipher<KEY_SIZE, BLOCK_SIZE>
+class OpenSSLCipher : public SymmetricCipher
 {
 public:
 
