@@ -86,5 +86,11 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER(56, 8, EVP_bf_ecb());
         case Cipher::BLOWFISH_CFB:
             return CIPHER(56, 8, EVP_bf_cfb());
+        case Cipher::CAST5_ECB:
+            return CIPHER(16, 8, EVP_cast5_ecb());
+        case Cipher::CAST5_CBC:
+            return CIPHER(16, 8, EVP_cast5_cbc());
+        case Cipher::CAST5_CFB:
+            return CIPHER(16, 8, EVP_cast5_cfb());
     }
 }

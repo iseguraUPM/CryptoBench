@@ -17,6 +17,7 @@ enum class Cipher
     AES_128_CBC,
     AES_128_CFB,
     AES_128_ECB,
+
     ARIA_256_CBC,
     ARIA_256_CFB,
     ARIA_256_ECB,
@@ -29,6 +30,9 @@ enum class Cipher
     CAMELLIA_128_CBC,
     CAMELLIA_128_CFB,
     CAMELLIA_128_ECB,
+    CAST5_ECB,
+    CAST5_CBC,
+    CAST5_CFB,
     BLOWFISH_CBC,
     BLOWFISH_ECB,
     BLOWFISH_CFB
