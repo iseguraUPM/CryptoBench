@@ -89,9 +89,9 @@ TEST_F(AesCipherFixture, Aes256CBC)
     ASSERT_EQ(input, recovered);
 }
 
-TEST_F(AesCipherFixture, Aes128CBC)
+TEST_F(AesCipherFixture, Aes256CFB)
 {
-    CipherPtr cipher = factory.getCipher(Cipher::AES_128_CBC);
+    CipherPtr cipher = factory.getCipher(Cipher::AES_256_CFB);
 
     security::secure_string output;
     startChrono();
@@ -113,9 +113,9 @@ TEST_F(AesCipherFixture, Aes128CBC)
     ASSERT_EQ(input, recovered);
 }
 
-TEST_F(AesCipherFixture, BlowfishCBC)
+TEST_F(AesCipherFixture, Aes256ECB)
 {
-    CipherPtr cipher = factory.getCipher(Cipher::BLOWFISH_CBC);
+    CipherPtr cipher = factory.getCipher(Cipher::AES_256_ECB);
 
     security::secure_string output;
     startChrono();

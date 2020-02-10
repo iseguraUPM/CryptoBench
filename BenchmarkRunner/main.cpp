@@ -95,22 +95,8 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
     return len;
 }
 
-int main(int argc, char** arv)
+void runBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
-    generateInputFile("fox.txt", 100000);
-
-    std::ifstream input_file("fox.txt", std::ios::binary | std::ios::ate);
-    security::secure_string input_text;
-
-    int input_size = readInputFile(input_file, input_text);
-
-    std::ofstream resultsFile;
-    resultsFile.open("benchmark.csv");
-
-    resultsFile << "ALG,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
-
-    //security::secure_string input_text = "The quick fox jumps over the lazy dog";
-
     OpenSSLCipherFactory factory;
     CipherPtr cipher;
     BenchmarkResult result;
@@ -248,9 +234,33 @@ int main(int argc, char** arv)
     result = BenchmarkResult(448, 64, input_size, "Blowfish", "CFB");
     benchmarkCipher(key448, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
+}
+
+int main(int argc, char** arv)
+{
+    generateInputFile("fox.txt", 100000);
+
+    std::ifstream input_file("fox.txt", std::ios::binary | std::ios::ate);
+    security::secure_string input_text;
+
+    int input_size = readInputFile(input_file, input_text);
+
+    for (int i = 0; i < 2; i++)
+    {
+        std::ofstream resultsFile;
+        resultsFile.open("benchmark.csv");
+
+        resultsFile << "ALG,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
+
+        //security::secure_string input_text = "The quick fox jumps over the lazy dog";
+
+        runBenchmark(input_text, input_size, resultsFile);
+
+
+        resultsFile.close();
+    }
 
     input_file.close();
-    resultsFile.close();
 
     return 0;
 }
