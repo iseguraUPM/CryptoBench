@@ -6,3 +6,5 @@ project(${TARGET_NAME})
 add_subdirectory(src)
 
 add_subdirectory(Google_test)
+
+add_subdirectory(BenchmarkRunner)

@@ -4,10 +4,18 @@
 
 #include "gtest/gtest.h"
 
+#include <chrono>
+
 #include "CryptoBench/open_ssl_cipher_factory.hpp"
 
 class AesCipherFixture : public ::testing::Test
 {
+
+private:
+
+    std::chrono::high_resolution_clock::time_point t1;
+    std::chrono::high_resolution_clock::time_point t2;
+
 
 protected:
 
@@ -30,6 +38,21 @@ protected:
     {
     }
 
+    void startChrono()
+    {
+        t1 = std::chrono::high_resolution_clock::now();
+    }
+
+    void stopChrono()
+    {
+        t2 = std::chrono::high_resolution_clock::now();
+    }
+
+    auto getElapsedChrono()
+    {
+        return std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
+    }
+
     static void generateRandomBytes(byte *arr, int len)
     {
         if (len <= 0)
@@ -47,12 +70,20 @@ TEST_F(AesCipherFixture, Aes256CBC)
     CipherPtr cipher = factory.getCipher(Cipher::AES_256_CBC);
 
     security::secure_string output;
+    startChrono();
     cipher->encrypt(key, iv, input, output);
+    stopChrono();
+
+    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nCipher text: " << output << "\n";
 
     security::secure_string recovered;
+    startChrono();
     cipher->decrypt(key, iv, output, recovered);
+    stopChrono();
+
+    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nRecovered string: " << recovered << "\n";
     ASSERT_EQ(input, recovered);
@@ -63,12 +94,44 @@ TEST_F(AesCipherFixture, Aes128CBC)
     CipherPtr cipher = factory.getCipher(Cipher::AES_128_CBC);
 
     security::secure_string output;
+    startChrono();
     cipher->encrypt(key, iv, input, output);
+    stopChrono();
+
+    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nCipher text: " << output << "\n";
 
     security::secure_string recovered;
+    startChrono();
     cipher->decrypt(key, iv, output, recovered);
+    stopChrono();
+
+    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
+
+    std::cout << "\nRecovered string: " << recovered << "\n";
+    ASSERT_EQ(input, recovered);
+}
+
+TEST_F(AesCipherFixture, BlowfishCBC)
+{
+    CipherPtr cipher = factory.getCipher(Cipher::BLOWFISH_CBC);
+
+    security::secure_string output;
+    startChrono();
+    cipher->encrypt(key, iv, input, output);
+    stopChrono();
+
+    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
+
+    std::cout << "\nCipher text: " << output << "\n";
+
+    security::secure_string recovered;
+    startChrono();
+    cipher->decrypt(key, iv, output, recovered);
+    stopChrono();
+
+    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nRecovered string: " << recovered << "\n";
     ASSERT_EQ(input, recovered);
