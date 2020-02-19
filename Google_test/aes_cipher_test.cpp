@@ -48,7 +48,7 @@ protected:
         t2 = std::chrono::high_resolution_clock::now();
     }
 
-    auto getElapsedChrono()
+    std::chrono::microseconds getElapsedChrono()
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
     }

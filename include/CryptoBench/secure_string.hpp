@@ -6,8 +6,10 @@
 #define CRYPTOBENCH_SECURE_STRING_HPP
 
 #include <string>
+#include <iostream>
 
 /// source: https://codereview.stackexchange.com/questions/107991/hacking-a-securestring-based-on-stdbasic-string-for-c
+/// source: https://docs.roguewave.com/en/sourcepro/11/html/toolsug/12-6.html
 
 namespace security
 {
@@ -19,14 +21,24 @@ namespace security
     template<typename T>
     struct allocator
     {
-        using value_type = T;
+        typedef size_t size_type;
+        typedef ptrdiff_t difference_type;
+        typedef T* pointer;
+        typedef const T* const_pointer;
+        typedef T& reference;
+        typedef const T&  const_reference;
+        typedef T value_type;
+
+        template <class U>
+        struct rebind { typedef allocator<U> other; };
+
         using propagate_on_container_move_assignment =
                 typename std::allocator_traits<std::allocator<T>>
                 ::propagate_on_container_move_assignment;
 
         constexpr allocator() = default;
         constexpr allocator(const allocator&) = default;
-        template <class U> constexpr allocator(const allocator<U>&) noexcept {}
+        template <class U> constexpr explicit allocator(const allocator<U>&) noexcept {}
 
         static T* allocate(std::size_t n) { return std::allocator<T>{}.allocate(n); }
         static void deallocate(T* p, std::size_t n) noexcept
@@ -48,10 +60,10 @@ namespace security
         return false;
     }
 
-    using secure_string = std::string;//std::basic_string<char, std::char_traits<char>, allocator<char>>;
+    using secure_string = std::basic_string<char, std::char_traits<char>, allocator<char>>;
 }
 
-/*namespace std
+namespace std
 {
     template <>
     inline security::secure_string::~basic_string()
@@ -62,6 +74,6 @@ namespace security
         ((X*)this)->~X();
         ::security::SecureZeroMemory(this, sizeof *this);
     }
-}*/
+}
 
 #endif //CRYPTOBENCH_SECURE_STRING_HPP
