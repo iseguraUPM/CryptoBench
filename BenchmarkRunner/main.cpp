@@ -6,6 +6,10 @@
 #include <chrono>
 #include <utility>
 #include <iostream>
+#include <vector>
+#include <random>
+#include <climits>
+#include <algorithm>
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 
@@ -68,13 +72,38 @@ void recordResult(BenchmarkResult &result, std::ofstream &file_stream)
     << result.decrypt_time_micro << "\n";
 }
 
+int min(std::size_t x, std::size_t y)
+{
+    return x > y ? y : x;
+}
 
-void generateInputFile(const std::string& filename, int line_count)
+void generateInputBinaryFile(const std::string& filename, std::size_t target_size)
+{
+    std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned char> rbe;
+    std::ofstream binaryFile(filename, std::ios::binary);
+    std::size_t file_size = 0;
+
+    const int buffer_size = 1024;
+    unsigned char buffer[buffer_size];
+    while (file_size < target_size)
+    {
+        std::generate(std::begin(buffer), std::end(buffer), std::ref(rbe));
+        std::size_t to_write = min(buffer_size, target_size - file_size);
+        binaryFile.write((char *) &buffer[0], min(buffer_size, target_size - file_size));
+        file_size += to_write;
+    }
+}
+
+
+void generateInputTextFile(const std::string& filename, int line_count)
 {
     const std::string foxStr = "The Quick Brown Fox Jumps Over The Lazy Dog";
 
     std::ofstream textFile;
     textFile.open(filename);
+
+    std::random_device engine;
+    unsigned char x = engine();
 
     for (int i = 0; i < line_count; i++)
     {
@@ -97,8 +126,6 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
 
 void runBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
-    std::cout << "Starting Benchmark...\n";
-
     OpenSSLCipherFactory factory;
     CipherPtr cipher;
     BenchmarkResult result;
@@ -191,35 +218,63 @@ void runBenchmark(const security::secure_string &input_text, int input_size, std
     result = BenchmarkResult(448, 64, input_size, "Blowfish", "CFB");
     benchmarkCipher(key448, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
+}
 
-    std::cout << "Done!\n";
+void runBenchmarkWSize(int bytes, std::ofstream &results_file)
+{
+    security::secure_string input_text;
+    std::ifstream input_file;
+
+    generateInputBinaryFile("input.bin", bytes);
+    input_file.open("input.bin", std::ios::binary);
+    int input_size = readInputFile(input_file, input_text);
+
+    runBenchmark(input_text, input_size, results_file);
+
+    input_file.close();
 }
 
 int main(int argc, char** arv)
 {
-    generateInputFile("fox.txt", 100000);
+    //generateInputTextFile("fox.txt", 100000);
+    //std::ifstream input_file("fox.txt", std::ios::binary);
 
-    std::ifstream input_file("fox.txt", std::ios::binary | std::ios::ate);
-    security::secure_string input_text;
+    std::ofstream resultsFile;
+    resultsFile.open("benchmark.csv");
+    resultsFile << "ALG,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
 
-    int input_size = readInputFile(input_file, input_text);
+    //security::secure_string input_text;
+    //input_text = "The quick fox jumps over the lazy dog";
 
-    for (int i = 0; i < 2; i++)
+    // From 2^10 to 2^25
+    int sizes[] = {
+            1024,
+            2048,
+            4096,
+            8192,
+            16384,
+            32768,
+            65536,
+            131072,
+            262144,
+            524288,
+            1048576,
+            2097152,
+            4194304,
+            8388608,
+            16777216,
+            33554432
+    };
+
+    for (int b : sizes)
     {
-        std::ofstream resultsFile;
-        resultsFile.open("benchmark.csv");
-
-        resultsFile << "ALG,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
-
-        //security::secure_string input_text = "The quick fox jumps over the lazy dog";
-
-        runBenchmark(input_text, input_size, resultsFile);
-
-
-        resultsFile.close();
+        std::cout << "Running " << b << " bytes benchmark\n";
+        runBenchmarkWSize(b, resultsFile);
     }
 
-    input_file.close();
+    std::cout << "Done!\n";
+
+    resultsFile.close();
 
     return 0;
 }
