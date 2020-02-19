@@ -56,29 +56,23 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(16, EVP_aes_128_cfb());
         case Cipher::AES_128_ECB:
             return CIPHER_128_BLOCK(16, EVP_aes_128_ecb());
-        case Cipher::CAMELLIA_256_CBC:
-            return CIPHER_128_BLOCK(32, EVP_camellia_256_cbc());
-        case Cipher::CAMELLIA_256_CFB:
-            return CIPHER_128_BLOCK(32, EVP_camellia_256_cfb());
-        case Cipher::CAMELLIA_256_ECB:
-            return CIPHER_128_BLOCK(32, EVP_camellia_256_ecb());
-        case Cipher::CAMELLIA_128_CBC:
-            return CIPHER_128_BLOCK(16, EVP_camellia_128_cbc());
-        case Cipher::CAMELLIA_128_CFB:
-            return CIPHER_128_BLOCK(16, EVP_camellia_128_cfb());
-        case Cipher::CAMELLIA_128_ECB:
-            return CIPHER_128_BLOCK(16, EVP_camellia_128_ecb());
+        case Cipher::ARIA_256_CBC:
+            return CIPHER_128_BLOCK(32, EVP_aria_256_cbc());
+        case Cipher::ARIA_256_CFB:
+            return CIPHER_128_BLOCK(32, EVP_aria_256_cfb());
+        case Cipher::ARIA_256_ECB:
+            return CIPHER_128_BLOCK(32, EVP_aria_256_ecb());
+        case Cipher::ARIA_128_CBC:
+            return CIPHER_128_BLOCK(16, EVP_aria_128_cbc());
+        case Cipher::ARIA_128_CFB:
+            return CIPHER_128_BLOCK(16, EVP_aria_128_cfb());
+        case Cipher::ARIA_128_ECB:
+            return CIPHER_128_BLOCK(16, EVP_aria_128_ecb());
         case Cipher::BLOWFISH_CBC:
             return CIPHER(56, 8, EVP_bf_cbc());
         case Cipher::BLOWFISH_ECB:
             return CIPHER(56, 8, EVP_bf_ecb());
         case Cipher::BLOWFISH_CFB:
             return CIPHER(56, 8, EVP_bf_cfb());
-        case Cipher::CAST5_ECB:
-            return CIPHER(16, 8, EVP_cast5_ecb());
-        case Cipher::CAST5_CBC:
-            return CIPHER(16, 8, EVP_cast5_cbc());
-        case Cipher::CAST5_CFB:
-            return CIPHER(16, 8, EVP_cast5_cfb());
     }
 }

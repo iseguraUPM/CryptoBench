@@ -141,53 +141,38 @@ void runBenchmark(const security::secure_string &input_text, int input_size, std
     benchmarkCipher(key256, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::CAMELLIA_256_ECB);
-    result = BenchmarkResult(256, 128, input_size, "Camellia", "ECB");
+    cipher = factory.getCipher(Cipher::ARIA_256_ECB);
+    result = BenchmarkResult(256, 128, input_size, "ARIA", "ECB");
     benchmarkCipher(key256, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::CAMELLIA_256_CBC);
-    result = BenchmarkResult(256, 128, input_size, "Camellia", "CBC");
+    cipher = factory.getCipher(Cipher::ARIA_256_CBC);
+    result = BenchmarkResult(256, 128, input_size, "ARIA", "CBC");
     benchmarkCipher(key256, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::CAMELLIA_256_CFB);
-    result = BenchmarkResult(256, 128, input_size, "Camellia", "CFB");
+    cipher = factory.getCipher(Cipher::ARIA_256_CFB);
+    result = BenchmarkResult(256, 128, input_size, "ARIA", "CFB");
     benchmarkCipher(key256, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::CAMELLIA_128_ECB);
-    result = BenchmarkResult(128, 128, input_size, "Camellia", "ECB");
+    cipher = factory.getCipher(Cipher::ARIA_128_ECB);
+    result = BenchmarkResult(128, 128, input_size, "ARIA", "ECB");
     benchmarkCipher(key128, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::CAMELLIA_128_CBC);
-    result = BenchmarkResult(128, 128, input_size, "Camellia", "CBC");
+    cipher = factory.getCipher(Cipher::ARIA_128_CBC);
+    result = BenchmarkResult(128, 128, input_size, "ARIA", "CBC");
     benchmarkCipher(key128, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::CAMELLIA_128_CFB);
-    result = BenchmarkResult(128, 128, input_size, "Camellia", "CFB");
+    cipher = factory.getCipher(Cipher::ARIA_128_CFB);
+    result = BenchmarkResult(128, 128, input_size, "ARIA", "CFB");
     benchmarkCipher(key128, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
 
     byte iv64[8];
     generateRandomBytes(iv64, 8);
-
-    cipher = factory.getCipher(Cipher::CAST5_ECB);
-    result = BenchmarkResult(128, 64, input_size, "CAST5", "ECB");
-    benchmarkCipher(key128, iv64, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::CAST5_CBC);
-    result = BenchmarkResult(128, 64, input_size, "CAST5", "CBC");
-    benchmarkCipher(key128, iv64, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::CAST5_CFB);
-    result = BenchmarkResult(128, 64, input_size, "CAST5", "CFB");
-    benchmarkCipher(key128, iv64, input_text, cipher, result);
-    recordResult(result, resultsFile);
 
     byte key448[56];
     generateRandomBytes(key448, 56);
