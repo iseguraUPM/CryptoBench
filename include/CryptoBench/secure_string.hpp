@@ -48,10 +48,10 @@ namespace security
         return false;
     }
 
-    using secure_string = std::basic_string<char, std::char_traits<char>, allocator<char>>;
+    using secure_string = std::string;//std::basic_string<char, std::char_traits<char>, allocator<char>>;
 }
 
-namespace std
+/*namespace std
 {
     template <>
     inline security::secure_string::~basic_string()
@@ -62,6 +62,6 @@ namespace std
         ((X*)this)->~X();
         ::security::SecureZeroMemory(this, sizeof *this);
     }
-}
+}*/
 
 #endif //CRYPTOBENCH_SECURE_STRING_HPP

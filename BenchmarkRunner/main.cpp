@@ -97,6 +97,8 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
 
 void runBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
+    std::cout << "Starting Benchmark...\n";
+
     OpenSSLCipherFactory factory;
     CipherPtr cipher;
     BenchmarkResult result;
@@ -234,6 +236,8 @@ void runBenchmark(const security::secure_string &input_text, int input_size, std
     result = BenchmarkResult(448, 64, input_size, "Blowfish", "CFB");
     benchmarkCipher(key448, iv128, input_text, cipher, result);
     recordResult(result, resultsFile);
+
+    std::cout << "Done!\n";
 }
 
 int main(int argc, char** arv)
