@@ -21,6 +21,10 @@ public:
     virtual void decrypt(const byte* key, const byte* iv, const security::secure_string &cipher_text
                          , security::secure_string &recovered_text) = 0;
 
+    virtual int getBlockLen() = 0;
+
+    virtual int getKeyLen() = 0;
+
 };
 
 

@@ -22,6 +22,10 @@ public:
     void decrypt(const byte key[KEY_SIZE], const byte iv[BLOCK_SIZE], const security::secure_string &cipher_text
                  , security::secure_string &recovered_text) override;
 
+    int getBlockLen();
+
+    int getKeyLen();
+
 private:
 
     virtual const EVP_CIPHER* getCipherMode() = 0;
@@ -83,6 +87,18 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], cons
     }
 
     recovered_text.resize(out_len1 + out_len2);
+}
+
+template<int KEY_SIZE, int BLOCK_SIZE>
+int OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::getBlockLen()
+{
+    return BLOCK_SIZE;
+}
+
+template<int KEY_SIZE, int BLOCK_SIZE>
+int OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::getKeyLen()
+{
+    return KEY_SIZE;
 }
 
 #endif //CRYPTOBENCH_OPENSSL_CIPHER_HPP
