@@ -10,36 +10,33 @@
 #include <random>
 #include <climits>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 
-
-byte key128[16];
-byte key192[24];
-byte key256[32];
-byte key448[56];
-byte iv64[8];
-byte iv128[16];
-
 struct BenchmarkResult
 {
-    unsigned long encrypt_time_micro;
-    unsigned long decrypt_time_micro;
-    int key_bits;
-    int block_bits;
-    unsigned int input_size;
+    unsigned long encrypt_time_micro{};
+    unsigned long decrypt_time_micro{};
+    int key_bits{};
+    int block_bits{};
+    unsigned int input_size{};
     std::string cipher_alg;
     std::string block_mode;
 
-    BenchmarkResult() {}
+    BenchmarkResult() = default;
 
     BenchmarkResult(int key_len, int block_len, unsigned int input_size, std::string cipher, std::string mode)
     : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_alg(std::move(cipher)), block_mode(std::move(mode))
-    {}
+    {
+        encrypt_time_micro = 0;
+        decrypt_time_micro = 0;
+    }
 };
 
 
-void generateRandomBytes(byte *arr, int len)
+void generateRandomBytes(byte *arr, int len) noexcept (false)
 {
     if (len <= 0)
         throw std::runtime_error("Random bytes length must be greater than 0");
@@ -154,20 +151,12 @@ void runSingleBenchmark(Cipher cipher, OpenSSLCipherFactory &factory, const secu
 void runFullBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
     OpenSSLCipherFactory factory;
-    CipherPtr cipher;
-    BenchmarkResult result;
 
-    generateRandomBytes(key128, 16);
-    generateRandomBytes(key192, 24);
-    generateRandomBytes(key256, 32);
-    generateRandomBytes(key448, 56);
-    generateRandomBytes(iv64, 8);
-    generateRandomBytes(iv128, 16);
-
-
+    const int rounds = 3;
     for(Cipher cipher : CIPHER_LIST)
     {
-        for(int i = 0; i < 3; i++)
+        auto info_pair = cipherDescription(cipher);
+        for(int i = 0; i < rounds; i++)
         {
             runSingleBenchmark(cipher, factory, input_text, input_size, resultsFile);
         }
@@ -183,6 +172,7 @@ void runBenchmarkWSize(int bytes, std::ofstream &results_file)
     input_file.open("input.bin", std::ios::binary);
     int input_size = readInputFile(input_file, input_text);
 
+    std::cout << "Running " << input_size << " bytes random file benchmark\n";
     runFullBenchmark(input_text, input_size, results_file);
 
     input_file.close();
@@ -193,9 +183,15 @@ int main(int argc, char** arv)
     //generateInputTextFile("fox.txt", 100000);
     //std::ifstream input_file("fox.txt", std::ios::binary);
 
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
+
     std::ofstream resultsFile;
-    resultsFile.open("benchmark.csv");
-    resultsFile << "ALG,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
+    resultsFile.open("benchmark_" + ss.str() + ".csv");
+    resultsFile << "ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
 
     //security::secure_string input_text;
     //input_text = "The quick fox jumps over the lazy dog";
@@ -217,12 +213,19 @@ int main(int argc, char** arv)
             4194304,
             8388608,
             16777216,
-            33554432
+            33554432,
+            67108864,
+            134217728//,
+            //268435456,
+            //536870912,
+            //1073741824
     };
+
+    std::cout << "Starting...\n";
 
     for (int b : sizes)
     {
-        std::cout << "Running " << b << " bytes benchmark\n";
+
         runBenchmarkWSize(b, resultsFile);
     }
 
