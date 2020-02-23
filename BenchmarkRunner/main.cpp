@@ -13,6 +13,14 @@
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 
+
+byte key128[16];
+byte key192[24];
+byte key256[32];
+byte key448[56];
+byte iv64[8];
+byte iv128[16];
+
 struct BenchmarkResult
 {
     unsigned long encrypt_time_micro;
@@ -30,6 +38,7 @@ struct BenchmarkResult
     {}
 };
 
+
 void generateRandomBytes(byte *arr, int len)
 {
     if (len <= 0)
@@ -39,6 +48,7 @@ void generateRandomBytes(byte *arr, int len)
         arr[i] = rand() % 0xFF;
     }
 }
+
 
 void benchmarkCipher(const byte* key, const byte* iv, const security::secure_string &input_text, CipherPtr &cipher, BenchmarkResult &result)
 {
@@ -124,100 +134,44 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
     return len;
 }
 
-void runBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+void runSingleBenchmark(Cipher cipher, OpenSSLCipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+{
+    CipherPtr cipherptr = factory.getCipher(cipher);
+
+    byte key [cipherptr->getKeyLen()];
+    generateRandomBytes(key, cipherptr->getKeyLen());
+
+    byte iv [cipherptr->getBlockLen()];
+    generateRandomBytes(iv, cipherptr->getBlockLen());
+
+    auto infoPair = cipherDescription(cipher);
+    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, infoPair.first, infoPair.second);
+
+    benchmarkCipher(key, iv, input_text, cipherptr, result);
+    recordResult(result, resultsFile);
+}
+
+void runFullBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
     OpenSSLCipherFactory factory;
     CipherPtr cipher;
     BenchmarkResult result;
 
-    byte key256[32];
-    generateRandomBytes(key256, 32);
-    byte key128[16];
     generateRandomBytes(key128, 16);
-
-    byte iv128[16];
+    generateRandomBytes(key192, 24);
+    generateRandomBytes(key256, 32);
+    generateRandomBytes(key448, 56);
+    generateRandomBytes(iv64, 8);
     generateRandomBytes(iv128, 16);
 
-    cipher = factory.getCipher(Cipher::AES_128_ECB);
-    result = BenchmarkResult(128, 128, input_size, "AES", "ECB");
-    benchmarkCipher(key128, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
 
-    cipher = factory.getCipher(Cipher::AES_128_CBC);
-    result = BenchmarkResult(128, 128, input_size, "AES", "CBC");
-    benchmarkCipher(key128, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::AES_128_CFB);
-    result = BenchmarkResult(128, 128, input_size, "AES", "CFB");
-    benchmarkCipher(key128, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::AES_256_ECB);
-    result = BenchmarkResult(256, 128, input_size, "AES", "ECB");
-    benchmarkCipher(key256, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::AES_256_CBC);
-    result = BenchmarkResult(256, 128, input_size, "AES", "CBC");
-    benchmarkCipher(key256, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::AES_256_CFB);
-    result = BenchmarkResult(256, 128, input_size, "AES", "CFB");
-    benchmarkCipher(key256, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::ARIA_256_ECB);
-    result = BenchmarkResult(256, 128, input_size, "ARIA", "ECB");
-    benchmarkCipher(key256, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::ARIA_256_CBC);
-    result = BenchmarkResult(256, 128, input_size, "ARIA", "CBC");
-    benchmarkCipher(key256, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::ARIA_256_CFB);
-    result = BenchmarkResult(256, 128, input_size, "ARIA", "CFB");
-    benchmarkCipher(key256, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::ARIA_128_ECB);
-    result = BenchmarkResult(128, 128, input_size, "ARIA", "ECB");
-    benchmarkCipher(key128, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::ARIA_128_CBC);
-    result = BenchmarkResult(128, 128, input_size, "ARIA", "CBC");
-    benchmarkCipher(key128, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::ARIA_128_CFB);
-    result = BenchmarkResult(128, 128, input_size, "ARIA", "CFB");
-    benchmarkCipher(key128, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    byte iv64[8];
-    generateRandomBytes(iv64, 8);
-
-    byte key448[56];
-    generateRandomBytes(key448, 56);
-
-    cipher = factory.getCipher(Cipher::BLOWFISH_ECB);
-    result = BenchmarkResult(448, 64, input_size, "Blowfish", "ECB");
-    benchmarkCipher(key448, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::BLOWFISH_CBC);
-    result = BenchmarkResult(448, 64, input_size, "Blowfish", "CBC");
-    benchmarkCipher(key448, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
-
-    cipher = factory.getCipher(Cipher::BLOWFISH_CFB);
-    result = BenchmarkResult(448, 64, input_size, "Blowfish", "CFB");
-    benchmarkCipher(key448, iv128, input_text, cipher, result);
-    recordResult(result, resultsFile);
+    for(Cipher cipher : CIPHER_LIST)
+    {
+        for(int i = 0; i < 3; i++)
+        {
+            runSingleBenchmark(cipher, factory, input_text, input_size, resultsFile);
+        }
+    }
 }
 
 void runBenchmarkWSize(int bytes, std::ofstream &results_file)
@@ -229,7 +183,7 @@ void runBenchmarkWSize(int bytes, std::ofstream &results_file)
     input_file.open("input.bin", std::ios::binary);
     int input_size = readInputFile(input_file, input_text);
 
-    runBenchmark(input_text, input_size, results_file);
+    runFullBenchmark(input_text, input_size, results_file);
 
     input_file.close();
 }
