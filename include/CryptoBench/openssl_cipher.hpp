@@ -22,9 +22,9 @@ public:
     void decrypt(const byte key[KEY_SIZE], const byte iv[BLOCK_SIZE], const security::secure_string &cipher_text
                  , security::secure_string &recovered_text) override;
 
-    int getBlockLen();
+    int getBlockLen() override;
 
-    int getKeyLen();
+    int getKeyLen() override;
 
 private:
 

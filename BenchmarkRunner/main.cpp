@@ -197,7 +197,7 @@ int main(int argc, char** arv)
     //input_text = "The quick fox jumps over the lazy dog";
 
     // From 2^10 to 2^25
-    int sizes[] = {
+    /*int sizes[] = {
             1024,
             2048,
             4096,
@@ -219,15 +219,29 @@ int main(int argc, char** arv)
             //268435456,
             //536870912,
             //1073741824
-    };
+    };*/
 
     std::cout << "Starting...\n";
 
-    for (int b : sizes)
+    generateInputTextFile("fox.txt", 10000);
+    std::ifstream input_file("fox.txt", std::ios::binary);
+    security::secure_string plaintext;
+    int text_size = readInputFile(input_file, plaintext);
+    OpenSSLCipherFactory cipherFactory;
+    runSingleBenchmark(Cipher::AES_192_CBC, cipherFactory, plaintext, text_size, resultsFile);
+    input_file.close();
+
+    generateInputBinaryFile("input.bin", text_size);
+    input_file.open("input.bin", std::ios::binary);
+    text_size = readInputFile(input_file, plaintext);
+    runSingleBenchmark(Cipher::AES_192_CBC, cipherFactory, plaintext, text_size, resultsFile);
+    input_file.close();
+
+    /*for (int b : sizes)
     {
 
         runBenchmarkWSize(b, resultsFile);
-    }
+    }*/
 
     std::cout << "Done!\n";
 
