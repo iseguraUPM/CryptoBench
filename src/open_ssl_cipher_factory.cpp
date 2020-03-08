@@ -103,5 +103,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER(KEY_448, 8, EVP_bf_ecb());
         case Cipher::BLOWFISH_CFB:
             return CIPHER(KEY_448, 8, EVP_bf_cfb());
+        default:
+            return nullptr;
     }
 }
