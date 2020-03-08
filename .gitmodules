@@ -4,3 +4,6 @@
 [submodule "OpenSSL-CMake"]
 	path = OpenSSL-CMake
 	url = https://github.com/viaduck/openssl-cmake.git
+[submodule "wolfSSL-4.3.0"]
+    path = wolfSSL-4.3.0/lib
+    url = https://github.com/wolfSSL/wolfssl.git
