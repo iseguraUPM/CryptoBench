@@ -7,3 +7,6 @@
 [submodule "wolfSSL-4.3.0/lib"]
 	path = wolfSSL-4.3.0/lib
 	url = https://github.com/wolfSSL/wolfssl.git
+[submodule "cryptopp-8.2/lib/cryptopp"]
+	path = cryptopp-8.2/lib/cryptopp
+	url = https://github.com/weidai11/cryptopp.git
