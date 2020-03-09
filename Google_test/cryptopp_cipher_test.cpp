@@ -2,8 +2,9 @@
 // Created by ISU on 06/02/2020.
 //
 
-#include "cryptopp/default.h"
-#include "cryptopp/hex.h"
+
+#include <cryptopp/hex.h>
+#include <cryptopp/default.h>
 
 #include "gtest/gtest.h"
 
