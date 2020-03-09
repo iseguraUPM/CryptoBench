@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.4.1)
 project(wolfssl)
 
 # Add preprocessor defines to CFLAGS
-add_definitions()
+add_definitions(-DHAVE_AESCCM -DHAVE_AESGCM -DHAVE_CAMELLIA)
 
 # set wolfSSL location as environment variable, change if needed
 set(wolfssl_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)

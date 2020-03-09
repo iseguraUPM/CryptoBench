@@ -8,15 +8,15 @@
 #include <string>
 #include "symmetric_cipher.hpp"
 
-#define AES "AES"
-#define ARIA "ARIA"
-#define SM4 "SM4"
-#define SEED "SEED"
-#define BLOWFISH "BLOWFISH"
+#define STR_AES "AES"
+#define STR_ARIA "ARIA"
+#define STR_SM4 "SM4"
+#define STR_SEED "SEED"
+#define STR_BLOWFISH "BLOWFISH"
 
-#define CBC "CBC"
-#define ECB "ECB"
-#define CFB "CFB"
+#define STR_CBC "CBC"
+#define STR_ECB "ECB"
+#define STR_CFB "CFB"
 
 using CipherPtr = std::shared_ptr<SymmetricCipher>;
 
@@ -85,59 +85,59 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
     switch (cipher)
     {
         case Cipher::AES_256_CBC:
-            return std::make_pair(AES, CBC);
+            return std::make_pair(STR_AES, STR_CBC);
         case Cipher::AES_256_CFB:
-            return std::make_pair(AES, CFB);
+            return std::make_pair(STR_AES, STR_CFB);
         case Cipher::AES_256_ECB:
-            return std::make_pair(AES, ECB);
+            return std::make_pair(STR_AES, STR_ECB);
         case Cipher::AES_192_CBC:
-            return std::make_pair(AES, CBC);
+            return std::make_pair(STR_AES, STR_CBC);
         case Cipher::AES_192_CFB:
-            return std::make_pair(AES, CFB);
+            return std::make_pair(STR_AES, STR_CFB);
         case Cipher::AES_192_ECB:
-            return std::make_pair(AES, ECB);
+            return std::make_pair(STR_AES, STR_ECB);
         case Cipher::AES_128_CBC:
-            return std::make_pair(AES, CBC);
+            return std::make_pair(STR_AES, STR_CBC);
         case Cipher::AES_128_CFB:
-            return std::make_pair(AES, CFB);
+            return std::make_pair(STR_AES, STR_CFB);
         case Cipher::AES_128_ECB:
-            return std::make_pair(AES, ECB);
+            return std::make_pair(STR_AES, STR_ECB);
         case Cipher::ARIA_256_CBC:
-            return std::make_pair(ARIA, CBC);
+            return std::make_pair(STR_ARIA, STR_CBC);
         case Cipher::ARIA_256_CFB:
-            return std::make_pair(ARIA, CFB);
+            return std::make_pair(STR_ARIA, STR_CFB);
         case Cipher::ARIA_256_ECB:
-            return std::make_pair(ARIA, ECB);
+            return std::make_pair(STR_ARIA, STR_ECB);
         case Cipher::ARIA_192_CBC:
-            return std::make_pair(ARIA, CBC);
+            return std::make_pair(STR_ARIA, STR_CBC);
         case Cipher::ARIA_192_CFB:
-            return std::make_pair(ARIA, CFB);
+            return std::make_pair(STR_ARIA, STR_CFB);
         case Cipher::ARIA_192_ECB:
-            return std::make_pair(ARIA, ECB);
+            return std::make_pair(STR_ARIA, STR_ECB);
         case Cipher::ARIA_128_CBC:
-            return std::make_pair(ARIA, CBC);
+            return std::make_pair(STR_ARIA, STR_CBC);
         case Cipher::ARIA_128_CFB:
-            return std::make_pair(ARIA, CFB);
+            return std::make_pair(STR_ARIA, STR_CFB);
         case Cipher::ARIA_128_ECB:
-            return std::make_pair(ARIA, ECB);
+            return std::make_pair(STR_ARIA, STR_ECB);
         case Cipher::SM4_CBC:
-            return std::make_pair(SM4, CBC);
+            return std::make_pair(STR_SM4, STR_CBC);
         case Cipher::SM4_CFB:
-            return std::make_pair(SM4, CFB);
+            return std::make_pair(STR_SM4, STR_CFB);
         case Cipher::SM4_ECB:
-            return std::make_pair(SM4, ECB);
+            return std::make_pair(STR_SM4, STR_ECB);
         case Cipher::SEED_CBC:
-            return std::make_pair(SEED, CBC);
+            return std::make_pair(STR_SEED, STR_CBC);
         case Cipher::SEED_CFB:
-            return std::make_pair(SEED, CFB);
+            return std::make_pair(STR_SEED, STR_CFB);
         case Cipher::SEED_ECB:
-            return std::make_pair(SEED, ECB);
+            return std::make_pair(STR_SEED, STR_ECB);
         case Cipher::BLOWFISH_CBC:
-            return std::make_pair(BLOWFISH, CBC);
+            return std::make_pair(STR_BLOWFISH, STR_CBC);
         case Cipher::BLOWFISH_ECB:
-            return std::make_pair(BLOWFISH, ECB);
+            return std::make_pair(STR_BLOWFISH, STR_ECB);
         case Cipher::BLOWFISH_CFB:
-            return std::make_pair(BLOWFISH, CFB);
+            return std::make_pair(STR_BLOWFISH, STR_CFB);
     }
 }
 
