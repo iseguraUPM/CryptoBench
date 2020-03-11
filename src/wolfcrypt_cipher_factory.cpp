@@ -17,7 +17,7 @@ enum class BlockMode
 template <int KEY_SIZE>
 class AesCipher : public SymmetricCipher
 {
-    explicit AesCipher(BlockMode mode) : blockMode(mode) {};
+    explicit AesCipher(BlockMode mode) : block_mode(mode) {};
 
     void encrypt(const byte key[KEY_SIZE], const byte iv[16], const security::secure_string& plain_text
                  , security::secure_string& cipher_text) override;
@@ -37,7 +37,7 @@ class AesCipher : public SymmetricCipher
 
 private:
 
-    BlockMode blockMode;
+    BlockMode block_mode;
 
 };
 
@@ -46,6 +46,21 @@ void AesCipher<KEY_SIZE>::encrypt(const byte key[KEY_SIZE], const byte iv[16], c
                                   , security::secure_string& cipher_text)
 {
     Aes enc;
+
+    switch (block_mode)
+    {
+        case BlockMode::CBC:
+            wc_AesSetKey(&enc, key, KEY_SIZE, iv, 16);
+            wc_AesCbcEncrypt(&enc, (byte *) cipher_text.c_str(), (byte *) plain_text.c_str(), plain_text.length());
+        case BlockMode::GCM:
+            wc_AesGcmSetKey(&enc, key, KEY_SIZE);
+            security::secure_string auth_tag;
+            wc_AesGcmEncrypt(&enc, (byte *) cipher_text.c_str(), (byte *) plain_text.c_str(), plain_text.length(), iv, 12, auth_tag, 16, nullptr, 0);
+    }
+
+
+
+
 }
 
 template<int KEY_SIZE>
