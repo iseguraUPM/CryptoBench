@@ -10,3 +10,6 @@
 [submodule "cryptopp-8.2/lib/cryptopp"]
 	path = cryptopp-8.2/lib/cryptopp
 	url = https://github.com/weidai11/cryptopp.git
+[submodule "libsodium-1.0.18/lib"]
+	path = libsodium-1.0.18/lib
+	url = https://github.com/jedisct1/libsodium.git
