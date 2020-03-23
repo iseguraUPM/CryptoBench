@@ -47,14 +47,14 @@ void generateRandomBytes(byte *arr, int len) noexcept (false)
 }
 
 
-void benchmarkCipher(const byte* key, const byte* iv, const security::secure_string &input_text, CipherPtr &cipher, BenchmarkResult &result)
+void benchmarkCipher(const byte* key, const security::secure_string &input_text, CipherPtr &cipher, BenchmarkResult &result)
 {
     using namespace std::chrono;
 
     security::secure_string output_text;
 
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    cipher->encrypt(key, iv, input_text, output_text);
+    cipher->encrypt(key, input_text, output_text);
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
     result.encrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -62,7 +62,7 @@ void benchmarkCipher(const byte* key, const byte* iv, const security::secure_str
     security::secure_string recovered_text;
 
     t1 = high_resolution_clock::now();
-    cipher->decrypt(key, iv, output_text, recovered_text);
+    cipher->decrypt(key, output_text, recovered_text);
     t2 = high_resolution_clock::now();
 
     result.decrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -138,13 +138,10 @@ void runSingleBenchmark(Cipher cipher, OpenSSLCipherFactory &factory, const secu
     byte key [cipherptr->getKeyLen()];
     generateRandomBytes(key, cipherptr->getKeyLen());
 
-    byte iv [cipherptr->getBlockLen()];
-    generateRandomBytes(iv, cipherptr->getBlockLen());
-
     auto infoPair = cipherDescription(cipher);
     BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, infoPair.first, infoPair.second);
 
-    benchmarkCipher(key, iv, input_text, cipherptr, result);
+    benchmarkCipher(key, input_text, cipherptr, result);
     recordResult(result, resultsFile);
 }
 

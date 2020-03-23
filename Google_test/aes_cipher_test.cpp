@@ -71,7 +71,7 @@ TEST_F(AesCipherFixture, Aes256CBC)
 
     security::secure_string output;
     startChrono();
-    cipher->encrypt(key, iv, input, output);
+    cipher->encrypt(key, input, output);
     stopChrono();
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
@@ -80,7 +80,7 @@ TEST_F(AesCipherFixture, Aes256CBC)
 
     security::secure_string recovered;
     startChrono();
-    cipher->decrypt(key, iv, output, recovered);
+    cipher->decrypt(key, output, recovered);
     stopChrono();
 
     std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
@@ -95,7 +95,7 @@ TEST_F(AesCipherFixture, Aes256CFB)
 
     security::secure_string output;
     startChrono();
-    cipher->encrypt(key, iv, input, output);
+    cipher->encrypt(key, input, output);
     stopChrono();
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
@@ -104,7 +104,7 @@ TEST_F(AesCipherFixture, Aes256CFB)
 
     security::secure_string recovered;
     startChrono();
-    cipher->decrypt(key, iv, output, recovered);
+    cipher->decrypt(key, output, recovered);
     stopChrono();
 
     std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
@@ -119,7 +119,7 @@ TEST_F(AesCipherFixture, Aes256ECB)
 
     security::secure_string output;
     startChrono();
-    cipher->encrypt(key, iv, input, output);
+    cipher->encrypt(key, input, output);
     stopChrono();
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
@@ -128,7 +128,7 @@ TEST_F(AesCipherFixture, Aes256ECB)
 
     security::secure_string recovered;
     startChrono();
-    cipher->decrypt(key, iv, output, recovered);
+    cipher->decrypt(key, output, recovered);
     stopChrono();
 
     std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
