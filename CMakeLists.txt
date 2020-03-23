@@ -20,6 +20,8 @@ add_subdirectory(OpenSSL-CMake)
 
 add_subdirectory(cryptopp-8.2)
 
+add_subdirectory(libsodium-1.0.18)
+
 add_subdirectory(Google_test)
 
 add_subdirectory(BenchmarkRunner)
