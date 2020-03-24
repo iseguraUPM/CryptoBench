@@ -60,31 +60,19 @@ protected:
     int encrypt(unsigned char *plainText, int plainTextLen, unsigned char *key, unsigned char *iv
                 , unsigned char *cipherText)
     {
-        CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-        CryptoPP::CBC_Mode_ExternalCipher::Encryption encryptionMode(aesEncryption, iv);
+        CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH, iv);
+        cfbEncryption.ProcessData(cipherText, plainText, plainTextLen);
 
-        std::string cipherTextStr((char *)cipherText);
-
-        CryptoPP::StreamTransformationFilter stfEncryptor(encryptionMode, new CryptoPP::StringSink(cipherTextStr) );
-        stfEncryptor.Put( reinterpret_cast<const unsigned char*>( plainText ), plainTextLen );
-        stfEncryptor.MessageEnd();
-
-        return cipherTextStr.length();
+        return std::strlen((char*)cipherText) + 1;
     }
 
     int decrypt(unsigned char *cipherText, int cipherTextLen, unsigned char *key, unsigned char *iv
                 , unsigned char *plainText)
     {
-        CryptoPP::AES::Decryption aesDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-        CryptoPP::CBC_Mode_ExternalCipher::Decryption decryptionMode(aesDecryption, iv );
+        CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH, iv);
+        cfbDecryption.ProcessData(plainText, cipherText, cipherTextLen);
 
-        std::string plainTextStr((char *)plainText);
-
-        CryptoPP::StreamTransformationFilter stfDecryptor(decryptionMode,  new CryptoPP::StringSink(plainTextStr));
-        stfDecryptor.Put( reinterpret_cast<const unsigned char*>( cipherText ), cipherTextLen );
-        stfDecryptor.MessageEnd();
-
-        return plainTextStr.length();
+        return std::strlen((char*)plainText) + 1;
     }
 
 };
