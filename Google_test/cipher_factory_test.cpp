@@ -6,9 +6,11 @@
 
 #include <chrono>
 
-#include "CryptoBench/open_ssl_cipher_factory.hpp"
+#include <CryptoBench/open_ssl_cipher_factory.hpp>
+#include <CryptoBench/libsodium_cipher_factory.hpp>
+#include <CryptoBench/random_bytes.hpp>
 
-class AesCipherFixture : public ::testing::Test
+class CipherFactoryFixture : public ::testing::Test
 {
 
 private:
@@ -19,10 +21,10 @@ private:
 
 protected:
 
-    OpenSSLCipherFactory factory;
+    OpenSSLCipherFactory opensslFactory;
+    LibsodiumCipherFactory libsodiumFactory;
 
     byte key[32];
-    byte iv[16];
     security::secure_string input;
 
 protected:
@@ -30,8 +32,7 @@ protected:
     void SetUp()
     {
         input = "The quick brown fox jumps over the lazy dog";
-        generateRandomBytes(key, 32);
-        generateRandomBytes(iv, 16);
+        RandomBytes::generateRandomBytes(key, 32);
     }
 
     void TearDown()
@@ -53,21 +54,11 @@ protected:
         return std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
     }
 
-    static void generateRandomBytes(byte *arr, int len)
-    {
-        if (len <= 0)
-            throw std::runtime_error("Random bytes length must be greater than 0");
-        for (int i = 0; i < len; i++)
-        {
-            arr[i] = rand() % 0xFF;
-        }
-    }
-
 };
 
-TEST_F(AesCipherFixture, Aes256CBC)
+TEST_F(CipherFactoryFixture, Aes256CBC)
 {
-    CipherPtr cipher = factory.getCipher(Cipher::AES_256_CBC);
+    CipherPtr cipher = opensslFactory.getCipher(Cipher::AES_256_CBC);
 
     security::secure_string output;
     startChrono();
@@ -89,9 +80,9 @@ TEST_F(AesCipherFixture, Aes256CBC)
     ASSERT_EQ(input, recovered);
 }
 
-TEST_F(AesCipherFixture, Aes256CFB)
+TEST_F(CipherFactoryFixture, Aes256CFB)
 {
-    CipherPtr cipher = factory.getCipher(Cipher::AES_256_CFB);
+    CipherPtr cipher = opensslFactory.getCipher(Cipher::AES_256_CFB);
 
     security::secure_string output;
     startChrono();
@@ -113,9 +104,33 @@ TEST_F(AesCipherFixture, Aes256CFB)
     ASSERT_EQ(input, recovered);
 }
 
-TEST_F(AesCipherFixture, Aes256ECB)
+TEST_F(CipherFactoryFixture, Aes256ECB)
 {
-    CipherPtr cipher = factory.getCipher(Cipher::AES_256_ECB);
+    CipherPtr cipher = opensslFactory.getCipher(Cipher::AES_256_ECB);
+
+    security::secure_string output;
+    startChrono();
+    cipher->encrypt(key, input, output);
+    stopChrono();
+
+    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
+
+    std::cout << "\nCipher text: " << output << "\n";
+
+    security::secure_string recovered;
+    startChrono();
+    cipher->decrypt(key, output, recovered);
+    stopChrono();
+
+    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
+
+    std::cout << "\nRecovered string: " << recovered << "\n";
+    ASSERT_EQ(input, recovered);
+}
+
+TEST_F(CipherFactoryFixture, Aes256GCM)
+{
+    CipherPtr cipher = libsodiumFactory.getCipher(Cipher::AES_256_GCM);
 
     security::secure_string output;
     startChrono();

@@ -10,5 +10,5 @@ enable_testing()
 
 # 'Google_Tests_run' is the target name
 # 'test1.cpp tests2.cpp' are source files with tests
-add_executable(Google_Tests_run gtest.cpp hello_world_test.cpp openssl_cipher_test.cpp aes_cipher_test.cpp cryptopp_cipher_test.cpp libsodium_cipher_test.cpp)
+add_executable(Google_Tests_run gtest.cpp hello_world_test.cpp openssl_cipher_test.cpp cipher_factory_test.cpp cryptopp_cipher_test.cpp libsodium_cipher_test.cpp)
 target_link_libraries(Google_Tests_run gtest gtest_main ${TARGET_NAME})
