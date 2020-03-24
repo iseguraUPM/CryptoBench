@@ -9,6 +9,8 @@
 #include <cryptopp/default.h>
 #include "CryptoBench/random_bytes.hpp"
 
+
+
 class CryptoPPAesTest : public SymmetricCipher
 {
 public:
@@ -24,9 +26,10 @@ public:
 
         std::string cipherTxt;
 
+        cipher_text.resize(plain_text.size());
         CryptoPP::StringSource ss1(plain_text.data(), true,
                 new CryptoPP::StreamTransformationFilter( e,
-                        new CryptoPP::StringSink(cipherTxt)
+                        new CryptoPP::StringSinkTemplate<security::secure_string>(cipher_text)
                 )
         );
     }
@@ -38,9 +41,10 @@ public:
 
         std::string recoveredTxt;
 
+        recovered_text.resize(cipher_text.size());
         CryptoPP::StringSource ss3( cipher_text.data(), true,
                 new CryptoPP::StreamTransformationFilter( d,
-                        new CryptoPP::StringSink( recoveredTxt )
+                        new CryptoPP::StringSinkTemplate<security::secure_string>(recovered_text)
                 )
         );
     }
