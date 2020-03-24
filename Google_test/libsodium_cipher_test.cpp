@@ -55,13 +55,15 @@ TEST_F(LibsodiumFixture, Full)
     unsigned char decryptedText[128];
 
     unsigned char nonce[crypto_aead_aes256gcm_NPUBBYTES];
-    RandomBytes::generateRandomBytes(nonce, crypto_aead_aes256gcm_NPUBBYTES);
+    RandomBytes random_bytes;
+    random_bytes.generateRandomBytes(nonce, crypto_aead_aes256gcm_NPUBBYTES);
 
     unsigned long long decryptedLen, cipherTextLen;
 
     crypto_aead_aes256gcm_encrypt(ciphertext, &cipherTextLen, inputText, inputTextLen, NULL, 0, NULL, nonce, key256);
 
-    int err = crypto_aead_aes256gcm_decrypt(decryptedText, &decryptedLen, NULL, ciphertext, cipherTextLen, NULL, 0, nonce, key256);
+    int err = crypto_aead_aes256gcm_decrypt(decryptedText, &decryptedLen, NULL, ciphertext, cipherTextLen, NULL, 0
+                                            , nonce, key256);
 
     ASSERT_EQ(0, err);
 

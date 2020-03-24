@@ -32,7 +32,8 @@ protected:
     void SetUp()
     {
         input = "The quick brown fox jumps over the lazy dog";
-        RandomBytes::generateRandomBytes(key, 32);
+        RandomBytes random_bytes;
+        random_bytes.generateRandomBytes(key, 32);
     }
 
     void TearDown()

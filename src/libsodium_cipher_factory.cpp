@@ -14,12 +14,15 @@ class AesGCMCipher : public SymmetricCipher
 {
 public:
 
+    explicit inline AesGCMCipher() : random_bytes()
+    {}
+
     inline void encrypt(const byte* key, const security::secure_string& plain_text
                          , security::secure_string& cipher_text) override
     {
         unsigned char nonce[crypto_aead_aes256gcm_NPUBBYTES];
 
-        RandomBytes::generateRandomBytes(nonce, crypto_aead_aes256gcm_NPUBBYTES);
+        random_bytes.generateRandomBytes(nonce, crypto_aead_aes256gcm_NPUBBYTES);
 
         unsigned long long cipher_text_len;
 
@@ -57,6 +60,11 @@ public:
     {
         return 32;
     }
+
+private:
+
+    RandomBytes random_bytes;
+
 };
 
 CipherPtr LibsodiumCipherFactory::getCipher(Cipher cipher)

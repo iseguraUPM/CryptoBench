@@ -18,6 +18,8 @@ class OpenSSLCipher : public SymmetricCipher
 {
 public:
 
+    explicit OpenSSLCipher();
+
     void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
             , security::secure_string& cipher_text) override;
 
@@ -30,6 +32,7 @@ public:
 
 private:
 
+    RandomBytes random_bytes;
     virtual const EVP_CIPHER* getCipherMode() = 0;
 
 };
@@ -37,12 +40,18 @@ private:
 using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
 
 template<int KEY_SIZE, int BLOCK_SIZE>
+OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::OpenSSLCipher()
+{
+    random_bytes = RandomBytes();
+}
+
+template<int KEY_SIZE, int BLOCK_SIZE>
 void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text, security::secure_string& cipher_text)
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
     byte *iv = new byte[BLOCK_SIZE];
-    RandomBytes::generateRandomBytes(iv, BLOCK_SIZE);
+    random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
 
     if (1 != EVP_EncryptInit_ex(ctx.get(), getCipherMode(), NULL, key, iv))
     {
