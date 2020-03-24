@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <sodium.h>
+#include <CryptoBench/random_bytes.hpp>
 
 class LibsodiumFixture : public ::testing::Test
 {
@@ -23,7 +24,7 @@ protected:
         key256 = generateRandomBytes(256 / 8);
         iv128 = generateRandomBytes(128 / 8);
         inputText = (unsigned char *) "The quick brown fox jumps over the lazy dog";
-        sodium_init();
+        //sodium_init();
     }
 
     void TearDown()
@@ -54,6 +55,7 @@ TEST_F(LibsodiumFixture, Full)
     unsigned char decryptedText[128];
 
     unsigned char nonce[crypto_aead_aes256gcm_NPUBBYTES];
+    RandomBytes::generateRandomBytes(nonce, crypto_aead_aes256gcm_NPUBBYTES);
 
     unsigned long long decryptedLen, cipherTextLen;
 
