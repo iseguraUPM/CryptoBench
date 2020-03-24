@@ -11,17 +11,14 @@ class RandomBytes {
 
 public:
 
-    static inline unsigned char *generateRandomBytes(int len)
+    static inline void generateRandomBytes(unsigned char *arr, int len)
     {
-        auto randBytes = new unsigned char[len];
         if (len <= 0)
             throw std::runtime_error("Random bytes length must be greater than 0");
         for (int i = 0; i < len / 8; i++)
         {
-            randBytes[i] = random() % 0xFF;
+            arr[i] = random() % 0xFF;
         }
-
-        return randBytes;
     }
 
 };

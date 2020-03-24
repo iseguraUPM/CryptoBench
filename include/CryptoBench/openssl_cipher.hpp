@@ -41,7 +41,8 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], cons
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    byte *iv = RandomBytes::generateRandomBytes(BLOCK_SIZE);
+    byte *iv = new byte[BLOCK_SIZE];
+    RandomBytes::generateRandomBytes(iv, BLOCK_SIZE);
 
     if (1 != EVP_EncryptInit_ex(ctx.get(), getCipherMode(), NULL, key, iv))
     {
@@ -64,7 +65,7 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], cons
 
     cipher_text.resize(out_len1 + out_len2);
     cipher_text.append((char *) iv, BLOCK_SIZE);
-    delete iv;
+    delete[] iv;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
