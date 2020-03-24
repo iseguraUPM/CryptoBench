@@ -19,36 +19,30 @@ public:
     inline void encrypt(const byte* key, const security::secure_string& plain_text
                         , security::secure_string& cipher_text) override
     {
-        //TODO: hardcodeado
-        int iv_length = 16;
 
-        unsigned char iv[iv_length];
+        CryptoPP::ECB_Mode< CryptoPP::AES >::Encryption e( key, CryptoPP::AES::DEFAULT_KEYLENGTH);
 
-        random_bytes.generateRandomBytes(iv, iv_length);
+        std::string cipherTxt;
 
-        cipher_text.resize(plain_text.size());
-
-        CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH, iv);
-        cfbEncryption.ProcessData((byte *) &cipher_text[0], (byte *) &plain_text[0], plain_text.size());
-
-        cipher_text.append((char *) iv, iv_length);
-
+        CryptoPP::StringSource ss1(plain_text.data(), true,
+                new CryptoPP::StreamTransformationFilter( e,
+                        new CryptoPP::StringSink(cipherTxt)
+                )
+        );
     }
 
     inline void decrypt(const byte* key, const security::secure_string &cipher_text
                         , security::secure_string &recovered_text) override
     {
-        //TODO: hardcodeado
-        int iv_length = 16;
+        CryptoPP::ECB_Mode< CryptoPP::AES >::Decryption d( key, CryptoPP::AES::DEFAULT_KEYLENGTH );
 
-        byte iv[iv_length];
-        cipher_text.copy((char *) iv, iv_length, cipher_text.size() - iv_length);
+        std::string recoveredTxt;
 
-        recovered_text.resize(cipher_text.size() - iv_length);
-
-        CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH, iv);
-        cfbDecryption.ProcessData((byte *) &recovered_text[0], (byte *) &cipher_text[0]
-                                  , cipher_text.size() - iv_length);
+        CryptoPP::StringSource ss3( cipher_text.data(), true,
+                new CryptoPP::StreamTransformationFilter( d,
+                        new CryptoPP::StringSink( recoveredTxt )
+                )
+        );
     }
 
     inline int getBlockLen() override
