@@ -134,6 +134,11 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
 void runSingleBenchmark(Cipher cipher, OpenSSLCipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
     CipherPtr cipherptr = factory.getCipher(cipher);
+    if (cipherptr == nullptr)
+    {
+        auto desc = cipherDescription(cipher);
+        throw std::runtime_error("Cipher not found: " + desc.first + "_" + desc.second);
+    }
 
     byte key [cipherptr->getKeyLen()];
     generateRandomBytes(key, cipherptr->getKeyLen());
