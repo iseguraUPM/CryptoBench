@@ -17,6 +17,7 @@
 #define STR_CBC "CBC"
 #define STR_ECB "ECB"
 #define STR_CFB "CFB"
+#define STR_GCM "GCM"
 
 using CipherPtr = std::shared_ptr<SymmetricCipher>;
 
@@ -48,12 +49,14 @@ enum class Cipher
     SEED_ECB,
     BLOWFISH_CBC,
     BLOWFISH_ECB,
-    BLOWFISH_CFB
+    BLOWFISH_CFB,
+    AES_256_GCM
 };
 
 const Cipher CIPHER_LIST[] = {Cipher::AES_256_CBC,
                               Cipher::AES_256_CFB,
                               Cipher::AES_256_ECB,
+                              Cipher::AES_256_GCM,
                               Cipher::AES_192_CBC,
                               Cipher::AES_192_CFB,
                               Cipher::AES_192_ECB,
@@ -138,6 +141,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_BLOWFISH, STR_ECB);
         case Cipher::BLOWFISH_CFB:
             return std::make_pair(STR_BLOWFISH, STR_CFB);
+        case Cipher::AES_256_GCM:
+            return std::make_pair(STR_AES, STR_GCM);
     }
 }
 
