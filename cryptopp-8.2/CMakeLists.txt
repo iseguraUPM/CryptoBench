@@ -10,6 +10,7 @@ add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe
         -DCRYPTOPP_DISABLE_ASM)
 
 set(cryptopp_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/cryptopp)
+set(cryptopp_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/cryptopp)
 
 add_library(cryptopp STATIC ${cryptopp_DIR}/3way.cpp
         ${cryptopp_DIR}/adhoc.cpp.proto
@@ -212,3 +213,13 @@ add_library(cryptopp STATIC ${cryptopp_DIR}/3way.cpp
         ${cryptopp_DIR}/zlib.cpp)
 
 target_include_directories(cryptopp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib
+        DESTINATION ${cryptopp_PREFIX}/include
+        FILES_MATCHING PATTERN "*.h*")
+
+INSTALL(TARGETS cryptopp
+        ARCHIVE DESTINATION ${cryptopp_PREFIX}/obj
+        LIBRARY DESTINATION ${cryptopp_PREFIX}/lib
+        PUBLIC_HEADER DESTINATION ${cryptopp_PREFIX}/include
+        )
