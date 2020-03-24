@@ -60,6 +60,12 @@ protected:
     int encrypt(unsigned char *plainText, int plainTextLen, unsigned char *key, unsigned char *iv
                 , unsigned char *cipherText)
     {
+        CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption cfbEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH, iv);
+        cfbEncryption.ProcessData(cipherText, plainText, plainTextLen);
+
+        return std::strlen((char*)cipherText) + 1;
+
+        /*
         CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
         CryptoPP::CBC_Mode_ExternalCipher::Encryption encryptionMode(aesEncryption, iv);
 
@@ -69,12 +75,15 @@ protected:
         stfEncryptor.Put( reinterpret_cast<const unsigned char*>( plainText ), plainTextLen );
         stfEncryptor.MessageEnd();
 
-        return cipherTextStr.length();
+        return cipherTextStr.length();*/
     }
 
     int decrypt(unsigned char *cipherText, int cipherTextLen, unsigned char *key, unsigned char *iv
                 , unsigned char *plainText)
     {
+        CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption cfbDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH, iv);
+        cfbDecryption.ProcessData(plainText, cipherText, cipherTextLen);
+        /*
         CryptoPP::AES::Decryption aesDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
         CryptoPP::CBC_Mode_ExternalCipher::Decryption decryptionMode(aesDecryption, iv );
 
@@ -84,7 +93,7 @@ protected:
         stfDecryptor.Put( reinterpret_cast<const unsigned char*>( cipherText ), cipherTextLen );
         stfDecryptor.MessageEnd();
 
-        return plainTextStr.length();
+        return plainTextStr.length();*/
     }
 
 };
