@@ -20,24 +20,134 @@ public:
 
     explicit OpenSSLCipher();
 
-    void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
+    virtual void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
             , security::secure_string& cipher_text) override;
 
-    void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
+    virtual void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
                  , security::secure_string &recovered_text) override;
 
     int getBlockLen() override;
 
     int getKeyLen() override;
 
+protected:
+    RandomBytes random_bytes;
+
 private:
 
-    RandomBytes random_bytes;
+    virtual const EVP_CIPHER* getCipherMode() = 0;
+
+};
+
+
+template <int KEY_SIZE, int BLOCK_SIZE>
+class OpenSSLGCMCipher : public OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>
+{
+public:
+
+    explicit inline OpenSSLGCMCipher() : OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>() {}
+
+    void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
+                 , security::secure_string& cipher_text) override;
+
+    void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
+                 , security::secure_string &recovered_text) override;
+
+private:
+
     virtual const EVP_CIPHER* getCipherMode() = 0;
 
 };
 
 using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
+
+template<int KEY_SIZE, int BLOCK_SIZE>
+void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
+                                                     , security::secure_string& cipher_text)
+{
+    EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
+
+    byte iv[BLOCK_SIZE];
+    OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
+
+    if (1 != EVP_EncryptInit_ex(ctx.get(), getCipherMode(), NULL, key, iv))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
+    }
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_IVLEN, BLOCK_SIZE, NULL))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
+    }
+
+    cipher_text.resize(plain_text.size() + BLOCK_SIZE);
+    int out_len1 = (int) cipher_text.size();
+
+    if (1 != EVP_EncryptUpdate(ctx.get(), (byte *)&cipher_text[0], &out_len1, (byte *)&plain_text[0], (int) plain_text.size()))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    int out_len2 = (int) cipher_text.size() - out_len1;
+    if (1 != EVP_EncryptFinal_ex(ctx.get(), (byte *)&cipher_text[0] + out_len1, &out_len2))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    byte tag[16];
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, 16, tag))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    cipher_text.resize(out_len1 + out_len2);
+    cipher_text.append((char *) iv, BLOCK_SIZE);
+    cipher_text.append((char *) tag, 16);
+}
+
+template<int KEY_SIZE, int BLOCK_SIZE>
+void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
+                                                     , security::secure_string &recovered_text)
+{
+    EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
+
+    byte tag[16];
+    cipher_text.copy((char *) tag, BLOCK_SIZE, cipher_text.size() - 16);
+
+    byte iv[BLOCK_SIZE];
+    cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - 16 - BLOCK_SIZE);
+
+    if (1 != EVP_DecryptInit_ex(ctx.get(), getCipherMode(), nullptr, key, iv))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_IVLEN, BLOCK_SIZE, NULL))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
+    }
+
+    recovered_text.resize(cipher_text.size() - BLOCK_SIZE - 16);
+    int out_len1 = (int) recovered_text.size();
+
+    if (1 != EVP_DecryptUpdate(ctx.get(), (byte *)&recovered_text[0], &out_len1, (byte *)&cipher_text[0], (int) cipher_text.size() - BLOCK_SIZE))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
+    }
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, 16, tag))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
+    }
+
+    int out_len2 = (int) recovered_text.size() - out_len1;
+    if (0 < EVP_DecryptFinal_ex(ctx.get(), (byte *)&recovered_text[0] + out_len1, &out_len2))
+    {
+        throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
+    }
+
+    recovered_text.resize(out_len1 + out_len2);
+}
 
 template<int KEY_SIZE, int BLOCK_SIZE>
 OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::OpenSSLCipher()
@@ -50,7 +160,7 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], cons
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    byte *iv = new byte[BLOCK_SIZE];
+    byte iv[BLOCK_SIZE];
     random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
 
     if (1 != EVP_EncryptInit_ex(ctx.get(), getCipherMode(), NULL, key, iv))
@@ -74,7 +184,6 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], cons
 
     cipher_text.resize(out_len1 + out_len2);
     cipher_text.append((char *) iv, BLOCK_SIZE);
-    delete[] iv;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
@@ -83,7 +192,7 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], cons
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    byte *iv = new byte[BLOCK_SIZE];
+    byte iv[BLOCK_SIZE];
     cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - BLOCK_SIZE);
 
     if (1 != EVP_DecryptInit_ex(ctx.get(), getCipherMode(), nullptr, key, iv))
@@ -91,7 +200,7 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], cons
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    recovered_text.resize(cipher_text.size());
+    recovered_text.resize(cipher_text.size() - BLOCK_SIZE);
     int out_len1 = (int) recovered_text.size();
 
     if (1 != EVP_DecryptUpdate(ctx.get(), (byte *)&recovered_text[0], &out_len1, (byte *)&cipher_text[0], (int) cipher_text.size() - BLOCK_SIZE))
@@ -106,7 +215,6 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], cons
     }
 
     recovered_text.resize(out_len1 + out_len2);
-    delete[] iv;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>

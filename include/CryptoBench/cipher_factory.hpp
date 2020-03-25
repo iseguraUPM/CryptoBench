@@ -34,6 +34,7 @@ enum class Cipher
     AES_256_OCB,
     AES_256_OFB,
     AES_256_XTS,
+    AES_256_GCM,
 
     AES_192_CBC,
     AES_192_CFB,
@@ -41,6 +42,7 @@ enum class Cipher
     AES_192_CTR,
     AES_192_OFB,
     AES_192_OCB,
+    AES_192_GCM,
 
     AES_128_CBC,
     AES_128_CFB,
@@ -49,24 +51,28 @@ enum class Cipher
     AES_128_OFB,
     AES_128_OCB,
     AES_128_XTS,
+    AES_128_GCM,
 
     ARIA_256_CBC,
     ARIA_256_CFB,
     ARIA_256_ECB,
     ARIA_256_OFB,
     ARIA_256_CTR,
+    ARIA_256_GCM,
 
     ARIA_192_CBC,
     ARIA_192_CFB,
     ARIA_192_ECB,
     ARIA_192_OFB,
     ARIA_192_CTR,
+    ARIA_192_GCM,
 
     ARIA_128_CBC,
     ARIA_128_CFB,
     ARIA_128_ECB,
     ARIA_128_OFB,
     ARIA_128_CTR,
+    ARIA_128_GCM,
 
     SM4_CBC,
     SM4_CFB,
@@ -82,39 +88,71 @@ enum class Cipher
     BLOWFISH_CBC,
     BLOWFISH_ECB,
     BLOWFISH_CFB,
-    BLOWFISH_OFB,
-
-    AES_256_GCM
+    BLOWFISH_OFB
 };
 
 const Cipher CIPHER_LIST[] = {Cipher::AES_256_CBC,
                               Cipher::AES_256_CFB,
                               Cipher::AES_256_ECB,
+                              Cipher::AES_256_CTR,
+                              Cipher::AES_256_OCB,
+                              Cipher::AES_256_OFB,
+                              Cipher::AES_256_XTS,
                               Cipher::AES_256_GCM,
+
                               Cipher::AES_192_CBC,
                               Cipher::AES_192_CFB,
                               Cipher::AES_192_ECB,
+                              Cipher::AES_192_CTR,
+                              Cipher::AES_192_OFB,
+                              Cipher::AES_192_OCB,
+                              Cipher::AES_192_GCM,
+
                               Cipher::AES_128_CBC,
                               Cipher::AES_128_CFB,
                               Cipher::AES_128_ECB,
+                              Cipher::AES_128_CTR,
+                              Cipher::AES_128_OFB,
+                              Cipher::AES_128_OCB,
+                              Cipher::AES_128_XTS,
+                              Cipher::AES_128_GCM,
+
                               Cipher::ARIA_256_CBC,
                               Cipher::ARIA_256_CFB,
                               Cipher::ARIA_256_ECB,
+                              Cipher::ARIA_256_OFB,
+                              Cipher::ARIA_256_CTR,
+                              Cipher::ARIA_256_GCM,
+
                               Cipher::ARIA_192_CBC,
                               Cipher::ARIA_192_CFB,
                               Cipher::ARIA_192_ECB,
+                              Cipher::ARIA_192_OFB,
+                              Cipher::ARIA_192_CTR,
+                              Cipher::ARIA_192_GCM,
+
                               Cipher::ARIA_128_CBC,
                               Cipher::ARIA_128_CFB,
                               Cipher::ARIA_128_ECB,
+                              Cipher::ARIA_128_OFB,
+                              Cipher::ARIA_128_CTR,
+                              Cipher::ARIA_128_GCM,
+
                               Cipher::SM4_CBC,
                               Cipher::SM4_CFB,
                               Cipher::SM4_ECB,
+                              Cipher::SM4_CTR,
+                              Cipher::SM4_OFB,
+
                               Cipher::SEED_CBC,
                               Cipher::SEED_CFB,
                               Cipher::SEED_ECB,
+                              Cipher::SEED_OFB,
+
                               Cipher::BLOWFISH_CBC,
                               Cipher::BLOWFISH_ECB,
-                              Cipher::BLOWFISH_CFB};
+                              Cipher::BLOWFISH_CFB,
+                              Cipher::BLOWFISH_OFB};
 
 
 inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
@@ -135,6 +173,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_AES, STR_OCB);
         case Cipher::AES_256_XTS:
             return std::make_pair(STR_AES, STR_XTS);
+        case Cipher::AES_256_GCM:
+            return std::make_pair(STR_AES, STR_GCM);
         case Cipher::AES_192_CBC:
             return std::make_pair(STR_AES, STR_CBC);
         case Cipher::AES_192_CFB:
@@ -147,6 +187,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_AES, STR_OCB);
         case Cipher::AES_192_OFB:
             return std::make_pair(STR_AES, STR_OFB);
+        case Cipher::AES_192_GCM:
+            return std::make_pair(STR_AES, STR_GCM);
         case Cipher::AES_128_CBC:
             return std::make_pair(STR_AES, STR_CBC);
         case Cipher::AES_128_CFB:
@@ -161,6 +203,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_AES, STR_OCB);
         case Cipher::AES_128_XTS:
             return std::make_pair(STR_AES, STR_XTS);
+        case Cipher::AES_128_GCM:
+            return std::make_pair(STR_AES, STR_GCM);
         case Cipher::ARIA_256_CBC:
             return std::make_pair(STR_ARIA, STR_CBC);
         case Cipher::ARIA_256_CFB:
@@ -171,6 +215,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_ARIA, STR_CTR);
         case Cipher::ARIA_256_OFB:
             return std::make_pair(STR_ARIA, STR_OFB);
+        case Cipher::ARIA_256_GCM:
+            return std::make_pair(STR_ARIA, STR_GCM);
         case Cipher::ARIA_192_CBC:
             return std::make_pair(STR_ARIA, STR_CBC);
         case Cipher::ARIA_192_CFB:
@@ -181,6 +227,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_ARIA, STR_CTR);
         case Cipher::ARIA_192_OFB:
             return std::make_pair(STR_ARIA, STR_OFB);
+        case Cipher::ARIA_192_GCM:
+            return std::make_pair(STR_ARIA, STR_GCM);
         case Cipher::ARIA_128_CBC:
             return std::make_pair(STR_ARIA, STR_CBC);
         case Cipher::ARIA_128_CFB:
@@ -191,6 +239,8 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_ARIA, STR_CTR);
         case Cipher::ARIA_128_OFB:
             return std::make_pair(STR_ARIA, STR_OFB);
+        case Cipher::ARIA_128_GCM:
+            return std::make_pair(STR_ARIA, STR_GCM);
         case Cipher::SM4_CBC:
             return std::make_pair(STR_SM4, STR_CBC);
         case Cipher::SM4_CFB:
@@ -217,13 +267,12 @@ inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
             return std::make_pair(STR_BLOWFISH, STR_CFB);
         case Cipher::BLOWFISH_OFB:
             return std::make_pair(STR_BLOWFISH, STR_OFB);
-        case Cipher::AES_256_GCM:
-            return std::make_pair(STR_AES, STR_GCM);
     }
 }
 
 class CipherFactory
 {
+public:
     /**
      * Returns the requested cipher
      * @param cipher

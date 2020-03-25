@@ -14,6 +14,7 @@
 #include <iomanip>
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
+#include <CryptoBench/libsodium_cipher_factory.hpp>
 
 struct BenchmarkResult
 {
@@ -131,7 +132,7 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
     return len;
 }
 
-void runSingleBenchmark(Cipher cipher, OpenSSLCipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+void runSingleBenchmark(Cipher cipher, CipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
     CipherPtr cipherptr = factory.getCipher(cipher);
     if (cipherptr == nullptr)
@@ -230,13 +231,14 @@ int main(int argc, char** arv)
     security::secure_string plaintext;
     int text_size = readInputFile(input_file, plaintext);
     OpenSSLCipherFactory cipherFactory;
-    runSingleBenchmark(Cipher::AES_192_CBC, cipherFactory, plaintext, text_size, resultsFile);
+    runSingleBenchmark(Cipher::AES_256_GCM, cipherFactory, plaintext, text_size, resultsFile);
     input_file.close();
 
+    LibsodiumCipherFactory naclFactory;
     generateInputBinaryFile("input.bin", text_size);
     input_file.open("input.bin", std::ios::binary);
     text_size = readInputFile(input_file, plaintext);
-    runSingleBenchmark(Cipher::AES_192_CBC, cipherFactory, plaintext, text_size, resultsFile);
+    runSingleBenchmark(Cipher::AES_256_GCM, naclFactory, plaintext, text_size, resultsFile);
     input_file.close();
 
     /*for (int b : sizes)

@@ -7,7 +7,7 @@
 
 #include "cipher_factory.hpp"
 
-class LibsodiumCipherFactory : CipherFactory
+class LibsodiumCipherFactory : public CipherFactory
 {
 
 public:

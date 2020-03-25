@@ -9,6 +9,7 @@
 #define CIPHER_128_BLOCK(key_len, cipher) (CipherPtr(new OpenSSLCipher128Block<key_len>(cipher)))
 
 #define CIPHER(key_len, block_len, cipher) (CipherPtr(new OpenSSLCipherImpl<key_len, block_len>(cipher)))
+#define CIPHER_GCM(key_len, block_len, cipher) (CipherPtr(new OpenSSLGCMCipherImpl<key_len, block_len>(cipher)))
 
 #define KEY_128 16
 #define KEY_192 24
@@ -46,6 +47,21 @@ public:
     explicit inline OpenSSLCipherImpl(const EVP_CIPHER* cipher) : cipher(cipher) {}
 };
 
+template <int KEY_LENGTH, int BLOCK_LENGTH>
+class OpenSSLGCMCipherImpl : public OpenSSLGCMCipher<KEY_LENGTH, BLOCK_LENGTH>
+{
+private:
+    const EVP_CIPHER* cipher;
+
+    inline const EVP_CIPHER* getCipherMode() override
+    {
+        return cipher;
+    }
+
+public:
+    explicit inline OpenSSLGCMCipherImpl(const EVP_CIPHER* cipher) : cipher(cipher) {}
+};
+
 CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
 {
     switch (cipher)
@@ -64,6 +80,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_256_ocb());
         case Cipher::AES_256_XTS:
             return CIPHER_128_BLOCK(KEY_512, EVP_aes_256_xts()); // XTS mode expects key doubled
+        case Cipher::AES_256_GCM:
+            return CIPHER_GCM(KEY_256, 16, EVP_aes_256_gcm());
         case Cipher::AES_192_CBC:
             return CIPHER_128_BLOCK(KEY_192, EVP_aes_192_cbc());
         case Cipher::AES_192_CFB:
@@ -76,6 +94,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_192, EVP_aes_192_ofb());
         case Cipher::AES_192_OCB:
             return CIPHER_128_BLOCK(KEY_192, EVP_aes_256_ocb());
+        case Cipher::AES_192_GCM:
+            return CIPHER_GCM(KEY_192, 16, EVP_aes_192_gcm());
         case Cipher::AES_128_CBC:
             return CIPHER_128_BLOCK(KEY_128, EVP_aes_128_cbc());
         case Cipher::AES_128_CFB:
@@ -90,6 +110,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_128, EVP_aes_128_ocb());
         case Cipher::AES_128_XTS:
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_128_xts()); // XTS mode expects key doubled
+        case Cipher::AES_128_GCM:
+            return CIPHER_GCM(KEY_128, 16, EVP_aes_128_gcm());
         case Cipher::ARIA_256_CBC:
             return CIPHER_128_BLOCK(KEY_256, EVP_aria_256_cbc());
         case Cipher::ARIA_256_CFB:
@@ -100,6 +122,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_256, EVP_aria_256_ctr());
         case Cipher::ARIA_256_OFB:
             return CIPHER_128_BLOCK(KEY_256, EVP_aria_256_ofb());
+        case Cipher::ARIA_256_GCM:
+            return CIPHER_GCM(KEY_256, 16, EVP_aria_256_gcm());
         case Cipher::ARIA_192_CBC:
             return CIPHER_128_BLOCK(KEY_192, EVP_aria_192_cbc());
         case Cipher::ARIA_192_CFB:
@@ -110,6 +134,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_192, EVP_aria_192_ctr());
         case Cipher::ARIA_192_OFB:
             return CIPHER_128_BLOCK(KEY_192, EVP_aria_192_ofb());
+        case Cipher::ARIA_192_GCM:
+            return CIPHER_GCM(KEY_192, 16, EVP_aria_192_gcm());
         case Cipher::ARIA_128_CBC:
             return CIPHER_128_BLOCK(KEY_128, EVP_aria_128_cbc());
         case Cipher::ARIA_128_CFB:
@@ -120,6 +146,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_128, EVP_aria_128_ctr());
         case Cipher::ARIA_128_OFB:
             return CIPHER_128_BLOCK(KEY_128, EVP_aria_128_ofb());
+        case Cipher::ARIA_128_GCM:
+            return CIPHER_GCM(KEY_128, 16, EVP_aria_128_gcm());
         case Cipher::SM4_CBC:
             return CIPHER_128_BLOCK(KEY_128, EVP_sm4_cbc());
         case Cipher::SM4_CFB:
