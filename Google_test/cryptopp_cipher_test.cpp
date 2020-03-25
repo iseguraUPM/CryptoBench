@@ -5,6 +5,7 @@
 
 #include <cryptopp/hex.h>
 #include <cryptopp/default.h>
+#include <cryptopp/aria.h>
 #include <include/CryptoBench/cipher_factory.hpp>
 #include <include/CryptoBench/cryptopp_cipher_factory.hpp>
 
@@ -16,23 +17,6 @@ class CryptoppFixture : public ::testing::Test
 protected:
 
     unsigned char *key256;
-    unsigned char *iv128;
-
-protected:
-
-    void SetUp()
-    {
-        key256 = generateRandomBytes(256 / 8);
-        iv128 = generateRandomBytes(128 / 8);
-    }
-
-    void TearDown()
-    {
-        delete (key256);
-        delete (iv128);
-    }
-
-private:
 
     static unsigned char *generateRandomBytes(int len)
     {
@@ -46,17 +30,27 @@ private:
 
         return randBytes;
     }
+
+    void TearDown()
+    {
+        delete (key256);
+    }
 };
 
 
 TEST_F(CryptoppFixture, Implementation){
     CryptoppCipherFactory factory;
-    CipherPtr cipherptr = factory.getCipher(Cipher::AES_256_CBC);
+    CipherPtr cipherptr = factory.getCipher(Cipher::ARIA_256_CFB);
+
     security::secure_string plaintext = "The quick brown fox jumps over the lazy dog";
     security::secure_string ciphertext;
     security::secure_string recoveredtext;
+
+    key256 = generateRandomBytes(CryptoPP::ARIA::DEFAULT_KEYLENGTH);
+
     cipherptr->encrypt(key256, plaintext, ciphertext);
     cipherptr->decrypt(key256, ciphertext, recoveredtext);
+
 
     for (int i = 0; i < plaintext.size(); i++)
     {
