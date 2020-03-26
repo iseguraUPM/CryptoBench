@@ -7,7 +7,7 @@
 
 #include "cipher_factory.hpp"
 
-class CryptoppCipherFactory : CipherFactory
+class CryptoppCipherFactory : public CipherFactory
 {
 
 public:
