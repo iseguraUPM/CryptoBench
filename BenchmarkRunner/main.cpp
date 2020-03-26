@@ -15,6 +15,7 @@
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 #include <CryptoBench/libsodium_cipher_factory.hpp>
+#include <CryptoBench/cryptopp_cipher_factory.hpp>
 
 struct BenchmarkResult
 {
@@ -23,13 +24,14 @@ struct BenchmarkResult
     int key_bits{};
     int block_bits{};
     unsigned int input_size{};
+    std::string cipher_lib;
     std::string cipher_alg;
     std::string block_mode;
 
     BenchmarkResult() = default;
 
-    BenchmarkResult(int key_len, int block_len, unsigned int input_size, std::string cipher, std::string mode)
-    : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_alg(std::move(cipher)), block_mode(std::move(mode))
+    BenchmarkResult(int key_len, int block_len, unsigned int input_size, std::string lib, std::string cipher, std::string mode)
+    : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_lib(std::move(lib)), cipher_alg(std::move(cipher)), block_mode(std::move(mode))
     {
         encrypt_time_micro = 0;
         decrypt_time_micro = 0;
@@ -78,6 +80,13 @@ void recordResult(BenchmarkResult &result, std::ofstream &file_stream)
     << result.input_size << ","
     << result.encrypt_time_micro << ","
     << result.decrypt_time_micro << "\n";
+    std::cout << result.cipher_alg << ","
+              << result.key_bits << ","
+              << result.block_mode << ","
+              << result.block_bits << ","
+              << result.input_size << ","
+              << result.encrypt_time_micro << ","
+              << result.decrypt_time_micro << "\n";
 }
 
 int min(std::size_t x, std::size_t y)
@@ -132,36 +141,34 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
     return len;
 }
 
-void runSingleBenchmark(Cipher cipher, CipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+void runSingleBenchmark(std::string library, Cipher cipher, CipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
     CipherPtr cipherptr = factory.getCipher(cipher);
     if (cipherptr == nullptr)
     {
         auto desc = cipherDescription(cipher);
-        throw std::runtime_error("Cipher not found: " + desc.first + "_" + desc.second);
+        std::cerr << library << " cipher not found: " + desc.first + "_" + desc.second + "\n";
     }
 
     byte key [cipherptr->getKeyLen()];
     generateRandomBytes(key, cipherptr->getKeyLen());
 
     auto infoPair = cipherDescription(cipher);
-    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, infoPair.first, infoPair.second);
+    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, library, infoPair.first, infoPair.second);
 
     benchmarkCipher(key, input_text, cipherptr, result);
     recordResult(result, resultsFile);
 }
 
-void runFullBenchmark(const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+void runFullBenchmark(std::string lib_name, CipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
 {
-    OpenSSLCipherFactory factory;
-
     const int rounds = 3;
     for(Cipher cipher : CIPHER_LIST)
     {
         auto info_pair = cipherDescription(cipher);
         for(int i = 0; i < rounds; i++)
         {
-            runSingleBenchmark(cipher, factory, input_text, input_size, resultsFile);
+            runSingleBenchmark(lib_name, cipher, factory, input_text, input_size, resultsFile);
         }
     }
 }
@@ -176,7 +183,14 @@ void runBenchmarkWSize(int bytes, std::ofstream &results_file)
     int input_size = readInputFile(input_file, input_text);
 
     std::cout << "Running " << input_size << " bytes random file benchmark\n";
-    runFullBenchmark(input_text, input_size, results_file);
+    OpenSSLCipherFactory open_ssl_cipher_factory;
+    runFullBenchmark("openssl", open_ssl_cipher_factory, input_text, input_size, results_file);
+
+    LibsodiumCipherFactory libsodium_cipher_factory;
+    runFullBenchmark("libsodium", libsodium_cipher_factory, input_text, input_size, results_file);
+
+    CryptoppCipherFactory cryptopp_cipher_factory;
+    runFullBenchmark("cryptopp", cryptopp_cipher_factory, input_text, input_size, results_file);
 
     input_file.close();
 }
@@ -194,13 +208,13 @@ int main(int argc, char** arv)
 
     std::ofstream resultsFile;
     resultsFile.open("benchmark_" + ss.str() + ".csv");
-    resultsFile << "ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
+    resultsFile << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
 
     //security::secure_string input_text;
     //input_text = "The quick fox jumps over the lazy dog";
 
     // From 2^10 to 2^25
-    /*int sizes[] = {
+    int sizes[] = {
             1024,
             2048,
             4096,
@@ -222,11 +236,11 @@ int main(int argc, char** arv)
             //268435456,
             //536870912,
             //1073741824
-    };*/
+    };
 
     std::cout << "Starting...\n";
 
-    generateInputTextFile("fox.txt", 10000);
+    /*generateInputTextFile("fox.txt", 10000);
     std::ifstream input_file("fox.txt", std::ios::binary);
     security::secure_string plaintext;
     int text_size = readInputFile(input_file, plaintext);
@@ -239,13 +253,13 @@ int main(int argc, char** arv)
     input_file.open("input.bin", std::ios::binary);
     text_size = readInputFile(input_file, plaintext);
     runSingleBenchmark(Cipher::AES_256_GCM, naclFactory, plaintext, text_size, resultsFile);
-    input_file.close();
+    input_file.close();*/
 
-    /*for (int b : sizes)
+    for (int b : sizes)
     {
 
         runBenchmarkWSize(b, resultsFile);
-    }*/
+    }
 
     std::cout << "Done!\n";
 
