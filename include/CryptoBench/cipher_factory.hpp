@@ -5,7 +5,9 @@
 #ifndef CRYPTOBENCH_CIPHER_FACTORY_HPP
 #define CRYPTOBENCH_CIPHER_FACTORY_HPP
 
+#include <tuple>
 #include <string>
+
 #include "symmetric_cipher.hpp"
 
 #define STR_AES "AES"
@@ -154,120 +156,126 @@ const Cipher CIPHER_LIST[] = {Cipher::AES_256_CBC,
                               Cipher::BLOWFISH_CFB,
                               Cipher::BLOWFISH_OFB};
 
-
-inline std::pair<std::string, std::string> cipherDescription(Cipher cipher)
+typedef std::tuple<std::string, int, std::string> CipherDescription;
+inline CipherDescription getCipherDescription(Cipher cipher)
 {
     switch (cipher)
     {
         case Cipher::AES_256_CBC:
-            return std::make_pair(STR_AES, STR_CBC);
+            return std::make_tuple(STR_AES, 256, STR_CBC);
         case Cipher::AES_256_CFB:
-            return std::make_pair(STR_AES, STR_CFB);
+            return std::make_tuple(STR_AES, 256, STR_CFB);
         case Cipher::AES_256_ECB:
-            return std::make_pair(STR_AES, STR_ECB);
+            return std::make_tuple(STR_AES, 256, STR_ECB);
         case Cipher::AES_256_CTR:
-            return std::make_pair(STR_AES, STR_CTR);
+            return std::make_tuple(STR_AES, 256, STR_CTR);
         case Cipher::AES_256_OFB:
-            return std::make_pair(STR_AES, STR_OFB);
+            return std::make_tuple(STR_AES, 256, STR_OFB);
         case Cipher::AES_256_OCB:
-            return std::make_pair(STR_AES, STR_OCB);
+            return std::make_tuple(STR_AES, 256, STR_OCB);
         case Cipher::AES_256_XTS:
-            return std::make_pair(STR_AES, STR_XTS);
+            return std::make_tuple(STR_AES, 256, STR_XTS);
         case Cipher::AES_256_GCM:
-            return std::make_pair(STR_AES, STR_GCM);
+            return std::make_tuple(STR_AES, 256, STR_GCM);
         case Cipher::AES_192_CBC:
-            return std::make_pair(STR_AES, STR_CBC);
+            return std::make_tuple(STR_AES, 192, STR_CBC);
         case Cipher::AES_192_CFB:
-            return std::make_pair(STR_AES, STR_CFB);
+            return std::make_tuple(STR_AES, 192, STR_CFB);
         case Cipher::AES_192_ECB:
-            return std::make_pair(STR_AES, STR_ECB);
+            return std::make_tuple(STR_AES, 192, STR_ECB);
         case Cipher::AES_192_CTR:
-            return std::make_pair(STR_AES, STR_CTR);
+            return std::make_tuple(STR_AES, 192, STR_CTR);
         case Cipher::AES_192_OCB:
-            return std::make_pair(STR_AES, STR_OCB);
+            return std::make_tuple(STR_AES, 192, STR_OCB);
         case Cipher::AES_192_OFB:
-            return std::make_pair(STR_AES, STR_OFB);
+            return std::make_tuple(STR_AES, 192, STR_OFB);
         case Cipher::AES_192_GCM:
-            return std::make_pair(STR_AES, STR_GCM);
+            return std::make_tuple(STR_AES, 192, STR_GCM);
         case Cipher::AES_128_CBC:
-            return std::make_pair(STR_AES, STR_CBC);
+            return std::make_tuple(STR_AES, 128, STR_CBC);
         case Cipher::AES_128_CFB:
-            return std::make_pair(STR_AES, STR_CFB);
+            return std::make_tuple(STR_AES, 128, STR_CFB);
         case Cipher::AES_128_ECB:
-            return std::make_pair(STR_AES, STR_ECB);
+            return std::make_tuple(STR_AES, 128, STR_ECB);
         case Cipher::AES_128_CTR:
-            return std::make_pair(STR_AES, STR_CTR);
+            return std::make_tuple(STR_AES, 128, STR_CTR);
         case Cipher::AES_128_OFB:
-            return std::make_pair(STR_AES, STR_OFB);
+            return std::make_tuple(STR_AES, 128, STR_OFB);
         case Cipher::AES_128_OCB:
-            return std::make_pair(STR_AES, STR_OCB);
+            return std::make_tuple(STR_AES, 128, STR_OCB);
         case Cipher::AES_128_XTS:
-            return std::make_pair(STR_AES, STR_XTS);
+            return std::make_tuple(STR_AES, 128, STR_XTS);
         case Cipher::AES_128_GCM:
-            return std::make_pair(STR_AES, STR_GCM);
+            return std::make_tuple(STR_AES, 128, STR_GCM);
         case Cipher::ARIA_256_CBC:
-            return std::make_pair(STR_ARIA, STR_CBC);
+            return std::make_tuple(STR_ARIA, 256, STR_CBC);
         case Cipher::ARIA_256_CFB:
-            return std::make_pair(STR_ARIA, STR_CFB);
+            return std::make_tuple(STR_ARIA, 256, STR_CFB);
         case Cipher::ARIA_256_ECB:
-            return std::make_pair(STR_ARIA, STR_ECB);
+            return std::make_tuple(STR_ARIA, 256, STR_ECB);
         case Cipher::ARIA_256_CTR:
-            return std::make_pair(STR_ARIA, STR_CTR);
+            return std::make_tuple(STR_ARIA, 256, STR_CTR);
         case Cipher::ARIA_256_OFB:
-            return std::make_pair(STR_ARIA, STR_OFB);
+            return std::make_tuple(STR_ARIA, 256, STR_OFB);
         case Cipher::ARIA_256_GCM:
-            return std::make_pair(STR_ARIA, STR_GCM);
+            return std::make_tuple(STR_ARIA, 256, STR_GCM);
         case Cipher::ARIA_192_CBC:
-            return std::make_pair(STR_ARIA, STR_CBC);
+            return std::make_tuple(STR_ARIA, 192, STR_CBC);
         case Cipher::ARIA_192_CFB:
-            return std::make_pair(STR_ARIA, STR_CFB);
+            return std::make_tuple(STR_ARIA, 192, STR_CFB);
         case Cipher::ARIA_192_ECB:
-            return std::make_pair(STR_ARIA, STR_ECB);
+            return std::make_tuple(STR_ARIA, 192, STR_ECB);
         case Cipher::ARIA_192_CTR:
-            return std::make_pair(STR_ARIA, STR_CTR);
+            return std::make_tuple(STR_ARIA, 192, STR_CTR);
         case Cipher::ARIA_192_OFB:
-            return std::make_pair(STR_ARIA, STR_OFB);
+            return std::make_tuple(STR_ARIA, 192, STR_OFB);
         case Cipher::ARIA_192_GCM:
-            return std::make_pair(STR_ARIA, STR_GCM);
+            return std::make_tuple(STR_ARIA, 192, STR_GCM);
         case Cipher::ARIA_128_CBC:
-            return std::make_pair(STR_ARIA, STR_CBC);
+            return std::make_tuple(STR_ARIA, 128, STR_CBC);
         case Cipher::ARIA_128_CFB:
-            return std::make_pair(STR_ARIA, STR_CFB);
+            return std::make_tuple(STR_ARIA, 128, STR_CFB);
         case Cipher::ARIA_128_ECB:
-            return std::make_pair(STR_ARIA, STR_ECB);
+            return std::make_tuple(STR_ARIA, 128, STR_ECB);
         case Cipher::ARIA_128_CTR:
-            return std::make_pair(STR_ARIA, STR_CTR);
+            return std::make_tuple(STR_ARIA, 128, STR_CTR);
         case Cipher::ARIA_128_OFB:
-            return std::make_pair(STR_ARIA, STR_OFB);
+            return std::make_tuple(STR_ARIA, 128, STR_OFB);
         case Cipher::ARIA_128_GCM:
-            return std::make_pair(STR_ARIA, STR_GCM);
+            return std::make_tuple(STR_ARIA, 128, STR_GCM);
         case Cipher::SM4_CBC:
-            return std::make_pair(STR_SM4, STR_CBC);
+            return std::make_tuple(STR_SM4, 128, STR_CBC);
         case Cipher::SM4_CFB:
-            return std::make_pair(STR_SM4, STR_CFB);
+            return std::make_tuple(STR_SM4, 128, STR_CFB);
         case Cipher::SM4_ECB:
-            return std::make_pair(STR_SM4, STR_ECB);
+            return std::make_tuple(STR_SM4, 128, STR_ECB);
         case Cipher::SM4_CTR:
-            return std::make_pair(STR_SM4, STR_CTR);
+            return std::make_tuple(STR_SM4, 128, STR_CTR);
         case Cipher::SM4_OFB:
-            return std::make_pair(STR_SM4, STR_OFB);
+            return std::make_tuple(STR_SM4, 128, STR_OFB);
         case Cipher::SEED_CBC:
-            return std::make_pair(STR_SEED, STR_CBC);
+            return std::make_tuple(STR_SEED, 128, STR_CBC);
         case Cipher::SEED_CFB:
-            return std::make_pair(STR_SEED, STR_CFB);
+            return std::make_tuple(STR_SEED, 128, STR_CFB);
         case Cipher::SEED_ECB:
-            return std::make_pair(STR_SEED, STR_ECB);
+            return std::make_tuple(STR_SEED, 128, STR_ECB);
         case Cipher::SEED_OFB:
-            return std::make_pair(STR_SEED, STR_OFB);
+            return std::make_tuple(STR_SEED, 128, STR_OFB);
         case Cipher::BLOWFISH_CBC:
-            return std::make_pair(STR_BLOWFISH, STR_CBC);
+            return std::make_tuple(STR_BLOWFISH, 448, STR_CBC);
         case Cipher::BLOWFISH_ECB:
-            return std::make_pair(STR_BLOWFISH, STR_ECB);
+            return std::make_tuple(STR_BLOWFISH, 448, STR_ECB);
         case Cipher::BLOWFISH_CFB:
-            return std::make_pair(STR_BLOWFISH, STR_CFB);
+            return std::make_tuple(STR_BLOWFISH, 448, STR_CFB);
         case Cipher::BLOWFISH_OFB:
-            return std::make_pair(STR_BLOWFISH, STR_OFB);
+            return std::make_tuple(STR_BLOWFISH, 448, STR_OFB);
     }
+}
+
+inline std::string cipherDescriptionToString(CipherDescription desc)
+{
+    std::string key_len_str = std::to_string(std::get<1>(desc));
+    return std::get<0>(desc) + "_" + key_len_str + "_" + std::get<2>(desc);
 }
 
 class CipherFactory

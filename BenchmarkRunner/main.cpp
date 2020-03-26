@@ -146,15 +146,16 @@ void runSingleBenchmark(std::string library, Cipher cipher, CipherFactory &facto
     CipherPtr cipherptr = factory.getCipher(cipher);
     if (cipherptr == nullptr)
     {
-        auto desc = cipherDescription(cipher);
-        std::cerr << library << " cipher not found: " + desc.first + "_" + desc.second + "\n";
+        auto desc = getCipherDescription(cipher);
+        std::cerr << library << " cipher not found: " + cipherDescriptionToString(desc) + "\n";
+        return;
     }
 
     byte key [cipherptr->getKeyLen()];
     generateRandomBytes(key, cipherptr->getKeyLen());
 
-    auto infoPair = cipherDescription(cipher);
-    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, library, infoPair.first, infoPair.second);
+    auto desc = getCipherDescription(cipher);
+    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, library, std::get<0>(desc), std::get<2>(desc));
 
     benchmarkCipher(key, input_text, cipherptr, result);
     recordResult(result, resultsFile);
@@ -165,7 +166,6 @@ void runFullBenchmark(std::string lib_name, CipherFactory &factory, const securi
     const int rounds = 3;
     for(Cipher cipher : CIPHER_LIST)
     {
-        auto info_pair = cipherDescription(cipher);
         for(int i = 0; i < rounds; i++)
         {
             runSingleBenchmark(lib_name, cipher, factory, input_text, input_size, resultsFile);
