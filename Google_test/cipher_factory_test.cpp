@@ -11,7 +11,22 @@
 #include <CryptoBench/random_bytes.hpp>
 #include <CryptoBench/cryptopp_cipher_factory.hpp>
 
-class CipherFactoryFixture : public ::testing::Test
+typedef struct CipherTestParam
+{
+    CipherTestParam(std::string test_name, Cipher cipher, CipherFactory &factory)
+    : test_name(test_name), cipher(cipher), factory(factory)
+    {}
+
+    std::string test_name;
+    Cipher cipher;
+    CipherFactory &factory;
+} CipherTestParam;
+
+OpenSSLCipherFactory openssl_cipher_factory;
+LibsodiumCipherFactory libsodium_cipher_factory;
+CryptoppCipherFactory cryptopp_cipher_factory;
+
+class CipherFactoryFixture : public testing::TestWithParam<CipherTestParam>
 {
 
 private:
@@ -22,12 +37,23 @@ private:
 
 protected:
 
-    OpenSSLCipherFactory opensslFactory;
-    LibsodiumCipherFactory libsodiumFactory;
-    CryptoppCipherFactory cryptoppCipherFactory;
+    byte key256[32];
+    byte key192[24];
+    byte key128[16];
 
-    byte key[32];
     security::secure_string input;
+
+public:
+
+    struct PrintToStringParamName
+    {
+        template <class ParamType>
+        std::string operator()( const testing::TestParamInfo<ParamType>& info ) const
+        {
+            auto params = static_cast<CipherTestParam>(info.param);
+            return params.test_name;
+        }
+    };
 
 protected:
 
@@ -35,7 +61,9 @@ protected:
     {
         input = "The quick brown fox jumps over the lazy dog";
         RandomBytes random_bytes;
-        random_bytes.generateRandomBytes(key, 32);
+        random_bytes.generateRandomBytes(key256, 32);
+        random_bytes.generateRandomBytes(key192, 24);
+        random_bytes.generateRandomBytes(key128, 16);
     }
 
     void TearDown()
@@ -56,16 +84,41 @@ protected:
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
     }
-
 };
 
-TEST_F(CipherFactoryFixture, Aes256CBC)
+TEST_P(CipherFactoryFixture, EncryptDecrypt)
 {
-    CipherPtr cipher = opensslFactory.getCipher(Cipher::AES_256_CBC);
+    CipherPtr cipher_ptr = GetParam().factory.getCipher(GetParam().cipher);
+    if (cipher_ptr == nullptr)
+    {
+        auto desc = getCipherDescription(GetParam().cipher);
+        std::cout << "Cipher not supported";
+        FAIL();
+    }
+
+    byte * key = nullptr;
+    if (cipher_ptr->getKeyLen() == 256/8)
+    {
+        key = key256;
+    }
+    else if (cipher_ptr->getKeyLen() == 192/8)
+    {
+        key = key192;
+    }
+    else if (cipher_ptr->getKeyLen() == 128/8)
+    {
+        key = key128;
+    } else
+    {
+        std::cout << "Missing key for " << cipher_ptr->getKeyLen() * 8 << " bits\n";
+        FAIL();
+    }
+
 
     security::secure_string output;
+
     startChrono();
-    cipher->encrypt(key, input, output);
+    cipher_ptr->encrypt(key, input, output);
     stopChrono();
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
@@ -74,107 +127,60 @@ TEST_F(CipherFactoryFixture, Aes256CBC)
 
     security::secure_string recovered;
     startChrono();
-    cipher->decrypt(key, output, recovered);
+    cipher_ptr->decrypt(key, output, recovered);
     stopChrono();
 
     std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
+    EXPECT_EQ(input, recovered);
+
 }
 
-TEST_F(CipherFactoryFixture, Aes256CFB)
+std::vector<CipherTestParam> openSSLParams()
 {
-    CipherPtr cipher = opensslFactory.getCipher(Cipher::AES_256_CFB);
+    std::vector<CipherTestParam> test_params;
 
-    security::secure_string output;
-    startChrono();
-    cipher->encrypt(key, input, output);
-    stopChrono();
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        std::string test_name = "OPENSSL_" + cipherDescriptionToString(desc);
+        test_params.emplace_back(test_name, cipher, openssl_cipher_factory);
+    }
 
-    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    startChrono();
-    cipher->decrypt(key, output, recovered);
-    stopChrono();
-
-    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
+    return test_params;
 }
 
-TEST_F(CipherFactoryFixture, Aes256ECB)
+std::vector<CipherTestParam> libsodiumParams()
 {
-    CipherPtr cipher = opensslFactory.getCipher(Cipher::AES_256_ECB);
+    std::vector<CipherTestParam> test_params;
 
-    security::secure_string output;
-    startChrono();
-    cipher->encrypt(key, input, output);
-    stopChrono();
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        std::string test_name = "NACL_" + cipherDescriptionToString(desc);
+        test_params.emplace_back(test_name, cipher, libsodium_cipher_factory);
+    }
 
-    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    startChrono();
-    cipher->decrypt(key, output, recovered);
-    stopChrono();
-
-    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
+    return test_params;
 }
 
-TEST_F(CipherFactoryFixture, Aes256GCM)
+std::vector<CipherTestParam> cryptoppParams()
 {
-    CipherPtr cipher = libsodiumFactory.getCipher(Cipher::AES_256_GCM);
+    std::vector<CipherTestParam> test_params;
 
-    security::secure_string output;
-    startChrono();
-    cipher->encrypt(key, input, output);
-    stopChrono();
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        std::string test_name = "CRYPTOPP_" + cipherDescriptionToString(desc);
+        test_params.emplace_back(test_name, cipher, cryptopp_cipher_factory);
+    }
 
-    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    startChrono();
-    cipher->decrypt(key, output, recovered);
-    stopChrono();
-
-    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
+    return test_params;
 }
 
-TEST_F(CipherFactoryFixture, CPP_Aria256CFB)
-{
-    CipherPtr cipher = cryptoppCipherFactory.getCipher(Cipher::ARIA_256_CFB);
+INSTANTIATE_TEST_CASE_P(OpenSSL, CipherFactoryFixture, testing::ValuesIn(openSSLParams()), CipherFactoryFixture::PrintToStringParamName());
 
-    security::secure_string output;
-    startChrono();
-    cipher->encrypt(key, input, output);
-    stopChrono();
+INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
 
-    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nCipher text: " << output << "\n";
-
-    security::secure_string recovered;
-    startChrono();
-    cipher->decrypt(key, output, recovered);
-    stopChrono();
-
-    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
-
-    std::cout << "\nRecovered string: " << recovered << "\n";
-    ASSERT_EQ(input, recovered);
-}
+//INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
