@@ -9,6 +9,7 @@
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 #include <CryptoBench/libsodium_cipher_factory.hpp>
 #include <CryptoBench/random_bytes.hpp>
+#include <CryptoBench/cryptopp_cipher_factory.hpp>
 
 class CipherFactoryFixture : public ::testing::Test
 {
@@ -23,6 +24,7 @@ protected:
 
     OpenSSLCipherFactory opensslFactory;
     LibsodiumCipherFactory libsodiumFactory;
+    CryptoppCipherFactory cryptoppCipherFactory;
 
     byte key[32];
     security::secure_string input;
@@ -132,6 +134,30 @@ TEST_F(CipherFactoryFixture, Aes256ECB)
 TEST_F(CipherFactoryFixture, Aes256GCM)
 {
     CipherPtr cipher = libsodiumFactory.getCipher(Cipher::AES_256_GCM);
+
+    security::secure_string output;
+    startChrono();
+    cipher->encrypt(key, input, output);
+    stopChrono();
+
+    std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
+
+    std::cout << "\nCipher text: " << output << "\n";
+
+    security::secure_string recovered;
+    startChrono();
+    cipher->decrypt(key, output, recovered);
+    stopChrono();
+
+    std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
+
+    std::cout << "\nRecovered string: " << recovered << "\n";
+    ASSERT_EQ(input, recovered);
+}
+
+TEST_F(CipherFactoryFixture, CPP_Aria256CFB)
+{
+    CipherPtr cipher = cryptoppCipherFactory.getCipher(Cipher::ARIA_256_CFB);
 
     security::secure_string output;
     startChrono();

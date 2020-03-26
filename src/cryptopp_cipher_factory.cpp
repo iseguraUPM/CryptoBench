@@ -7,70 +7,131 @@
 
 #include <cryptopp/hex.h>
 #include <cryptopp/default.h>
+#include <cryptopp/aria.h>
 #include "CryptoBench/random_bytes.hpp"
 
+#define CRYPTOPP_CIPHER(key_len, block_len, cipher) (CipherPtr(new CryptoppCipher<key_len, block_len, cipher>()))
 
-
-class CryptoPPAesTest : public SymmetricCipher
-{
-public:
-
-    explicit inline CryptoPPAesTest() : random_bytes()
-    {}
-
-    inline void encrypt(const byte* key, const security::secure_string& plain_text
-                        , security::secure_string& cipher_text) override
-    {
-
-        CryptoPP::ECB_Mode< CryptoPP::AES >::Encryption e( key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-
-        std::string cipherTxt;
-
-        cipher_text.resize(plain_text.size());
-        CryptoPP::StringSource ss1(plain_text.data(), true,
-                new CryptoPP::StreamTransformationFilter( e,
-                        new CryptoPP::StringSinkTemplate<security::secure_string>(cipher_text)
-                )
-        );
-    }
-
-    inline void decrypt(const byte* key, const security::secure_string &cipher_text
-                        , security::secure_string &recovered_text) override
-    {
-        CryptoPP::ECB_Mode< CryptoPP::AES >::Decryption d( key, CryptoPP::AES::DEFAULT_KEYLENGTH );
-
-        std::string recoveredTxt;
-
-        recovered_text.resize(cipher_text.size());
-        CryptoPP::StringSource ss3( cipher_text.data(), true,
-                new CryptoPP::StreamTransformationFilter( d,
-                        new CryptoPP::StringSinkTemplate<security::secure_string>(recovered_text)
-                )
-        );
-    }
-
-    inline int getBlockLen() override
-    {
-        return CryptoPP::AES::BLOCKSIZE;
-    }
-
-    inline int getKeyLen() override
-    {
-        return CryptoPP::AES::DEFAULT_KEYLENGTH;
-    }
-
-private:
-
-    RandomBytes random_bytes;
-
-};
-
+#define KEY_128 16
+#define KEY_192 24
+#define KEY_256 32
+#define KEY_512 64
+#define KEY_448 56
 
 CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
 {
-    if (cipher != Cipher::AES_256_CBC) {
-        return nullptr;
-    }
 
-    return CipherPtr(new CryptoPPAesTest());
+    switch(cipher)
+    {
+        case Cipher::ARIA_256_CFB:
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CFB_Mode<CryptoPP::ARIA>);
+        default:
+            return nullptr;
+        case Cipher::AES_256_CBC:
+            break;
+        case Cipher::AES_256_CFB:
+            break;
+        case Cipher::AES_256_ECB:
+            break;
+        case Cipher::AES_256_CTR:
+            break;
+        case Cipher::AES_256_OCB:
+            break;
+        case Cipher::AES_256_OFB:
+            break;
+        case Cipher::AES_256_XTS:
+            break;
+        case Cipher::AES_256_GCM:
+            break;
+        case Cipher::AES_192_CBC:
+            break;
+        case Cipher::AES_192_CFB:
+            break;
+        case Cipher::AES_192_ECB:
+            break;
+        case Cipher::AES_192_CTR:
+            break;
+        case Cipher::AES_192_OFB:
+            break;
+        case Cipher::AES_192_OCB:
+            break;
+        case Cipher::AES_192_GCM:
+            break;
+        case Cipher::AES_128_CBC:
+            break;
+        case Cipher::AES_128_CFB:
+            break;
+        case Cipher::AES_128_ECB:
+            break;
+        case Cipher::AES_128_CTR:
+            break;
+        case Cipher::AES_128_OFB:
+            break;
+        case Cipher::AES_128_OCB:
+            break;
+        case Cipher::AES_128_XTS:
+            break;
+        case Cipher::AES_128_GCM:
+            break;
+        case Cipher::ARIA_256_CBC:
+            break;
+        case Cipher::ARIA_256_ECB:
+            break;
+        case Cipher::ARIA_256_OFB:
+            break;
+        case Cipher::ARIA_256_CTR:
+            break;
+        case Cipher::ARIA_256_GCM:
+            break;
+        case Cipher::ARIA_192_CBC:
+            break;
+        case Cipher::ARIA_192_CFB:
+            break;
+        case Cipher::ARIA_192_ECB:
+            break;
+        case Cipher::ARIA_192_OFB:
+            break;
+        case Cipher::ARIA_192_CTR:
+            break;
+        case Cipher::ARIA_192_GCM:
+            break;
+        case Cipher::ARIA_128_CBC:
+            break;
+        case Cipher::ARIA_128_CFB:
+            break;
+        case Cipher::ARIA_128_ECB:
+            break;
+        case Cipher::ARIA_128_OFB:
+            break;
+        case Cipher::ARIA_128_CTR:
+            break;
+        case Cipher::ARIA_128_GCM:
+            break;
+        case Cipher::SM4_CBC:
+            break;
+        case Cipher::SM4_CFB:
+            break;
+        case Cipher::SM4_ECB:
+            break;
+        case Cipher::SM4_CTR:
+            break;
+        case Cipher::SM4_OFB:
+            break;
+        case Cipher::SEED_CBC:
+            break;
+        case Cipher::SEED_CFB:
+            break;
+        case Cipher::SEED_ECB:
+            break;
+        case Cipher::SEED_OFB:
+            break;
+        case Cipher::BLOWFISH_CBC:
+            break;
+        case Cipher::BLOWFISH_ECB:
+            break;
+        case Cipher::BLOWFISH_CFB:
+            break;
+        case Cipher::BLOWFISH_OFB:
+            break;
+    }
 }
