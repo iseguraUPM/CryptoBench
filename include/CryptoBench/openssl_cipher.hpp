@@ -112,7 +112,7 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], c
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
     byte tag[16];
-    cipher_text.copy((char *) tag, BLOCK_SIZE, cipher_text.size() - 16);
+    cipher_text.copy((char *) tag, 16, cipher_text.size() - 16);
 
     byte iv[BLOCK_SIZE];
     cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - 16 - BLOCK_SIZE);
@@ -130,7 +130,7 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], c
     recovered_text.resize(cipher_text.size() - BLOCK_SIZE - 16);
     int out_len1 = (int) recovered_text.size();
 
-    if (1 != EVP_DecryptUpdate(ctx.get(), (byte *)&recovered_text[0], &out_len1, (byte *)&cipher_text[0], (int) cipher_text.size() - BLOCK_SIZE))
+    if (1 != EVP_DecryptUpdate(ctx.get(), (byte *)&recovered_text[0], &out_len1, (byte *)&cipher_text[0], (int) cipher_text.size() - BLOCK_SIZE - 16))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
@@ -141,7 +141,7 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], c
     }
 
     int out_len2 = (int) recovered_text.size() - out_len1;
-    if (0 < EVP_DecryptFinal_ex(ctx.get(), (byte *)&recovered_text[0] + out_len1, &out_len2))
+    if (0 >= EVP_DecryptFinal_ex(ctx.get(), (byte *)&recovered_text[0] + out_len1, &out_len2))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
