@@ -20,6 +20,7 @@
 
 #define CRYPTOPP_CIPHER(key_len, block_len, cipher) (CipherPtr(new CryptoppCipher<key_len, block_len, cipher>()))
 #define CRYPTOPP_CIPHER_ECB(key_len, block_len, cipher) (CipherPtr(new CryptoppCipherECB<key_len, block_len, cipher>()))
+#define CRYPTOPP_CIPHER_CBC(key_len, block_len, cipher) (CipherPtr(new CryptoppCipherCBC<key_len, block_len, cipher>()))
 
 #define KEY_128 16
 #define KEY_192 24
@@ -35,7 +36,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
     switch(cipher)
     {
         case Cipher::AES_256_CBC:
-            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CBC_Mode<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER_CBC(KEY_256, 16, CryptoPP::CBC_Mode<CryptoPP::AES>);
         case Cipher::AES_256_CFB:
             return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CFB_Mode<CryptoPP::AES>);
         case Cipher::AES_256_ECB:
@@ -58,7 +59,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_CFB:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CFB_Mode<CryptoPP::AES>);
         case Cipher::AES_192_ECB:
-            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER_ECB(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
         case Cipher::AES_192_CTR:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CTR_Mode<CryptoPP::AES>);
         case Cipher::AES_192_OFB:
@@ -74,7 +75,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_CFB:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CFB_Mode<CryptoPP::AES>);
         case Cipher::AES_128_ECB:
-            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
         case Cipher::AES_128_CTR:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CTR_Mode<CryptoPP::AES>);
         case Cipher::AES_128_OFB:
@@ -93,7 +94,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_CFB:
             return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CFB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_256_ECB:
-            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
+            return CRYPTOPP_CIPHER_ECB(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_256_OFB:
             return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CFB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_256_CTR:
@@ -106,7 +107,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_CFB:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CFB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_192_ECB:
-            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
+            return CRYPTOPP_CIPHER_ECB(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_192_OFB:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::OFB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_192_CTR:
@@ -119,7 +120,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_CFB:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CFB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_128_ECB:
-            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
+            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_128_OFB:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::OFB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_128_CTR:

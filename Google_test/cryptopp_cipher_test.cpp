@@ -40,7 +40,7 @@ protected:
 
 TEST_F(CryptoppFixture, Implementation){
     CryptoppCipherFactory factory;
-    CipherPtr cipherptr = factory.getCipher(Cipher::AES_256_ECB);
+    CipherPtr cipherptr = factory.getCipher(Cipher::AES_256_CBC);
 
     security::secure_string plaintext = "The quick brown fox jumps over the lazy dog";
     security::secure_string ciphertext;
