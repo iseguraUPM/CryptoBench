@@ -40,13 +40,13 @@ protected:
 
 TEST_F(CryptoppFixture, Implementation){
     CryptoppCipherFactory factory;
-    CipherPtr cipherptr = factory.getCipher(Cipher::ARIA_256_CFB);
+    CipherPtr cipherptr = factory.getCipher(Cipher::AES_256_ECB);
 
     security::secure_string plaintext = "The quick brown fox jumps over the lazy dog";
     security::secure_string ciphertext;
     security::secure_string recoveredtext;
 
-    key256 = generateRandomBytes(CryptoPP::ARIA::DEFAULT_KEYLENGTH);
+    key256 = generateRandomBytes(CryptoPP::AES::DEFAULT_KEYLENGTH);
 
     cipherptr->encrypt(key256, plaintext, ciphertext);
     cipherptr->decrypt(key256, ciphertext, recoveredtext);

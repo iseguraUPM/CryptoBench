@@ -183,4 +183,6 @@ INSTANTIATE_TEST_CASE_P(OpenSSL, CipherFactoryFixture, testing::ValuesIn(openSSL
 
 INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
 
+INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
+
 //INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
