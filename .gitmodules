@@ -13,3 +13,6 @@
 [submodule "libsodium-1.0.18/lib"]
 	path = libsodium-1.0.18/lib
 	url = https://github.com/jedisct1/libsodium.git
+[submodule "Botan-2.13.0/lib"]
+	path = Botan-2.13.0/lib
+	url = https://github.com/randombit/botan.git
