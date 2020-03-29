@@ -16,10 +16,10 @@ class SymmetricCipher
 {
 public:
 
-    virtual void encrypt(const byte* key, const security::secure_string& plain_text
-            , security::secure_string& cipher_text) = 0;
-    virtual void decrypt(const byte* key, const security::secure_string &cipher_text
-                         , security::secure_string &recovered_text) = 0;
+    virtual void encrypt(const byte* key, const byte* plain_text, size_t plain_text_len
+            , const byte* cipher_text, size_t cipher_text_len) = 0;
+    virtual void decrypt(const byte* key, const byte* cipher_text, size_t cipher_text_len
+            , const byte* recovered_text, size_t recovered_text_len) = 0;
 
     virtual int getBlockLen() = 0;
 
