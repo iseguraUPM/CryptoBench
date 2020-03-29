@@ -6,6 +6,8 @@
 
 #include <gcrypt.h>
 
+#include <cstring>
+
 #include "CryptoBench/random_bytes.hpp"
 
 #define CIPHER(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len>(alg, mode)))
@@ -26,11 +28,11 @@ public:
     explicit inline LibgcryptCipher(gcry_cipher_algos alg, gcry_cipher_modes mode) : alg(alg), mode(mode), random_bytes()
     {}
 
-    virtual void encrypt(const byte key[KEY_LEN], const security::secure_string& plain_text
-                         , security::secure_string& cipher_text);
+    virtual void encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
+                         , byte * cipher_text, byte_len & cipher_text_len);
 
-    virtual void decrypt(const byte key[KEY_LEN], const security::secure_string &cipher_text
-                         , security::secure_string &recovered_text);
+    virtual void decrypt(const byte key[KEY_LEN], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len);
 
     void handleGcryError(gcry_error_t err);
 
@@ -56,9 +58,15 @@ private:
 };
 
 template<int KEY_LEN, int BLOCK_LEN>
-void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], const security::secure_string &plain_text
-                                                  , security::secure_string &cipher_text)
+void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
+                                                  , byte * cipher_text, byte_len & cipher_text_len)
 {
+    byte_len padded_plain_text_len = plain_text_len + BLOCK_LEN - (plain_text_len % BLOCK_LEN);
+    if (cipher_text_len < padded_plain_text_len)
+    {
+        throw std::runtime_error("Libgcrypt Error: Invalid cipher text length. Must be at least: " + padded_plain_text_len);
+    }
+
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
 
@@ -73,21 +81,27 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], const
     err = gcry_cipher_setiv(handle, iv, BLOCK_LEN);
     handleGcryError(err);
 
-    security::secure_string padded_plain_text = plain_text;
-    padded_plain_text.resize(plain_text.size() + BLOCK_LEN - (plain_text.size() % BLOCK_LEN));
+    byte padded_plain_text[padded_plain_text_len];
+    memcpy(padded_plain_text, plain_text, plain_text_len);
 
-    err = gcry_cipher_encrypt(handle, (void *) cipher_text.c_str(), padded_plain_text.size(), padded_plain_text.c_str(), padded_plain_text.size());
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text, padded_plain_text_len);
     handleGcryError(err);
 
     gcry_cipher_close(handle);
 
-    cipher_text.append((char *) iv, BLOCK_LEN);
+    memcpy(cipher_text + cipher_text_len, iv, BLOCK_LEN);
 }
 
 template<int KEY_LEN, int BLOCK_LEN>
-void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const security::secure_string &cipher_text
-                                                  , security::secure_string &recovered_text)
+void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const byte * cipher_text, byte_len cipher_text_len
+                                                  , byte * recovered_text, byte_len & recovered_text_len)
 {
+    auto req_len = cipher_text_len - BLOCK_LEN;
+    if (recovered_text_len < cipher_text_len - BLOCK_LEN)
+    {
+        throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + req_len);
+    }
+
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
 
@@ -98,14 +112,14 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     handleGcryError(err);
 
     byte iv[BLOCK_LEN];
-    cipher_text.copy((char *) iv, BLOCK_LEN, cipher_text.size() - BLOCK_LEN);
+    memcpy(iv, cipher_text + cipher_text_len, BLOCK_LEN);
 
     err = gcry_cipher_setiv(handle, iv, BLOCK_LEN);
     handleGcryError(err);
 
-    recovered_text.resize(cipher_text.size() - BLOCK_LEN);
-    err = gcry_cipher_decrypt(handle, (void *) recovered_text.c_str(), recovered_text.size()
-            , cipher_text.c_str(), cipher_text.size() - BLOCK_LEN);
+    recovered_text_len = cipher_text_len - BLOCK_LEN;
+    err = gcry_cipher_decrypt(handle, recovered_text, recovered_text_len
+            , cipher_text, cipher_text_len - BLOCK_LEN);
     handleGcryError(err);
 
     gcry_cipher_close(handle);

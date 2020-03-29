@@ -4,6 +4,8 @@
 
 #include "CryptoBench/open_ssl_cipher_factory.hpp"
 
+#include <cstring>
+
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
@@ -21,6 +23,8 @@
 #define BLK_128 16
 #define BLK_64 8
 
+#define TAG_LEN 16
+
 #define CIPHER_128_BLOCK(key_len, cipher) (CIPHER(key_len, BLK_128, cipher))
 
 template <int KEY_SIZE, int BLOCK_SIZE>
@@ -31,11 +35,11 @@ public:
     explicit inline OpenSSLCipher(const EVP_CIPHER * cipher_mode) : cipher_mode(cipher_mode), random_bytes()
     {}
 
-    virtual void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
-                         , security::secure_string& cipher_text) override;
+    virtual void encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                         , byte * cipher_text, byte_len & cipher_text_len) override;
 
-    virtual void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                         , security::secure_string &recovered_text) override;
+    virtual void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len) override;
 
     inline int getBlockLen() override
     {
@@ -62,20 +66,26 @@ public:
 
     explicit inline OpenSSLGCMCipher(const EVP_CIPHER* cipher_mode) : OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>(cipher_mode) {}
 
-    void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
-                 , security::secure_string& cipher_text) override;
+    void encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                 , byte * cipher_text, byte_len & cipher_text_len) override;
 
-    void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                 , security::secure_string &recovered_text) override;
+    void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                 , byte * recovered_text, byte_len & recovered_text_len) override;
 
 };
 
 using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
 
 template<int KEY_SIZE, int BLOCK_SIZE>
-void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
-                                                     , security::secure_string& cipher_text)
+void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                                                     , byte * cipher_text, byte_len & cipher_text_len)
 {
+    auto req_len = plain_text_len + BLOCK_SIZE * 2 + TAG_LEN;
+    if (cipher_text_len < req_len)
+    {
+        throw std::runtime_error("OpenSSL Error: Invalid cipher text length. Must be at least: " + req_len);
+    }
+
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
     byte iv[BLOCK_SIZE];
@@ -92,42 +102,46 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], c
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    cipher_text.resize(plain_text.size() + BLOCK_SIZE);
-    int out_len1 = (int) cipher_text.size();
-
-    if (1 != EVP_EncryptUpdate(ctx.get(), (byte *)&cipher_text[0], &out_len1, (byte *)&plain_text[0], (int) plain_text.size()))
+    int out_len1 = cipher_text_len + BLOCK_SIZE;
+    if (1 != EVP_EncryptUpdate(ctx.get(), cipher_text, &out_len1, plain_text, plain_text_len))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    int out_len2 = (int) cipher_text.size() - out_len1;
-    if (1 != EVP_EncryptFinal_ex(ctx.get(), (byte *)&cipher_text[0] + out_len1, &out_len2))
+    int out_len2 = cipher_text_len - out_len1;
+    if (1 != EVP_EncryptFinal_ex(ctx.get(), cipher_text + out_len1, &out_len2))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    byte tag[16];
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, 16, tag))
+    byte tag[TAG_LEN];
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, TAG_LEN, tag))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    cipher_text.resize(out_len1 + out_len2);
-    cipher_text.append((char *) iv, BLOCK_SIZE);
-    cipher_text.append((char *) tag, 16);
+    cipher_text_len = out_len1 + out_len2;
+    memcpy(cipher_text + cipher_text_len, iv, BLOCK_SIZE);
+    memcpy(cipher_text + cipher_text_len + BLOCK_SIZE, tag, TAG_LEN);
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
-void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                                                     , security::secure_string &recovered_text)
+void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                     , byte * recovered_text, byte_len & recovered_text_len)
 {
+    auto req_len = cipher_text_len - BLOCK_SIZE - TAG_LEN;
+    if (recovered_text_len < req_len)
+    {
+        throw std::runtime_error("OpenSSL Error: Invalid recovered text length. Must be at least: " + req_len);
+    }
+
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    byte tag[16];
-    cipher_text.copy((char *) tag, 16, cipher_text.size() - 16);
+    byte tag[TAG_LEN];
+    memcpy(tag, cipher_text + cipher_text_len + BLOCK_SIZE, TAG_LEN);
 
     byte iv[BLOCK_SIZE];
-    cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - 16 - BLOCK_SIZE);
+    memcpy(iv, cipher_text + cipher_text_len, BLOCK_SIZE);
 
     auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
     if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv))
@@ -140,31 +154,38 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], c
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    recovered_text.resize(cipher_text.size() - BLOCK_SIZE - 16);
-    int out_len1 = (int) recovered_text.size();
+    recovered_text_len = cipher_text_len - BLOCK_SIZE - TAG_LEN;
+    int out_len1 = recovered_text_len;
 
-    if (1 != EVP_DecryptUpdate(ctx.get(), (byte *)&recovered_text[0], &out_len1, (byte *)&cipher_text[0], (int) cipher_text.size() - BLOCK_SIZE - 16))
+    if (1 != EVP_DecryptUpdate(ctx.get(), recovered_text, &out_len1, cipher_text, cipher_text_len - BLOCK_SIZE - TAG_LEN))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, 16, tag))
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, TAG_LEN, tag))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    int out_len2 = (int) recovered_text.size() - out_len1;
-    if (0 >= EVP_DecryptFinal_ex(ctx.get(), (byte *)&recovered_text[0] + out_len1, &out_len2))
+    int out_len2 = recovered_text_len - out_len1;
+    if (0 >= EVP_DecryptFinal_ex(ctx.get(), recovered_text + out_len1, &out_len2))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    recovered_text.resize(out_len1 + out_len2);
+    recovered_text_len = out_len1 + out_len2;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
-void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text, security::secure_string& cipher_text)
+void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                                                  , byte * cipher_text, byte_len & cipher_text_len)
 {
+    auto req_len = plain_text_len + BLOCK_SIZE * 2;
+    if (cipher_text_len < req_len)
+    {
+        throw std::runtime_error("OpenSSL Error: Invalid cipher text length. Must be at least: " + req_len);
+    }
+
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
     byte iv[BLOCK_SIZE];
@@ -175,53 +196,57 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], cons
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    cipher_text.resize(plain_text.size() + BLOCK_SIZE);
-    int out_len1 = (int) cipher_text.size();
-
-    if (1 != EVP_EncryptUpdate(ctx.get(), (byte *)&cipher_text[0], &out_len1, (byte *)&plain_text[0], (int) plain_text.size()))
+    int out_len1 = cipher_text_len + BLOCK_SIZE;
+    if (1 != EVP_EncryptUpdate(ctx.get(), cipher_text, &out_len1, plain_text, plain_text_len))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    int out_len2 = (int) cipher_text.size() - out_len1;
-    if (1 != EVP_EncryptFinal_ex(ctx.get(), (byte *)&cipher_text[0] + out_len1, &out_len2))
+    int out_len2 = cipher_text_len - out_len1;
+    if (1 != EVP_EncryptFinal_ex(ctx.get(), cipher_text + out_len1, &out_len2))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    cipher_text.resize(out_len1 + out_len2);
-    cipher_text.append((char *) iv, BLOCK_SIZE);
+    cipher_text_len = out_len1 + out_len2;
+    memcpy(cipher_text + cipher_text_len, iv, BLOCK_SIZE);
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
-void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                                                  , security::secure_string &recovered_text)
+void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                  , byte * recovered_text, byte_len & recovered_text_len)
 {
+    auto req_len = cipher_text_len - BLOCK_SIZE;
+    if (recovered_text_len < req_len)
+    {
+        throw std::runtime_error("OpenSSL Error: Invalid recovered text length. Must be at least: " + req_len);
+    }
+
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
     byte iv[BLOCK_SIZE];
-    cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - BLOCK_SIZE);
+    memcpy(iv, cipher_text + cipher_text_len, BLOCK_SIZE);
 
     if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    recovered_text.resize(cipher_text.size() - BLOCK_SIZE);
-    int out_len1 = (int) recovered_text.size();
+    recovered_text_len = cipher_text_len - BLOCK_SIZE;
+    int out_len1 = recovered_text_len;
 
-    if (1 != EVP_DecryptUpdate(ctx.get(), (byte *)&recovered_text[0], &out_len1, (byte *)&cipher_text[0], (int) cipher_text.size() - BLOCK_SIZE))
+    if (1 != EVP_DecryptUpdate(ctx.get(), recovered_text, &out_len1, cipher_text, cipher_text_len - BLOCK_SIZE))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    int out_len2 = (int) recovered_text.size() - out_len1;
-    if (1 != EVP_DecryptFinal_ex(ctx.get(), (byte *)&recovered_text[0] + out_len1, &out_len2))
+    int out_len2 = recovered_text_len - out_len1;
+    if (1 != EVP_DecryptFinal_ex(ctx.get(), recovered_text + out_len1, &out_len2))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), NULL)));
     }
 
-    recovered_text.resize(out_len1 + out_len2);
+    recovered_text_len = out_len1 + out_len2;
 }
 
 CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
