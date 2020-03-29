@@ -5,9 +5,6 @@
 #ifndef CRYPTOBENCH_SYMMETRIC_CIPHER_HPP
 #define CRYPTOBENCH_SYMMETRIC_CIPHER_HPP
 
-#include <string>
-#include <memory>
-
 typedef unsigned char byte;
 
 typedef unsigned long long int byte_len;
