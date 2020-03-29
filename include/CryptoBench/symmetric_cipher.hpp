@@ -8,8 +8,6 @@
 #include <string>
 #include <memory>
 
-#include "secure_string.hpp"
-
 typedef unsigned char byte;
 
 typedef unsigned long long int byte_len;
