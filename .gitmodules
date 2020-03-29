@@ -13,3 +13,9 @@
 [submodule "libsodium-1.0.18/lib"]
 	path = libsodium-1.0.18/lib
 	url = https://github.com/jedisct1/libsodium.git
+[submodule "libgcrypt-1.8.5/lib"]
+	path = libgcrypt-1.8.5/lib
+	url = https://github.com/gpg/libgcrypt.git
+[submodule "libgpg-error-1.37/lib"]
+	path = libgpg-error-1.37/lib
+	url = https://github.com/gpg/libgpg-error.git

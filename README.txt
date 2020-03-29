@@ -1,0 +1,1 @@
+dependencies: gettext texinfo transfig

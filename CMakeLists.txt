@@ -22,6 +22,10 @@ add_subdirectory(cryptopp-8.2)
 
 add_subdirectory(libsodium-1.0.18)
 
+add_subdirectory(libgpg-error-1.37)
+
+add_subdirectory(libgcrypt-1.8.5)
+
 add_subdirectory(Google_test)
 
 add_subdirectory(BenchmarkRunner)
