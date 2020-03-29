@@ -10,6 +10,7 @@
 #include <CryptoBench/libsodium_cipher_factory.hpp>
 #include <CryptoBench/random_bytes.hpp>
 #include <CryptoBench/cryptopp_cipher_factory.hpp>
+#include <CryptoBench/libgcrypt_cipher_factory.hpp>
 
 typedef struct CipherTestParam
 {
@@ -25,6 +26,7 @@ typedef struct CipherTestParam
 OpenSSLCipherFactory openssl_cipher_factory;
 LibsodiumCipherFactory libsodium_cipher_factory;
 CryptoppCipherFactory cryptopp_cipher_factory;
+LibgcryptCipherFactory libgcrypt_cipher_factory;
 
 class CipherFactoryFixture : public testing::TestWithParam<CipherTestParam>
 {
@@ -179,6 +181,20 @@ std::vector<CipherTestParam> cryptoppParams()
     return test_params;
 }
 
+std::vector<CipherTestParam> libgcryptParams()
+{
+    std::vector<CipherTestParam> test_params;
+
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        std::string test_name = "LIBGCRYPT_" + cipherDescriptionToString(desc);
+        test_params.emplace_back(test_name, cipher, libgcrypt_cipher_factory);
+    }
+
+    return test_params;
+}
+
 INSTANTIATE_TEST_CASE_P(OpenSSL, CipherFactoryFixture, testing::ValuesIn(openSSLParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
@@ -186,3 +202,5 @@ INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumP
 INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
 
 //INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
+
+INSTANTIATE_TEST_CASE_P(Libgcrypt, CipherFactoryFixture, testing::ValuesIn(libgcryptParams()), CipherFactoryFixture::PrintToStringParamName());
