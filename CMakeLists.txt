@@ -26,6 +26,8 @@ add_subdirectory(libgpg-error-1.37)
 
 add_subdirectory(libgcrypt-1.8.5)
 
+add_subdirectory(Botan-2.13.0)
+
 add_subdirectory(Google_test)
 
 add_subdirectory(BenchmarkRunner)

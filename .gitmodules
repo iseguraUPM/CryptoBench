@@ -19,3 +19,6 @@
 [submodule "libgpg-error-1.37/lib"]
 	path = libgpg-error-1.37/lib
 	url = https://github.com/gpg/libgpg-error.git
+[submodule "Botan-2.13.0/lib"]
+	path = Botan-2.13.0/lib
+	url = https://github.com/randombit/botan.git
