@@ -22,6 +22,8 @@ add_subdirectory(cryptopp-8.2)
 
 add_subdirectory(libsodium-1.0.18)
 
+add_subdirectory(Botan-2.13.0)
+
 add_subdirectory(Google_test)
 
 add_subdirectory(BenchmarkRunner)
