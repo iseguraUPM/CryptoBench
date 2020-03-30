@@ -42,18 +42,26 @@ TEST_F(CryptoppFixture, Implementation){
     CryptoppCipherFactory factory;
     CipherPtr cipherptr = factory.getCipher(Cipher::AES_256_CBC);
 
-    security::secure_string plaintext = "The quick brown fox jumps over the lazy dog";
-    security::secure_string ciphertext;
-    security::secure_string recoveredtext;
+    const byte * input = reinterpret_cast<const byte *>("The quick brown fox jumps over the lazy dog");
+    byte_len input_len = std::strlen(reinterpret_cast<const char *>(input));
+
+    byte * ciphertext = new byte[input_len];
+    byte_len ciphertext_len = input_len;
+
+    byte * recovered = new byte[input_len];
+    byte_len recovered_len = input_len;
 
     key256 = generateRandomBytes(CryptoPP::AES::DEFAULT_KEYLENGTH);
 
-    cipherptr->encrypt(key256, plaintext, ciphertext);
-    cipherptr->decrypt(key256, ciphertext, recoveredtext);
+    cipherptr->encrypt(key256, input, input_len, ciphertext, ciphertext_len);
+    cipherptr->decrypt(key256, ciphertext, ciphertext_len, recovered, recovered_len);
 
 
-    for (int i = 0; i < plaintext.size(); i++)
+    for (int i = 0; i < input_len; i++)
     {
-        ASSERT_EQ(plaintext[i], recoveredtext[i]);
+        EXPECT_EQ(input[i], recovered[i]);
     }
+
+    delete[] ciphertext;
+    delete[] recovered;
 }

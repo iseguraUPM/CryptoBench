@@ -12,6 +12,8 @@
 #include <CryptoBench/cryptopp_cipher_factory.hpp>
 #include <CryptoBench/libgcrypt_cipher_factory.hpp>
 
+#include <CryptoBench/secure_string.hpp>
+
 typedef struct CipherTestParam
 {
     CipherTestParam(std::string test_name, Cipher cipher, CipherFactory &factory)
@@ -43,7 +45,8 @@ protected:
     byte key192[24];
     byte key128[16];
 
-    security::secure_string input;
+    const byte * input;
+    byte_len input_len;
 
 public:
 
@@ -61,7 +64,8 @@ protected:
 
     void SetUp()
     {
-        input = "The quick brown fox jumps over the lazy dog";
+        input = (byte *) "The quick brown fox jumps over the lazy dog";
+        input_len = std::strlen(reinterpret_cast<const char *>(input));
         RandomBytes random_bytes;
         random_bytes.generateRandomBytes(key256, 32);
         random_bytes.generateRandomBytes(key192, 24);
@@ -117,26 +121,34 @@ TEST_P(CipherFactoryFixture, EncryptDecrypt)
     }
 
 
-    security::secure_string output;
+    byte_len output_len = 128;
+    byte * output = new byte[output_len];
+
 
     startChrono();
-    cipher_ptr->encrypt(key, input, output);
+    cipher_ptr->encrypt(key, input, input_len, output, output_len);
     stopChrono();
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nCipher text: " << output << "\n";
 
-    security::secure_string recovered;
+    byte * recovered = new byte[input_len];
+    byte_len recovered_len = input_len;
     startChrono();
-    cipher_ptr->decrypt(key, output, recovered);
+    cipher_ptr->decrypt(key, output, output_len, recovered, recovered_len);
     stopChrono();
 
     std::cout << "\nDecrypt delta: " << getElapsedChrono().count() << "\n";
 
     std::cout << "\nRecovered string: " << recovered << "\n";
-    EXPECT_EQ(input, recovered);
+    for (int i = 0; i < input_len; i++)
+    {
+        EXPECT_EQ(input[i], recovered[i]);
+    }
 
+    delete[] output;
+    delete[] recovered;
 }
 
 std::vector<CipherTestParam> openSSLParams()
@@ -200,7 +212,5 @@ INSTANTIATE_TEST_CASE_P(OpenSSL, CipherFactoryFixture, testing::ValuesIn(openSSL
 INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
-
-//INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(Libgcrypt, CipherFactoryFixture, testing::ValuesIn(libgcryptParams()), CipherFactoryFixture::PrintToStringParamName());

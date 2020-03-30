@@ -7,6 +7,7 @@
 
 #include <tuple>
 #include <string>
+#include <memory>
 
 #include "symmetric_cipher.hpp"
 

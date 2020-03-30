@@ -6,11 +6,15 @@
 #define CRYPTOBENCH_CRYPTOPP_CIPHER_FACTORY_HPP
 
 #include "cipher_factory.hpp"
-#include "random_bytes.hpp"
+
+#include <cmath>
+
 #include <cryptopp/hex.h>
 #include <cryptopp/default.h>
 #include <cryptopp/aria.h>
-#include <math.h>
+
+
+#include "random_bytes.hpp"
 
 class CryptoppCipherFactory : public CipherFactory
 {
@@ -28,11 +32,11 @@ public:
 
     explicit CryptoppCipher();
 
-    virtual void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
-                         , security::secure_string& cipher_text) override;
+    virtual void encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+            , byte * cipher_text, byte_len & cipher_text_len) override;
 
-    virtual void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                         , security::secure_string &recovered_text) override;
+    virtual void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len) override;
 
     int getBlockLen() override;
 
@@ -62,33 +66,31 @@ int CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::getKeyLen()
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                                                   , security::secure_string &recovered_text)
+void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                      , byte * recovered_text, byte_len & recovered_text_len)
 {
     byte iv[BLOCK_SIZE];
-    cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - BLOCK_SIZE);
+    memcpy(iv, cipher_text + cipher_text_len, BLOCK_SIZE);
 
-    recovered_text.resize(cipher_text.size() - BLOCK_SIZE);
+    recovered_text_len = cipher_text_len;
 
     typename T::Decryption cfbDecryption(key, KEY_SIZE, iv);
-    cfbDecryption.ProcessData((byte *) &recovered_text[0], (byte *) &cipher_text[0]
-                              , cipher_text.size() - BLOCK_SIZE);
-
+    cfbDecryption.ProcessData(recovered_text, cipher_text, cipher_text_len);
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const security::secure_string &plain_text
-                                                   , security::secure_string &cipher_text)
+void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+                                                      , byte * cipher_text, byte_len & cipher_text_len)
 {
     byte iv[BLOCK_SIZE];
     random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
 
-    cipher_text.resize(plain_text.size());
+    cipher_text_len = plain_text_len;
 
     typename T::Encryption encryption(key, KEY_SIZE, iv);
-    encryption.ProcessData((byte *) &cipher_text[0], (byte *) &plain_text[0], plain_text.size());
+    encryption.ProcessData(cipher_text, plain_text, plain_text_len);
 
-    cipher_text.append((char *) iv, BLOCK_SIZE);
+    memcpy(cipher_text + cipher_text_len, iv, BLOCK_SIZE);
 }
 
 
@@ -99,11 +101,11 @@ public:
 
     explicit CryptoppCipherECB();
 
-    virtual void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
-                         , security::secure_string& cipher_text) override;
+    virtual void encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+                         , byte * cipher_text, byte_len & cipher_text_len) override;
 
-    virtual void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                         , security::secure_string &recovered_text) override;
+    virtual void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len) override;
 
     int getBlockLen() override;
 
@@ -133,28 +135,26 @@ int CryptoppCipherECB<KEY_SIZE, BLOCK_SIZE, T>::getKeyLen()
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipherECB<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                                                      , security::secure_string &recovered_text)
+void CryptoppCipherECB<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                         , byte * recovered_text, byte_len & recovered_text_len)
 {
-    recovered_text.resize(cipher_text.size());
+    recovered_text_len = cipher_text_len;
 
     typename T::Decryption cfbDecryption(key, KEY_SIZE);
-    cfbDecryption.ProcessData((byte *) &recovered_text[0], (byte *) &cipher_text[0]
-                              , cipher_text.size());
-
+    cfbDecryption.ProcessData(recovered_text, cipher_text, cipher_text_len);
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipherECB<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const security::secure_string &plain_text
-                                                      , security::secure_string &cipher_text)
+void CryptoppCipherECB<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+                                                         , byte * cipher_text, byte_len & cipher_text_len)
 {
 
-    float length = ceil((float)plain_text.size() / (float)BLOCK_SIZE) * BLOCK_SIZE;
+    float length = ceil(plain_text_len / (float)BLOCK_SIZE) * BLOCK_SIZE;
 
-    cipher_text.resize(length);
+    cipher_text_len = length;
 
     typename T::Encryption encryption(key, KEY_SIZE);
-    encryption.ProcessData((byte *) &cipher_text[0], (byte *) &plain_text[0], length);
+    encryption.ProcessData(cipher_text, plain_text, cipher_text_len);
 }
 
 template <int KEY_SIZE, int BLOCK_SIZE, typename T>
@@ -164,11 +164,11 @@ public:
 
     explicit CryptoppCipherCBC();
 
-    virtual void encrypt(const byte key[KEY_SIZE], const security::secure_string& plain_text
-                         , security::secure_string& cipher_text) override;
+    virtual void encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+                         , byte * cipher_text, byte_len & cipher_text_len) override;
 
-    virtual void decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                         , security::secure_string &recovered_text) override;
+    virtual void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len) override;
 
     int getBlockLen() override;
 
@@ -198,33 +198,46 @@ int CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::getKeyLen()
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const security::secure_string &cipher_text
-                                                         , security::secure_string &recovered_text)
+void CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                         , byte * recovered_text, byte_len & recovered_text_len)
 {
-    byte iv[BLOCK_SIZE];
-    cipher_text.copy((char *) iv, BLOCK_SIZE, cipher_text.size() - BLOCK_SIZE);
+    byte * iv = new byte[BLOCK_SIZE];
+    memcpy(iv, cipher_text + cipher_text_len, BLOCK_SIZE);
 
-    recovered_text.resize(cipher_text.size() - BLOCK_SIZE);
+    recovered_text_len = cipher_text_len;
 
-    typename T::Decryption cfbDecryption(key, KEY_SIZE, iv);
-    cfbDecryption.ProcessData((byte *) &recovered_text[0], (byte *) &cipher_text[0]
-                              , cipher_text.size() - BLOCK_SIZE);
+    typename T::Decryption decryption;
+    decryption.SetKeyWithIV(key, KEY_SIZE, iv, BLOCK_SIZE);
+
+    auto sink = CryptoPP::ArraySink(recovered_text, recovered_text_len);
+    CryptoPP::ArraySource(cipher_text, cipher_text_len, true
+                          ,new CryptoPP::StreamTransformationFilter(decryption, new CryptoPP::Redirector(sink)));
+
+    recovered_text_len = sink.TotalPutLength();
+
+    delete[] iv;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const security::secure_string &plain_text
-                                                         , security::secure_string &cipher_text)
+void CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+                                                         , byte * cipher_text, byte_len & cipher_text_len)
 {
-    byte iv[BLOCK_SIZE];
+    byte * iv = new byte[BLOCK_SIZE];
     random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
-    float length = ceil((float)plain_text.size() / (float)BLOCK_SIZE) * BLOCK_SIZE;
+    float length = ceil((float)plain_text_len / (float)BLOCK_SIZE) * BLOCK_SIZE;
 
-    cipher_text.resize(length);
+    cipher_text_len = length;
 
-    typename T::Encryption encryption(key, KEY_SIZE, iv);
-    encryption.ProcessData((byte *) &cipher_text[0], (byte *) &plain_text[0], length);
+    typename T::Encryption encryption;
+    encryption.SetKeyWithIV(key, KEY_SIZE, iv, BLOCK_SIZE);
 
-    cipher_text.append((char *) iv, BLOCK_SIZE);
+    auto sink = CryptoPP::ArraySink(cipher_text, cipher_text_len);
+    CryptoPP::ArraySource(plain_text, plain_text_len, true
+            ,new CryptoPP::StreamTransformationFilter(encryption, new CryptoPP::Redirector(sink)));
+
+    cipher_text_len = sink.TotalPutLength();
+    memcpy(cipher_text + cipher_text_len, iv, BLOCK_SIZE);
+    delete[] iv;
 }
 
 #endif //CRYPTOBENCH_CRYPTOPP_CIPHER_FACTORY_HPP
