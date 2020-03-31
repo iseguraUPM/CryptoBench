@@ -13,6 +13,7 @@
 #include <CryptoBench/libgcrypt_cipher_factory.hpp>
 
 #include <CryptoBench/secure_string.hpp>
+#include <include/CryptoBench/cipher_exception.hpp>
 
 typedef struct CipherTestParam
 {
@@ -95,11 +96,22 @@ protected:
 
 TEST_P(CipherFactoryFixture, EncryptDecrypt)
 {
-    CipherPtr cipher_ptr = GetParam().factory.getCipher(GetParam().cipher);
-    if (cipher_ptr == nullptr)
+    CipherPtr cipher_ptr = nullptr;
+    try
+    {
+        cipher_ptr = GetParam().factory.getCipher(GetParam().cipher);
+    }
+    catch (UnsupportedCipherException &ex)
     {
         auto desc = getCipherDescription(GetParam().cipher);
-        std::cout << "Cipher not supported";
+        std::cout << "Cipher " << cipherDescriptionToString(desc) << " not supported\n";
+        SUCCEED();
+        return;
+    }
+
+    if (cipher_ptr == nullptr)
+    {
+        std::cout << "Cipher not implemented\n";
         FAIL();
     }
 
@@ -137,8 +149,8 @@ TEST_P(CipherFactoryFixture, EncryptDecrypt)
 
     std::cout << "\nCipher text: " << output << "\n";
 
-    byte * recovered = new byte[output_len];
-    byte_len recovered_len = output_len;
+    byte * recovered = new byte[input_len];
+    byte_len recovered_len = input_len;
     startChrono();
     cipher_ptr->decrypt(key, output, output_len, recovered, recovered_len);
     stopChrono();

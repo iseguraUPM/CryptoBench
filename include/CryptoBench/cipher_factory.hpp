@@ -285,9 +285,10 @@ public:
     /**
      * Returns the requested cipher
      * @param cipher
-     * @return The requested cipher or nullptr if it's not supported
+     * @return The requested cipher
+     * @throws UnsupportedCipherException if the cipher is not supported
      */
-    virtual CipherPtr getCipher(Cipher cipher) = 0;
+    virtual CipherPtr getCipher(Cipher cipher) noexcept(false) = 0;
 };
 
 
