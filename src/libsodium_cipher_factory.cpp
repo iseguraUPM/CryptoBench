@@ -10,6 +10,7 @@
 
 #include <sodium.h>
 
+#include "CryptoBench/cipher_exception.hpp"
 #include "CryptoBench/random_bytes.hpp"
 
 class AesGCMCipher : public SymmetricCipher
@@ -25,17 +26,17 @@ public:
         auto req_len = plain_text_len + crypto_aead_aes256gcm_ABYTES + crypto_aead_aes256gcm_NPUBBYTES;
         if (cipher_text_len < req_len)
         {
-            throw std::runtime_error("Libsodium Error: Invalid cipher text length. Must be at least: " + req_len);
+            throw std::runtime_error("Libsodium Error: Invalid cipher text length. Must be at least: " + std::to_string(req_len));
         }
 
-        unsigned char nonce[crypto_aead_aes256gcm_NPUBBYTES];
+        auto nonce = std::shared_ptr<byte[]>(new byte[crypto_aead_aes256gcm_NPUBBYTES]);
 
-        random_bytes.generateRandomBytes(nonce, crypto_aead_aes256gcm_NPUBBYTES);
+        random_bytes.generateRandomBytes(nonce.get(), crypto_aead_aes256gcm_NPUBBYTES);
 
         crypto_aead_aes256gcm_encrypt(cipher_text, &cipher_text_len
-                , plain_text, plain_text_len, nullptr, 0, nullptr, nonce, key);
+                , plain_text, plain_text_len, nullptr, 0, nullptr, nonce.get(), key);
 
-        memcpy(cipher_text + cipher_text_len, nonce, crypto_aead_aes256gcm_NPUBBYTES);
+        memcpy(cipher_text + cipher_text_len, nonce.get(), crypto_aead_aes256gcm_NPUBBYTES);
     }
 
     inline void decrypt(const byte* key, const byte * cipher_text, byte_len cipher_text_len
@@ -44,14 +45,14 @@ public:
         auto req_len = cipher_text_len - crypto_aead_aes256gcm_NPUBBYTES;
         if (recovered_text_len < req_len)
         {
-            throw std::runtime_error("Libsodium Error: Invalid recovered text length. Must be at least: " + req_len);
+            throw std::runtime_error("Libsodium Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
         }
 
-        byte nonce[crypto_aead_aes256gcm_NPUBBYTES];
-        memcpy(nonce, cipher_text + cipher_text_len, crypto_aead_aes256gcm_NPUBBYTES);
+        auto nonce = std::shared_ptr<byte[]>(new byte[crypto_aead_aes256gcm_NPUBBYTES]);
+        memcpy(nonce.get(), cipher_text + cipher_text_len, crypto_aead_aes256gcm_NPUBBYTES);
 
         int err = crypto_aead_aes256gcm_decrypt(recovered_text, &recovered_text_len
-                , nullptr, cipher_text, cipher_text_len - crypto_aead_aes256gcm_NPUBBYTES, nullptr, 0, nonce, key);
+                , nullptr, cipher_text, cipher_text_len, nullptr, 0, nonce.get(), key);
         if (err != 0)
         {
             throw std::runtime_error("Libsodium: AES decrypt failure");
@@ -77,7 +78,7 @@ private:
 CipherPtr LibsodiumCipherFactory::getCipher(Cipher cipher)
 {
     if (cipher != Cipher::AES_256_GCM) {
-        return nullptr;
+        throw UnsupportedCipherException();
     }
 
     return CipherPtr(new AesGCMCipher());
