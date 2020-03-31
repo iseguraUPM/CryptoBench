@@ -8,6 +8,7 @@
 
 #include <cstring>
 
+#include "CryptoBench/cipher_exception.hpp"
 #include "CryptoBench/random_bytes.hpp"
 
 #define CIPHER(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len>(alg, mode)))
@@ -64,7 +65,7 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     byte_len padded_plain_text_len = plain_text_len + BLOCK_LEN - (plain_text_len % BLOCK_LEN);
     if (cipher_text_len < padded_plain_text_len)
     {
-        throw std::runtime_error("Libgcrypt Error: Invalid cipher text length. Must be at least: " + padded_plain_text_len);
+        throw std::runtime_error("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
     }
 
     gcry_cipher_hd_t handle;
@@ -76,20 +77,22 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
     handleGcryError(err);
 
-    byte iv[BLOCK_LEN];
-    random_bytes.generateRandomBytes(iv, BLOCK_LEN);
-    err = gcry_cipher_setiv(handle, iv, BLOCK_LEN);
+    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_LEN]);
+    random_bytes.generateRandomBytes(iv.get(), BLOCK_LEN);
+    err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
 
-    byte padded_plain_text[padded_plain_text_len];
-    memcpy(padded_plain_text, plain_text, plain_text_len);
+    auto padded_plain_text = std::shared_ptr<byte[]>(new byte[padded_plain_text_len]);
+    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
 
-    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text, padded_plain_text_len);
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
     handleGcryError(err);
+
+    cipher_text_len = padded_plain_text_len;
 
     gcry_cipher_close(handle);
 
-    memcpy(cipher_text + cipher_text_len, iv, BLOCK_LEN);
+    memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_LEN);
 }
 
 template<int KEY_LEN, int BLOCK_LEN>
@@ -99,7 +102,7 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     auto req_len = cipher_text_len - BLOCK_LEN;
     if (recovered_text_len < cipher_text_len - BLOCK_LEN)
     {
-        throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + req_len);
+        throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
     }
 
     gcry_cipher_hd_t handle;
@@ -111,10 +114,10 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
     handleGcryError(err);
 
-    byte iv[BLOCK_LEN];
-    memcpy(iv, cipher_text + cipher_text_len, BLOCK_LEN);
+    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_LEN]);
+    memcpy(iv.get(), cipher_text + cipher_text_len, BLOCK_LEN);
 
-    err = gcry_cipher_setiv(handle, iv, BLOCK_LEN);
+    err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
 
     recovered_text_len = cipher_text_len - BLOCK_LEN;
@@ -198,7 +201,53 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_OFB:
             return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
-        default:
-            return nullptr;
+        case Cipher::AES_128_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_OFB:
+            throw UnsupportedCipherException();
     }
 }
