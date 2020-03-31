@@ -44,6 +44,7 @@ protected:
     byte key256[32];
     byte key192[24];
     byte key128[16];
+    byte key448[448/8];
 
     const byte * input;
     byte_len input_len;
@@ -114,16 +115,19 @@ TEST_P(CipherFactoryFixture, EncryptDecrypt)
     else if (cipher_ptr->getKeyLen() == 128/8)
     {
         key = key128;
-    } else
+    } else if (cipher_ptr->getKeyLen() == 448/8)
+    {
+        key = key448;
+    }
+    else
     {
         std::cout << "Missing key for " << cipher_ptr->getKeyLen() * 8 << " bits\n";
         FAIL();
     }
 
 
-    byte_len output_len = 128;
+    byte_len output_len = input_len * 2;
     byte * output = new byte[output_len];
-
 
     startChrono();
     cipher_ptr->encrypt(key, input, input_len, output, output_len);
@@ -133,8 +137,8 @@ TEST_P(CipherFactoryFixture, EncryptDecrypt)
 
     std::cout << "\nCipher text: " << output << "\n";
 
-    byte * recovered = new byte[input_len];
-    byte_len recovered_len = input_len;
+    byte * recovered = new byte[output_len];
+    byte_len recovered_len = output_len;
     startChrono();
     cipher_ptr->decrypt(key, output, output_len, recovered, recovered_len);
     stopChrono();
