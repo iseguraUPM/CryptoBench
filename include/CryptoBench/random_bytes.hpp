@@ -14,13 +14,18 @@ public:
 
     explicit inline RandomBytes()
     {
+#ifndef CRYPTOBENCH_NO_RANDOM
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         random_engine = std::default_random_engine(seed);
         byte_uniform_dist = std::uniform_int_distribution<unsigned char>(0, 0xFF);
+#endif
     }
 
     inline void generateRandomBytes(unsigned char *arr, int len) noexcept(false)
     {
+#ifdef CRYPTOBENCH_NO_RANDOM
+        memset(arr, 0xFF, len);
+#else
         if (len <= 0)
             throw std::runtime_error("Random bytes length must be greater than 0");
 
@@ -28,6 +33,7 @@ public:
         {
             arr[i] = byte_uniform_dist(random_engine);
         }
+#endif
     }
 
 private:
