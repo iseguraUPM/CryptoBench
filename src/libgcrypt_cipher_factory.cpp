@@ -330,51 +330,28 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_OFB:
             return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_128_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CBC:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_ECB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_OFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CTR:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_GCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CBC:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_ECB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_OFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CTR:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_GCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CBC:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_ECB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_OFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CTR:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_GCM:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CBC:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CFB:
-            throw UnsupportedCipherException();
         case Cipher::SM4_ECB:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CTR:
-            throw UnsupportedCipherException();
         case Cipher::SM4_OFB:
             throw UnsupportedCipherException();
     }
