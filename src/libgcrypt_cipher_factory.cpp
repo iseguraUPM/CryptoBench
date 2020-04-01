@@ -12,6 +12,7 @@
 #include "CryptoBench/random_bytes.hpp"
 
 #define CIPHER(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len>(alg, mode)))
+#define CIPHER_AUTH(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptAuthCipher<key_len, block_len>(alg, mode)))
 
 #define KEY_128 16
 #define KEY_192 24
@@ -20,7 +21,10 @@
 #define KEY_448 56
 
 #define BLK_128 16
+#define BLK_96 12
 #define BLK_64 8
+
+#define TAG_LEN 16
 
 template <int KEY_LEN, int BLOCK_LEN>
 class LibgcryptCipher : public SymmetricCipher
@@ -35,7 +39,6 @@ public:
     virtual void decrypt(const byte key[KEY_LEN], const byte * cipher_text, byte_len cipher_text_len
                          , byte * recovered_text, byte_len & recovered_text_len);
 
-    void handleGcryError(gcry_error_t err);
 
     inline int getKeyLen() override
     {
@@ -51,12 +54,136 @@ protected:
 
     RandomBytes random_bytes;
 
-private:
+    void handleGcryError(gcry_error_t err);
 
     const gcry_cipher_algos alg;
     const gcry_cipher_modes mode;
 
 };
+
+template <int KEY_LEN, int BLOCK_LEN>
+class LibgcryptAuthCipher : public LibgcryptCipher<KEY_LEN, BLOCK_LEN>
+{
+public:
+
+    explicit inline LibgcryptAuthCipher(gcry_cipher_algos alg, gcry_cipher_modes mode) : LibgcryptCipher<KEY_LEN, BLOCK_LEN>(alg, mode)
+    {}
+
+    virtual void encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
+                         , byte * cipher_text, byte_len & cipher_text_len);
+
+    virtual void decrypt(const byte key[KEY_LEN], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len);
+
+};
+
+template<int KEY_LEN, int BLOCK_LEN>
+void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], const byte *plain_text, byte_len plain_text_len
+                                                      , byte *cipher_text, byte_len &cipher_text_len)
+{
+    using super = LibgcryptCipher<KEY_LEN, BLOCK_LEN>;
+
+    byte_len padded_plain_text_len;
+    if (super::mode == GCRY_CIPHER_MODE_OCB)
+    {
+        padded_plain_text_len = plain_text_len + GCRY_OCB_BLOCK_LEN - (plain_text_len % GCRY_OCB_BLOCK_LEN);
+    }
+    else
+    {
+        padded_plain_text_len = plain_text_len + BLOCK_LEN - (plain_text_len % BLOCK_LEN);
+    }
+
+    if (cipher_text_len < padded_plain_text_len)
+    {
+        throw std::runtime_error("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
+    }
+
+    gcry_cipher_hd_t handle;
+    gcry_error_t err = 0;
+
+    err = gcry_cipher_open(&handle, super::alg, super::mode, 0);
+    super::handleGcryError(err);
+
+    /*byte single[] = { 0xFF };
+    err = gcry_cipher_authenticate(handle, single, 1);
+    super::handleGcryError(err);
+    */
+
+    err = gcry_cipher_setkey(handle, key, KEY_LEN);
+    super::handleGcryError(err);
+
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
+    super::random_bytes.generateRandomBytes(iv.get(), BLOCK_LEN);
+    err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
+    super::handleGcryError(err);
+
+    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
+    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
+
+    err = gcry_cipher_final(handle);
+    super::handleGcryError(err);
+
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
+    super::handleGcryError(err);
+
+    auto tag = std::shared_ptr<byte>(new byte[TAG_LEN], std::default_delete<byte[]>());
+    err = gcry_cipher_gettag(handle, iv.get(), TAG_LEN);
+    super::handleGcryError(err);
+
+    cipher_text_len = padded_plain_text_len;
+
+    gcry_cipher_close(handle);
+
+    memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_LEN);
+    cipher_text_len += BLOCK_LEN;
+    memcpy(cipher_text + cipher_text_len, tag.get(), TAG_LEN);
+    cipher_text_len += TAG_LEN;
+}
+
+template<int KEY_LEN, int BLOCK_LEN>
+void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const byte *cipher_text, byte_len cipher_text_len
+                                                      , byte *recovered_text, byte_len &recovered_text_len)
+{
+    using super = LibgcryptCipher<KEY_LEN, BLOCK_LEN>;
+
+    auto req_len = BLOCK_LEN + TAG_LEN;
+    if (recovered_text_len < req_len)
+    {
+        throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
+    }
+
+    gcry_cipher_hd_t handle;
+    gcry_error_t err = 0;
+
+    err = gcry_cipher_open(&handle, super::alg, super::mode, 0);
+    super::handleGcryError(err);
+
+    err = gcry_cipher_setkey(handle, key, KEY_LEN);
+    super::handleGcryError(err);
+
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_LEN - TAG_LEN, BLOCK_LEN);
+
+    auto tag = std::shared_ptr<byte>(new byte[TAG_LEN], std::default_delete<byte[]>());
+    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_LEN, TAG_LEN);
+
+    err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
+    super::handleGcryError(err);
+
+    err = gcry_cipher_final(handle);
+    super::handleGcryError(err);
+
+    recovered_text_len = cipher_text_len - BLOCK_LEN - TAG_LEN;
+    err = gcry_cipher_decrypt(handle, recovered_text, recovered_text_len
+                              , cipher_text, cipher_text_len - BLOCK_LEN - TAG_LEN);
+    super::handleGcryError(err);
+
+    err = gcry_cipher_checktag(handle, tag.get(), TAG_LEN);
+    super::handleGcryError(err);
+
+    gcry_cipher_close(handle);
+}
+
 
 template<int KEY_LEN, int BLOCK_LEN>
 void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
@@ -77,12 +204,12 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
     handleGcryError(err);
 
-    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_LEN]);
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), BLOCK_LEN);
     err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
 
-    auto padded_plain_text = std::shared_ptr<byte[]>(new byte[padded_plain_text_len]);
+    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
     memcpy(padded_plain_text.get(), plain_text, plain_text_len);
 
     err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
@@ -93,14 +220,15 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     gcry_cipher_close(handle);
 
     memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_LEN);
+    cipher_text_len += BLOCK_LEN;
 }
 
 template<int KEY_LEN, int BLOCK_LEN>
 void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const byte * cipher_text, byte_len cipher_text_len
                                                   , byte * recovered_text, byte_len & recovered_text_len)
 {
-    auto req_len = cipher_text_len - BLOCK_LEN;
-    if (recovered_text_len < cipher_text_len - BLOCK_LEN)
+    auto req_len = BLOCK_LEN;
+    if (recovered_text_len < req_len)
     {
         throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
     }
@@ -114,8 +242,8 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
     handleGcryError(err);
 
-    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_LEN]);
-    memcpy(iv.get(), cipher_text + cipher_text_len, BLOCK_LEN);
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_LEN, BLOCK_LEN);
 
     err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
@@ -150,13 +278,13 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CTR:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CTR);
         case Cipher::AES_256_OCB:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OCB);
+            return CIPHER_AUTH(KEY_256, BLK_96, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OCB);
         case Cipher::AES_256_OFB:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_256_XTS:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_256_GCM:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_GCM);
+            return CIPHER_AUTH(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_192_CBC:
             return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_192_CFB:
@@ -168,9 +296,9 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_OFB:
             return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_192_OCB:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OCB);
+            return CIPHER(KEY_192, GCRY_OCB_BLOCK_LEN, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OCB);
         case Cipher::AES_192_GCM:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_GCM);
+            return CIPHER_AUTH(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_128_CBC:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_128_ECB:
@@ -180,11 +308,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_OFB:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_128_OCB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OCB);
+            return CIPHER_AUTH(KEY_128, GCRY_OCB_BLOCK_LEN, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OCB);
         case Cipher::AES_128_XTS:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_128_GCM:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_GCM);
+            return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_GCM);
         case Cipher::SEED_CBC:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CBC);
         case Cipher::SEED_CFB:
