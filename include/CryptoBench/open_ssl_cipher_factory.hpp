@@ -6,6 +6,7 @@
 #define CRYPTOBENCH_OPEN_SSL_CIPHER_FACTORY_HPP
 
 #include "cipher_factory.hpp"
+#include "cipher_exception.hpp"
 
 class OpenSSLCipherFactory : public CipherFactory
 {
@@ -13,6 +14,14 @@ public:
 
     CipherPtr getCipher(Cipher cipher) override;
 
+};
+
+class OpenSSLException : public GenericCipherException
+{
+public:
+    explicit inline OpenSSLException(char * msg) : GenericCipherException("Libgcrypt error: ", msg) {}
+
+    explicit inline OpenSSLException(const std::basic_string<char> &msg) : GenericCipherException("Libgcrypt error: ", msg.c_str()) {}
 };
 
 #endif //CRYPTOBENCH_OPEN_SSL_CIPHER_FACTORY_HPP
