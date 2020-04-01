@@ -36,6 +36,12 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
             return BOTAN_CIPHER(KEY_256, 16, "AES-256/XTS");
         case Cipher::AES_256_GCM:
             return BOTAN_CIPHER(KEY_256, 16, "AES-256/GCM");
+        case Cipher::AES_256_CCM:
+            return BOTAN_CIPHER(KEY_256, 16, "AES-256/CCM");
+        case Cipher::AES_256_EAX:
+            return BOTAN_CIPHER(KEY_256, 16, "AES-256/EAX");
+        case Cipher::AES_256_SIV:
+            return BOTAN_CIPHER(KEY_256, 16, "AES-256/SIV");
         case Cipher::AES_192_CBC:
             return BOTAN_CIPHER(KEY_192, 16, "AES-192/CBC");
         case Cipher::AES_192_CFB:
