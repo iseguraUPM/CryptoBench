@@ -95,7 +95,7 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
 
     if (cipher_text_len < padded_plain_text_len)
     {
-        throw std::runtime_error("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
+        throw LibgcryptException("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
     }
 
     gcry_cipher_hd_t handle;
@@ -149,7 +149,7 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], c
     auto req_len = BLOCK_LEN + TAG_LEN;
     if (recovered_text_len < req_len)
     {
-        throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
+        throw LibgcryptException("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
     }
 
     gcry_cipher_hd_t handle;
@@ -192,7 +192,7 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     byte_len padded_plain_text_len = plain_text_len + BLOCK_LEN - (plain_text_len % BLOCK_LEN);
     if (cipher_text_len < padded_plain_text_len)
     {
-        throw std::runtime_error("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
+        throw LibgcryptException("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
     }
 
     gcry_cipher_hd_t handle;
@@ -230,7 +230,7 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     auto req_len = BLOCK_LEN;
     if (recovered_text_len < req_len)
     {
-        throw std::runtime_error("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
+        throw LibgcryptException("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
     }
 
     gcry_cipher_hd_t handle;
@@ -261,7 +261,7 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::handleGcryError(gcry_error_t err)
 {
     if (err != GPG_ERR_NO_ERROR)
     {
-        throw std::runtime_error("Libgcrypt error: " + std::string(gcry_strsource(err)) + " " + std::string(gcry_strerror(err)));
+        throw LibgcryptException(std::string(gcry_strsource(err)) + " " + std::string(gcry_strerror(err)));
     }
 }
 
