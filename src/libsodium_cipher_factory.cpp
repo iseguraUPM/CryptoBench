@@ -10,7 +10,6 @@
 
 #include <sodium.h>
 
-#include "CryptoBench/cipher_exception.hpp"
 #include "CryptoBench/random_bytes.hpp"
 
 class AesGCMCipher : public SymmetricCipher
@@ -26,7 +25,7 @@ public:
         auto req_len = plain_text_len + crypto_aead_aes256gcm_ABYTES + crypto_aead_aes256gcm_NPUBBYTES;
         if (cipher_text_len < req_len)
         {
-            throw std::runtime_error("Libsodium Error: Invalid cipher text length. Must be at least: " + std::to_string(req_len));
+            throw LibsodiumException("Invalid cipher text length. Must be at least: " + std::to_string(req_len));
         }
 
         auto nonce = std::shared_ptr<byte>(new byte[crypto_aead_aes256gcm_NPUBBYTES], std::default_delete<byte[]>());
@@ -45,7 +44,7 @@ public:
         auto req_len = crypto_aead_aes256gcm_NPUBBYTES;
         if (recovered_text_len < req_len)
         {
-            throw std::runtime_error("Libsodium Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
+            throw LibsodiumException("Invalid recovered text length. Must be at least: " + std::to_string(req_len));
         }
 
         auto nonce = std::shared_ptr<byte>(new byte[crypto_aead_aes256gcm_NPUBBYTES], std::default_delete<byte[]>());
@@ -55,7 +54,7 @@ public:
                 , nullptr, cipher_text, cipher_text_len, nullptr, 0, nonce.get(), key);
         if (err != 0)
         {
-            throw std::runtime_error("Libsodium: AES decrypt failure");
+            throw LibsodiumException("AES decrypt failure");
         }
     }
 
