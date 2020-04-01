@@ -12,6 +12,8 @@ class GenericCipherException : public std::exception
 public:
     explicit GenericCipherException(const char* msg);
 
+    GenericCipherException(const char* tag, const char* msg);
+
     const char * what() const noexcept override;
 
 private:
