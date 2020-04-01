@@ -45,7 +45,8 @@ protected:
     byte key256[32];
     byte key192[24];
     byte key128[16];
-    byte key448[448/8];
+    byte key448[56];
+    byte key512[64];
 
     const byte * input;
     byte_len input_len;
@@ -115,21 +116,22 @@ TEST_P(CipherFactoryFixture, EncryptDecrypt)
         FAIL();
     }
 
-    byte * key = nullptr;
-    if (cipher_ptr->getKeyLen() == 256/8)
+    byte *key = nullptr;
+    if (cipher_ptr->getKeyLen() == 256 / 8)
     {
         key = key256;
-    }
-    else if (cipher_ptr->getKeyLen() == 192/8)
+    } else if (cipher_ptr->getKeyLen() == 192 / 8)
     {
         key = key192;
-    }
-    else if (cipher_ptr->getKeyLen() == 128/8)
+    } else if (cipher_ptr->getKeyLen() == 128 / 8)
     {
         key = key128;
-    } else if (cipher_ptr->getKeyLen() == 448/8)
+    } else if (cipher_ptr->getKeyLen() == 448 / 8)
     {
         key = key448;
+    } else if (cipher_ptr->getKeyLen() == 512 / 8)
+    {
+        key = key512;
     }
     else
     {
