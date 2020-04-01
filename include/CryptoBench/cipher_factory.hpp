@@ -25,6 +25,10 @@
 #define STR_OFB "OFB"
 #define STR_OCB "OCB"
 #define STR_XTS "XTS"
+#define STR_CCM "CCM"
+#define STR_EAX "EAX"
+#define STR_SIV "SIV"
+
 
 using CipherPtr = std::shared_ptr<SymmetricCipher>;
 
@@ -38,6 +42,9 @@ enum class Cipher
     AES_256_OFB,
     AES_256_XTS,
     AES_256_GCM,
+    AES_256_CCM,
+    AES_256_EAX,
+    AES_256_SIV,
 
     AES_192_CBC,
     AES_192_CFB,
@@ -77,6 +84,9 @@ enum class Cipher
     ARIA_128_CTR,
     ARIA_128_GCM,
 
+    //CAMELLIA,
+
+
     SM4_CBC,
     SM4_CFB,
     SM4_ECB,
@@ -87,6 +97,10 @@ enum class Cipher
     SEED_CFB,
     SEED_ECB,
     SEED_OFB,
+
+    //THREEDES,
+
+    //TWOFISH,
 
     BLOWFISH_CBC,
     BLOWFISH_ECB,
@@ -102,6 +116,9 @@ const Cipher CIPHER_LIST[] = {Cipher::AES_256_CBC,
                               Cipher::AES_256_OFB,
                               Cipher::AES_256_XTS,
                               Cipher::AES_256_GCM,
+                              Cipher::AES_256_CCM,
+                              Cipher::AES_256_EAX,
+                              Cipher::AES_256_SIV,
 
                               Cipher::AES_192_CBC,
                               Cipher::AES_192_CFB,
@@ -178,6 +195,12 @@ inline CipherDescription getCipherDescription(Cipher cipher)
             return std::make_tuple(STR_AES, 256, STR_XTS);
         case Cipher::AES_256_GCM:
             return std::make_tuple(STR_AES, 256, STR_GCM);
+        case Cipher::AES_256_CCM:
+            return std::make_tuple(STR_AES, 256, STR_CCM);
+        case Cipher::AES_256_EAX:
+            return std::make_tuple(STR_AES, 256, STR_EAX);
+        case Cipher::AES_256_SIV:
+            return std::make_tuple(STR_AES, 256, STR_SIV);
         case Cipher::AES_192_CBC:
             return std::make_tuple(STR_AES, 192, STR_CBC);
         case Cipher::AES_192_CFB:

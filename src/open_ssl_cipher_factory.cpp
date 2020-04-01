@@ -8,6 +8,7 @@
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
+#include <CryptoBench/cipher_exception.hpp>
 
 #include "CryptoBench/random_bytes.hpp"
 
@@ -259,6 +260,12 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_AUTH(KEY_256, BLK_96, EVP_aes_256_ocb());
         case Cipher::AES_256_XTS:
             return CIPHER_128_BLOCK(KEY_512, EVP_aes_256_xts()); // XTS mode expects key doubled
+        case Cipher::AES_256_CCM:
+            return CIPHER_AUTH(KEY_256, BLK_128, EVP_aes_256_ccm());
+        case Cipher::AES_256_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_SIV:
+            throw UnsupportedCipherException();
         case Cipher::AES_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, EVP_aes_256_gcm());
         case Cipher::AES_192_CBC:

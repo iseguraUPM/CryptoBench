@@ -354,5 +354,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SM4_CTR:
         case Cipher::SM4_OFB:
             throw UnsupportedCipherException();
+        default:
+            throw UnsupportedCipherException();
     }
 }
