@@ -16,6 +16,8 @@
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 #include <CryptoBench/libsodium_cipher_factory.hpp>
 #include <CryptoBench/cryptopp_cipher_factory.hpp>
+#include <CryptoBench/cipher_exception.hpp>
+#include <CryptoBench/libgcrypt_cipher_factory.hpp>
 
 struct BenchmarkResult
 {
@@ -30,7 +32,7 @@ struct BenchmarkResult
 
     BenchmarkResult() = default;
 
-    BenchmarkResult(int key_len, int block_len, unsigned int input_size, std::string lib, std::string cipher, std::string mode)
+    BenchmarkResult(int key_len, int block_len, unsigned int input_size, std::string &lib, std::string cipher, std::string mode)
     : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_lib(std::move(lib)), cipher_alg(std::move(cipher)), block_mode(std::move(mode))
     {
         encrypt_time_micro = 0;
@@ -38,55 +40,51 @@ struct BenchmarkResult
     }
 };
 
-
-void generateRandomBytes(byte *arr, int len) noexcept (false)
-{
-    if (len <= 0)
-        throw std::runtime_error("Random bytes length must be greater than 0");
-    for (int i = 0; i < len; i++)
-    {
-        arr[i] = rand() % 0xFF;
-    }
-}
-
-
-void benchmarkCipher(const byte* key, const security::secure_string &input_text, CipherPtr &cipher, BenchmarkResult &result)
+void benchmarkCipher(const byte* key, const std::string &input_text, CipherPtr &cipher, BenchmarkResult &result)
 {
     using namespace std::chrono;
 
-    security::secure_string output_text;
+    auto plain_text = new byte[input_text.size()];
+    byte_len plaintext_len = input_text.size();
+    memcpy(plain_text, input_text.data(), input_text.size());
+
+    auto cipher_text = new byte[input_text.size() * 2];
+    byte_len cipher_text_len = input_text.size() * 2;
 
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    cipher->encrypt(key, input_text, output_text);
+    cipher->encrypt(key, plain_text, plaintext_len, cipher_text, cipher_text_len);
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
     result.encrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
-    security::secure_string recovered_text;
+    auto recovered_text = new byte[input_text.size() + cipher->getBlockLen()];
+    byte_len recovered_text_len = input_text.size() + cipher->getBlockLen();
 
     t1 = high_resolution_clock::now();
-    cipher->decrypt(key, output_text, recovered_text);
+    cipher->decrypt(key, cipher_text, cipher_text_len, recovered_text, recovered_text_len);
     t2 = high_resolution_clock::now();
 
     result.decrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    delete[] recovered_text;
+    delete[] cipher_text;
+    delete[] plain_text;
 }
 
 void recordResult(BenchmarkResult &result, std::ofstream &file_stream)
 {
-    file_stream << result.cipher_alg << ","
+    std::stringstream result_line;
+    result_line << result.cipher_alg << ","
     << result.key_bits << ","
     << result.block_mode << ","
     << result.block_bits << ","
     << result.input_size << ","
     << result.encrypt_time_micro << ","
     << result.decrypt_time_micro << "\n";
-    std::cout << result.cipher_alg << ","
-              << result.key_bits << ","
-              << result.block_mode << ","
-              << result.block_bits << ","
-              << result.input_size << ","
-              << result.encrypt_time_micro << ","
-              << result.decrypt_time_micro << "\n";
+
+    file_stream << result_line.str();
+#ifdef CRYPTOBENCH_DEBUG
+    std::cout << result_line.str();
+#endif
 }
 
 int min(std::size_t x, std::size_t y)
@@ -111,6 +109,15 @@ void generateInputBinaryFile(const std::string& filename, std::size_t target_siz
     }
 }
 
+void generateRandomBytes(byte *arr, int len) noexcept (false)
+{
+    if (len <= 0)
+        throw std::runtime_error("Random bytes length must be greater than 0");
+    for (int i = 0; i < len; i++)
+    {
+        arr[i] = random() % 0xFF;
+    }
+}
 
 void generateInputTextFile(const std::string& filename, int line_count)
 {
@@ -130,7 +137,7 @@ void generateInputTextFile(const std::string& filename, int line_count)
     textFile.close();
 }
 
-int readInputFile(std::ifstream &t, security::secure_string &input_text)
+int readInputFile(std::ifstream &t, std::string &input_text)
 {
     t.seekg(0, std::ios::end);
     int len = t.tellg();
@@ -141,28 +148,40 @@ int readInputFile(std::ifstream &t, security::secure_string &input_text)
     return len;
 }
 
-void runSingleBenchmark(std::string library, Cipher cipher, CipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+void runSingleBenchmark(std::string &library, Cipher cipher, CipherFactory &factory, const std::string &input_text, int input_size, std::ofstream &resultsFile)
 {
-    CipherPtr cipherptr = factory.getCipher(cipher);
-    if (cipherptr == nullptr)
+    auto desc = getCipherDescription(cipher);
+    CipherPtr cipherptr;
+    try
     {
-        auto desc = getCipherDescription(cipher);
-        std::cerr << library << " cipher not found: " + cipherDescriptionToString(desc) + "\n";
+        cipherptr = factory.getCipher(cipher);
+    } catch (UnsupportedCipherException &ex)
+    {
+        //std::cout << library << " cipher not supported: " + cipherDescriptionToString(desc) + "\n";;
         return;
     }
 
-    byte key [cipherptr->getKeyLen()];
-    generateRandomBytes(key, cipherptr->getKeyLen());
+    if (cipherptr == nullptr)
+    {
+        BenchmarkResult result = BenchmarkResult(std::get<1>(desc), 0, input_size, library, std::get<0>(desc) + " NOT FOUND", std::get<2>(desc));
+        recordResult(result, resultsFile);
+        //std::cerr << library << " cipher not found: " + cipherDescriptionToString(desc) + "\n";
+        return;
+    }
 
-    auto desc = getCipherDescription(cipher);
+
+
+    auto key = std::shared_ptr<byte>(new byte[cipherptr->getKeyLen()], std::default_delete<byte[]>());
+    generateRandomBytes(key.get(), cipherptr->getKeyLen());
+
     BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, library, std::get<0>(desc), std::get<2>(desc));
-
-    benchmarkCipher(key, input_text, cipherptr, result);
+    benchmarkCipher(key.get(), input_text, cipherptr, result);
     recordResult(result, resultsFile);
 }
 
-void runFullBenchmark(std::string lib_name, CipherFactory &factory, const security::secure_string &input_text, int input_size, std::ofstream &resultsFile)
+void runFullBenchmark(std::string lib_name, CipherFactory &factory, const std::string &input_text, int input_size, std::ofstream &resultsFile)
 {
+    std::cout << "Running " << lib_name << " " << std::to_string(input_size) << " bytes random file benchmark\n" << std::endl;
     const int rounds = 3;
     for(Cipher cipher : CIPHER_LIST)
     {
@@ -175,24 +194,25 @@ void runFullBenchmark(std::string lib_name, CipherFactory &factory, const securi
 
 void runBenchmarkWSize(int bytes, std::ofstream &results_file)
 {
-    security::secure_string input_text;
+    std::string input_text;
     std::ifstream input_file;
 
     generateInputBinaryFile("input.bin", bytes);
     input_file.open("input.bin", std::ios::binary);
     int input_size = readInputFile(input_file, input_text);
+    input_file.close();
 
-    std::cout << "Running " << input_size << " bytes random file benchmark\n";
     OpenSSLCipherFactory open_ssl_cipher_factory;
     runFullBenchmark("openssl", open_ssl_cipher_factory, input_text, input_size, results_file);
 
     LibsodiumCipherFactory libsodium_cipher_factory;
     runFullBenchmark("libsodium", libsodium_cipher_factory, input_text, input_size, results_file);
 
-    CryptoppCipherFactory cryptopp_cipher_factory;
-    runFullBenchmark("cryptopp", cryptopp_cipher_factory, input_text, input_size, results_file);
+    LibgcryptCipherFactory libgcrypt_cipher_factory;
+    runFullBenchmark("libgcrypt", libgcrypt_cipher_factory, input_text, input_size, results_file);
 
-    input_file.close();
+    //CryptoppCipherFactory cryptopp_cipher_factory;
+    //runFullBenchmark("cryptopp", cryptopp_cipher_factory, input_text, input_size, results_file);
 }
 
 int main(int argc, char** arv)
@@ -220,7 +240,7 @@ int main(int argc, char** arv)
             4096,
             8192,
             16384,
-            32768,
+            /*32768,
             65536,
             131072,
             262144,
@@ -232,10 +252,10 @@ int main(int argc, char** arv)
             16777216,
             33554432,
             67108864,
-            134217728//,
-            //268435456,
-            //536870912,
-            //1073741824
+            134217728,
+            268435456,
+            536870912,
+            1073741824*/
     };
 
     std::cout << "Starting...\n";
@@ -257,7 +277,6 @@ int main(int argc, char** arv)
 
     for (int b : sizes)
     {
-
         runBenchmarkWSize(b, resultsFile);
     }
 
