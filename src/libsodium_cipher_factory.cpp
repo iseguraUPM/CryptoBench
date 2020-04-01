@@ -29,7 +29,7 @@ public:
             throw std::runtime_error("Libsodium Error: Invalid cipher text length. Must be at least: " + std::to_string(req_len));
         }
 
-        auto nonce = std::shared_ptr<byte[]>(new byte[crypto_aead_aes256gcm_NPUBBYTES]);
+        auto nonce = std::shared_ptr<byte>(new byte[crypto_aead_aes256gcm_NPUBBYTES], std::default_delete<byte[]>());
 
         random_bytes.generateRandomBytes(nonce.get(), crypto_aead_aes256gcm_NPUBBYTES);
 
@@ -42,13 +42,13 @@ public:
     inline void decrypt(const byte* key, const byte * cipher_text, byte_len cipher_text_len
                         , byte * recovered_text, byte_len & recovered_text_len) override
     {
-        auto req_len = cipher_text_len - crypto_aead_aes256gcm_NPUBBYTES;
+        auto req_len = crypto_aead_aes256gcm_NPUBBYTES;
         if (recovered_text_len < req_len)
         {
             throw std::runtime_error("Libsodium Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
         }
 
-        auto nonce = std::shared_ptr<byte[]>(new byte[crypto_aead_aes256gcm_NPUBBYTES]);
+        auto nonce = std::shared_ptr<byte>(new byte[crypto_aead_aes256gcm_NPUBBYTES], std::default_delete<byte[]>());
         memcpy(nonce.get(), cipher_text + cipher_text_len, crypto_aead_aes256gcm_NPUBBYTES);
 
         int err = crypto_aead_aes256gcm_decrypt(recovered_text, &recovered_text_len
