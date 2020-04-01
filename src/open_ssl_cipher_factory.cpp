@@ -12,7 +12,7 @@
 #include "CryptoBench/random_bytes.hpp"
 
 #define CIPHER(key_len, block_len, cipher) (CipherPtr(new OpenSSLCipher<key_len, block_len>(cipher)))
-#define CIPHER_GCM(key_len, block_len, cipher) (CipherPtr(new OpenSSLGCMCipher<key_len, block_len>(cipher)))
+#define CIPHER_AUTH(key_len, block_len, cipher) (CipherPtr(new OpenSSLAuthCipher<key_len, block_len>(cipher)))
 
 #define KEY_128 16
 #define KEY_192 24
@@ -21,6 +21,7 @@
 #define KEY_448 56
 
 #define BLK_128 16
+#define BLK_96 12
 #define BLK_64 8
 
 #define TAG_LEN 16
@@ -60,11 +61,11 @@ protected:
 
 
 template <int KEY_SIZE, int BLOCK_SIZE>
-class OpenSSLGCMCipher : public OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>
+class OpenSSLAuthCipher : public OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>
 {
 public:
 
-    explicit inline OpenSSLGCMCipher(const EVP_CIPHER* cipher_mode) : OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>(cipher_mode) {}
+    explicit inline OpenSSLAuthCipher(const EVP_CIPHER* cipher_mode) : OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>(cipher_mode) {}
 
     void encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
                  , byte * cipher_text, byte_len & cipher_text_len) override;
@@ -77,8 +78,8 @@ public:
 using EVP_CIPHER_CTX_free_ptr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>;
 
 template<int KEY_SIZE, int BLOCK_SIZE>
-void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
-                                                     , byte * cipher_text, byte_len & cipher_text_len)
+void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                                                      , byte * cipher_text, byte_len & cipher_text_len)
 {
     auto req_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE) + BLOCK_SIZE + TAG_LEN;
     if (cipher_text_len < req_len)
@@ -88,7 +89,7 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  
 
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_SIZE]);
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::random_bytes.generateRandomBytes(iv.get(), BLOCK_SIZE);
 
     auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
@@ -114,7 +115,7 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    auto tag = std::shared_ptr<byte[]>(new byte[TAG_LEN]);
+    auto tag = std::shared_ptr<byte>(new byte[TAG_LEN], std::default_delete<byte[]>());
     if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, TAG_LEN, tag.get()))
     {
         throw std::runtime_error("OpenSSL Error: " + std::string(ERR_error_string(ERR_get_error(), nullptr)));
@@ -129,15 +130,15 @@ void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
-void OpenSSLGCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
-                                                     , byte * recovered_text, byte_len & recovered_text_len)
+void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                      , byte * recovered_text, byte_len & recovered_text_len)
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    auto tag = std::shared_ptr<byte[]>(new byte[TAG_LEN]);
+    auto tag = std::shared_ptr<byte>(new byte[TAG_LEN], std::default_delete<byte[]>());
     memcpy(tag.get(), cipher_text + cipher_text_len - TAG_LEN, TAG_LEN);
 
-    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_SIZE]);
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - TAG_LEN - BLOCK_SIZE, BLOCK_SIZE);
 
     auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
@@ -185,7 +186,7 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  con
 
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_SIZE]);
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), BLOCK_SIZE);
 
     if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, NULL, key, iv.get()))
@@ -215,7 +216,7 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], cons
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    auto iv = std::shared_ptr<byte[]>(new byte[BLOCK_SIZE]);
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_SIZE, BLOCK_SIZE);
 
     if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
@@ -255,11 +256,11 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_OFB:
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_256_ofb());
         case Cipher::AES_256_OCB:
-            return CIPHER_128_BLOCK(KEY_256, EVP_aes_256_ocb());
+            return CIPHER_AUTH(KEY_256, BLK_96, EVP_aes_256_ocb());
         case Cipher::AES_256_XTS:
             return CIPHER_128_BLOCK(KEY_512, EVP_aes_256_xts()); // XTS mode expects key doubled
         case Cipher::AES_256_GCM:
-            return CIPHER_GCM(KEY_256, BLK_128, EVP_aes_256_gcm());
+            return CIPHER_AUTH(KEY_256, BLK_128, EVP_aes_256_gcm());
         case Cipher::AES_192_CBC:
             return CIPHER_128_BLOCK(KEY_192, EVP_aes_192_cbc());
         case Cipher::AES_192_CFB:
@@ -271,9 +272,9 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_OFB:
             return CIPHER_128_BLOCK(KEY_192, EVP_aes_192_ofb());
         case Cipher::AES_192_OCB:
-            return CIPHER_128_BLOCK(KEY_192, EVP_aes_256_ocb());
+            return CIPHER_AUTH(KEY_192, BLK_96, EVP_aes_256_ocb());
         case Cipher::AES_192_GCM:
-            return CIPHER_GCM(KEY_192, BLK_128, EVP_aes_192_gcm());
+            return CIPHER_AUTH(KEY_192, BLK_128, EVP_aes_192_gcm());
         case Cipher::AES_128_CBC:
             return CIPHER_128_BLOCK(KEY_128, EVP_aes_128_cbc());
         case Cipher::AES_128_CFB:
@@ -285,11 +286,11 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_OFB:
             return CIPHER_128_BLOCK(KEY_128, EVP_aes_128_ofb());
         case Cipher::AES_128_OCB:
-            return CIPHER_128_BLOCK(KEY_128, EVP_aes_128_ocb());
+            return CIPHER_AUTH(KEY_128, BLK_96, EVP_aes_128_ocb());
         case Cipher::AES_128_XTS:
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_128_xts()); // XTS mode expects key doubled
         case Cipher::AES_128_GCM:
-            return CIPHER_GCM(KEY_128, BLK_128, EVP_aes_128_gcm());
+            return CIPHER_AUTH(KEY_128, BLK_128, EVP_aes_128_gcm());
         case Cipher::ARIA_256_CBC:
             return CIPHER_128_BLOCK(KEY_256, EVP_aria_256_cbc());
         case Cipher::ARIA_256_CFB:
@@ -301,7 +302,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_OFB:
             return CIPHER_128_BLOCK(KEY_256, EVP_aria_256_ofb());
         case Cipher::ARIA_256_GCM:
-            return CIPHER_GCM(KEY_256, BLK_128, EVP_aria_256_gcm());
+            return CIPHER_AUTH(KEY_256, BLK_128, EVP_aria_256_gcm());
         case Cipher::ARIA_192_CBC:
             return CIPHER_128_BLOCK(KEY_192, EVP_aria_192_cbc());
         case Cipher::ARIA_192_CFB:
@@ -313,7 +314,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_OFB:
             return CIPHER_128_BLOCK(KEY_192, EVP_aria_192_ofb());
         case Cipher::ARIA_192_GCM:
-            return CIPHER_GCM(KEY_192, BLK_128, EVP_aria_192_gcm());
+            return CIPHER_AUTH(KEY_192, BLK_128, EVP_aria_192_gcm());
         case Cipher::ARIA_128_CBC:
             return CIPHER_128_BLOCK(KEY_128, EVP_aria_128_cbc());
         case Cipher::ARIA_128_CFB:
@@ -325,7 +326,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_OFB:
             return CIPHER_128_BLOCK(KEY_128, EVP_aria_128_ofb());
         case Cipher::ARIA_128_GCM:
-            return CIPHER_GCM(KEY_128, BLK_128, EVP_aria_128_gcm());
+            return CIPHER_AUTH(KEY_128, BLK_128, EVP_aria_128_gcm());
         case Cipher::SM4_CBC:
             return CIPHER_128_BLOCK(KEY_128, EVP_sm4_cbc());
         case Cipher::SM4_CFB:
