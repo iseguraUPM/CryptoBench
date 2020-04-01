@@ -63,18 +63,18 @@ void encryptDecryptBenchmark(const byte* key, const std::string &input_text, Cip
     auto cipher_text = new byte[input_text.size() * 2];
     byte_len cipher_text_len = input_text.size() * 2;
 
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    steady_clock::time_point t1 = steady_clock::now();
     cipher->encrypt(key, plain_text, plaintext_len, cipher_text, cipher_text_len);
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    steady_clock::time_point t2 = steady_clock::now();
 
     result.encrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
     auto recovered_text = new byte[input_text.size() + cipher->getBlockLen()];
     byte_len recovered_text_len = input_text.size() + cipher->getBlockLen();
 
-    t1 = high_resolution_clock::now();
+    t1 = steady_clock::now();
     cipher->decrypt(key, cipher_text, cipher_text_len, recovered_text, recovered_text_len);
-    t2 = high_resolution_clock::now();
+    t2 = steady_clock::now();
 
     result.decrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     delete[] recovered_text;
