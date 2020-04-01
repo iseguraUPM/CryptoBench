@@ -14,6 +14,7 @@
 
 #include <CryptoBench/secure_string.hpp>
 #include <include/CryptoBench/cipher_exception.hpp>
+#include <include/CryptoBench/botan_cipher_factory.hpp>
 
 typedef struct CipherTestParam
 {
@@ -30,6 +31,7 @@ OpenSSLCipherFactory openssl_cipher_factory;
 LibsodiumCipherFactory libsodium_cipher_factory;
 CryptoppCipherFactory cryptopp_cipher_factory;
 LibgcryptCipherFactory libgcrypt_cipher_factory;
+BotanCipherFactory botan_cipher_factory;
 
 class CipherFactoryFixture : public testing::TestWithParam<CipherTestParam>
 {
@@ -225,6 +227,20 @@ std::vector<CipherTestParam> libgcryptParams()
     return test_params;
 }
 
+std::vector<CipherTestParam> botanParams()
+{
+    std::vector<CipherTestParam> test_params;
+
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        std::string test_name = "BOTAN_" + cipherDescriptionToString(desc);
+        test_params.emplace_back(test_name, cipher, botan_cipher_factory);
+    }
+
+    return test_params;
+}
+
 INSTANTIATE_TEST_CASE_P(OpenSSL, CipherFactoryFixture, testing::ValuesIn(openSSLParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
@@ -232,3 +248,5 @@ INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumP
 INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(Libgcrypt, CipherFactoryFixture, testing::ValuesIn(libgcryptParams()), CipherFactoryFixture::PrintToStringParamName());
+
+INSTANTIATE_TEST_CASE_P(Botan, CipherFactoryFixture, testing::ValuesIn(botanParams()), CipherFactoryFixture::PrintToStringParamName());

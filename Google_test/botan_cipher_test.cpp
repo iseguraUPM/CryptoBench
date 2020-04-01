@@ -55,7 +55,7 @@ protected:
 
 };
 
-TEST_F(BotanFixture, Full)
+TEST_F(BotanFixture, CBC)
 {
 
     const byte * input = reinterpret_cast<const byte *>("The quick brown fox jumps over the lazy dog");
@@ -80,13 +80,14 @@ TEST_F(BotanFixture, Full)
     Botan::secure_vector<uint8_t> pt((const char *)&input[0], (const char *)&input[0] + input_len);
     enc->finish(pt);
 
-    std::cout << "\nENCRIPTION: " << " " << pt.data() << "\n";
+    //std::cout << "\nENCRIPTION: " << " " << pt.data() << "\n";
 
     ciphertext = pt.data();
     ciphertext_len = pt.size();
 
     memcpy(ciphertext + ciphertext_len, iv_enc, 128/8);
     ciphertext_len += 128/8;
+    delete[] iv_enc;
 
 
     byte * iv_dec = new byte[128/8];
@@ -101,9 +102,96 @@ TEST_F(BotanFixture, Full)
 
     dec->finish(ct);
 
+    //std::cout << "DECRIPTION: " << " " << ct.data() << "\n";
+
+
+    delete[] iv_dec;
+
+}
+
+TEST_F(BotanFixture, ECB_PREVIOUS)
+{
+
+    std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create("AES-256/ECB", Botan::ENCRYPTION);
+    enc->set_key(&key256[0], 256/8);
+    enc->start(&iv128[0], 128/8);
+
+    // Copy input data to a buffer that will be encrypted
+    Botan::secure_vector<uint8_t> pt((const char *)&input_text[0], (const char *)&input_text[0] + input_text_len);
+    enc->finish(pt);
+
+    std::cout << "\nENCRIPTION: " << " " << pt.data() << "\n";
+
+
+    int cipher_text_len = pt.size();
+    unsigned char * cipher_text = pt.data();
+
+    std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create("AES-256/ECB", Botan::DECRYPTION);
+    dec->set_key(&key256[0], 256/8);
+    dec->start(&iv128[0], 128/8);
+
+
+    Botan::secure_vector<uint8_t> ct((const char *)&cipher_text[0], (const char *)&cipher_text[0] + cipher_text_len);
+
+    dec->finish(ct);
+
     std::cout << "DECRIPTION: " << " " << ct.data() << "\n";
 
 
+
+}
+
+
+TEST_F(BotanFixture, ECB)
+{
+    const byte * input = reinterpret_cast<const byte *>("The quick brown fox jumps over the lazy dog");
+    byte_len input_len = std::strlen(reinterpret_cast<const char *>(input));
+
+    byte * ciphertext = new byte[input_len];
+    byte_len ciphertext_len = input_len;
+
+    byte * recovered = new byte[input_len];
+    byte_len recovered_len = input_len;
+
+    key256 = generateRandomBytes(128/8);
+
+    byte * iv_enc = new byte[128/8];
+    iv_enc = generateRandomBytes(128/8);
+
+    std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create("AES-128/ECB", Botan::ENCRYPTION);
+    enc->set_key(&key256[0], 128/8);
+    enc->start(&iv_enc[0], 128/8);
+
+    // Copy input data to a buffer that will be encrypted
+    Botan::secure_vector<uint8_t> pt((const char *)&input[0], (const char *)&input[0] + input_len);
+    enc->finish(pt);
+
+    //std::cout << "\nENCRIPTION: " << " " << pt.data() << "\n";
+
+    ciphertext = pt.data();
+    ciphertext_len = pt.size();
+
+    memcpy(ciphertext + ciphertext_len, iv_enc, 128/8);
+    ciphertext_len += 128/8;
+    delete[] iv_enc;
+
+
+    byte * iv_dec = new byte[128/8];
+    memcpy(iv_dec, ciphertext + ciphertext_len - 128/8, 128/8);
+    ciphertext_len -= 128/8;
+
+    std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create("AES-128/ECB", Botan::DECRYPTION);
+    dec->set_key(&key256[0], 256/8);
+    dec->start(&iv_dec[0], 128/8);
+
+    Botan::secure_vector<uint8_t> ct((const char *)&ciphertext[0], (const char *)&ciphertext[0] + ciphertext_len);
+
+    dec->finish(ct);
+
+    //std::cout << "DECRIPTION: " << " " << ct.data() << "\n";
+
+
+    delete[] iv_dec;
 
 }
 
@@ -115,8 +203,8 @@ TEST_F(BotanFixture, Implementation)
     const byte * input = reinterpret_cast<const byte *>("The quick brown fox jumps over the lazy dog");
     byte_len input_len = std::strlen(reinterpret_cast<const char *>(input));
 
-    byte * ciphertext = new byte[input_len];
-    byte_len ciphertext_len = input_len;
+    byte * ciphertext = new byte[64];
+    byte_len ciphertext_len = 64;
 
     byte * recovered = new byte[input_len];
     byte_len recovered_len = input_len;
