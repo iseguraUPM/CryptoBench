@@ -11,6 +11,7 @@
 #define KEY_256 32
 #define KEY_512 64
 #define KEY_448 56
+#define KEY_512 64
 
 #define BOTAN_CIPHER(key_len, block_len, cipher) (CipherPtr(new BotanCipher<key_len, block_len>(cipher)))
 
@@ -33,7 +34,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_OFB:
             return BOTAN_CIPHER(KEY_256, 16, "AES-256/OFB");
         case Cipher::AES_256_XTS:
-            return BOTAN_CIPHER(KEY_256, 12, "AES-256/XTS");
+            return BOTAN_CIPHER(KEY_512, 16, "AES-256/XTS");
         case Cipher::AES_256_GCM:
             return BOTAN_CIPHER(KEY_256, 16, "AES-256/GCM");
         case Cipher::AES_256_CCM:
@@ -41,7 +42,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_EAX:
             return BOTAN_CIPHER(KEY_256, 16, "AES-256/EAX");
         case Cipher::AES_256_SIV:
-            return BOTAN_CIPHER(KEY_256, 32, "AES-256/SIV");
+            return BOTAN_CIPHER(KEY_512, 16, "AES-256/SIV");
         case Cipher::AES_192_CBC:
             return BOTAN_CIPHER(KEY_192, 16, "AES-192/CBC");
         case Cipher::AES_192_CFB:
@@ -69,7 +70,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_OCB:
             return BOTAN_CIPHER(KEY_128, 12, "AES-128/OCB");
         case Cipher::AES_128_XTS:
-            return BOTAN_CIPHER(KEY_128, 12, "AES-128/XTS");
+            return BOTAN_CIPHER(KEY_256, 16, "AES-128/XTS");
         case Cipher::AES_128_GCM:
             return BOTAN_CIPHER(KEY_128, 12, "AES-128/GCM");
         case Cipher::ARIA_256_CBC:
