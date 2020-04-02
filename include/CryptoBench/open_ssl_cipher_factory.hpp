@@ -12,6 +12,8 @@ class OpenSSLCipherFactory : public CipherFactory
 {
 public:
 
+    explicit OpenSSLCipherFactory();
+
     CipherPtr getCipher(Cipher cipher) override;
 
 };
@@ -19,6 +21,7 @@ public:
 class OpenSSLException : public GenericCipherException
 {
 public:
+
     explicit inline OpenSSLException(const std::basic_string<char> &msg) : GenericCipherException("OpenSSL error: ", msg.c_str()) {}
 };
 
