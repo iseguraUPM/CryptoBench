@@ -12,10 +12,10 @@
 #include <CryptoBench/libsodium_cipher_factory.hpp>
 #include <CryptoBench/cryptopp_cipher_factory.hpp>
 #include <CryptoBench/libgcrypt_cipher_factory.hpp>
+#include <CryptoBench/botan_cipher_factory.hpp>
 
 #include <CryptoBench/secure_string.hpp>
-#include <include/CryptoBench/cipher_exception.hpp>
-#include <include/CryptoBench/botan_cipher_factory.hpp>
+
 
 OpenSSLCipherFactory openssl_cipher_factory;
 LibsodiumCipherFactory libsodium_cipher_factory;
