@@ -20,7 +20,6 @@ public:
 class LibsodiumException : public GenericCipherException
 {
 public:
-    explicit inline LibsodiumException(char * msg) : GenericCipherException("Libsodium error: ", msg) {}
 
     explicit inline LibsodiumException(const std::basic_string<char> &msg) : GenericCipherException("Libsodium error: ", msg.c_str()) {}
 };
