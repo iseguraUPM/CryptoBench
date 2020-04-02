@@ -419,7 +419,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_XTS:
             throw UnsupportedCipherException();
         case Cipher::AES_192_CCM:
-            return CIPHER_AUTH(KEY_192, BLK_128, EVP_aes_192_ccm());
+            return CIPHER_CCM(KEY_192, BLK_128, EVP_aes_192_ccm());
         case Cipher::AES_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_192_OCB:
@@ -443,7 +443,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_XTS:
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_128_xts()); // XTS mode expects key doubled
         case Cipher::AES_128_CCM:
-            return CIPHER_AUTH(KEY_128, BLK_128, EVP_aes_128_ccm());
+            return CIPHER_CCM(KEY_128, BLK_128, EVP_aes_128_ccm());
         case Cipher::AES_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_128_OCB:
@@ -468,7 +468,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_XTS:
             throw UnsupportedCipherException();
         case Cipher::ARIA_256_CCM:
-            return CIPHER_AUTH(KEY_256, BLK_128, EVP_aria_256_ccm());
+            return CIPHER_CCM(KEY_256, BLK_128, EVP_aria_256_ccm());
         case Cipher::ARIA_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::ARIA_256_OCB:
