@@ -29,7 +29,7 @@
 #define AEAD_IV_LEN 12
 
 #define CCM_TAG_LEN 12
-#define CCM_IV_LEN 8
+#define CCM_IV_LEN 7
 
 #define CIPHER_128_BLOCK(key_len, cipher) (CIPHER(key_len, BLK_128, cipher))
 
@@ -108,12 +108,8 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  
     }
 
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
-
-    auto iv = std::shared_ptr<byte>(new byte[CCM_IV_LEN], std::default_delete<byte[]>());
-    OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::random_bytes.generateRandomBytes(iv.get(), CCM_IV_LEN);
-
     auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
-    if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
+    if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, nullptr, nullptr, nullptr))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
@@ -124,6 +120,13 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE],  
     }
 
     EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_SET_TAG, CCM_TAG_LEN, nullptr);
+
+    auto iv = std::shared_ptr<byte>(new byte[CCM_IV_LEN], std::default_delete<byte[]>());
+    OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::random_bytes.generateRandomBytes(iv.get(), CCM_IV_LEN);
+    if (1 != EVP_EncryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
 
     int out_len1 = cipher_text_len;
     /*if (1 != EVP_EncryptUpdate(ctx.get(), nullptr, &out_len1, nullptr, plain_text_len))
@@ -162,17 +165,18 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], c
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
+    auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
+    if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, nullptr, nullptr))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
     auto tag = std::shared_ptr<byte>(new byte[CCM_TAG_LEN], std::default_delete<byte[]>());
     memcpy(tag.get(), cipher_text + cipher_text_len - CCM_TAG_LEN, CCM_TAG_LEN);
 
     auto iv = std::shared_ptr<byte>(new byte[CCM_IV_LEN], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - CCM_TAG_LEN - CCM_IV_LEN, CCM_IV_LEN);
 
-    auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
-    if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
-    {
-        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
-    }
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_SET_IVLEN, CCM_IV_LEN, nullptr))
     {
@@ -184,24 +188,23 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], c
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
+    if (1 != EVP_DecryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
     int out_len1 = recovered_text_len;
     /*if (1 != EVP_DecryptUpdate(ctx.get(), nullptr, &out_len1, nullptr, cipher_text_len))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }*/
 
-    if (1 != EVP_DecryptUpdate(ctx.get(), recovered_text, &out_len1, cipher_text, cipher_text_len - CCM_TAG_LEN - CCM_IV_LEN))
-    {
-        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
-    }
-
-    int out_len2 = recovered_text_len - out_len1;
-    if (1 >= EVP_DecryptFinal_ex(ctx.get(), recovered_text + out_len1, &out_len2))
+    if (0 >= EVP_DecryptUpdate(ctx.get(), recovered_text, &out_len1, cipher_text, cipher_text_len - CCM_TAG_LEN - CCM_IV_LEN))
     {
         throw OpenSSLException("Verification failed");
     }
 
-    recovered_text_len = out_len1 + out_len2;
+    recovered_text_len = out_len1;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE>
@@ -216,19 +219,26 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE>::encrypt(const byte key[KEY_SIZE], 
 
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
-    auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
-    OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::random_bytes.generateRandomBytes(iv.get(), AEAD_IV_LEN);
-
     auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
-    if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
+    if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, nullptr, nullptr, nullptr))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
+
+    EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_TAG, AEAD_TAG_LEN, nullptr);
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_IVLEN, AEAD_IV_LEN, nullptr))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
+
+    auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
+    OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::random_bytes.generateRandomBytes(iv.get(), AEAD_IV_LEN);
+    if (1 != EVP_EncryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
 
     int out_len1 = cipher_text_len;
     if (1 != EVP_EncryptUpdate(ctx.get(), cipher_text, &out_len1, plain_text, plain_text_len))
@@ -261,6 +271,11 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], 
                                                       , byte * recovered_text, byte_len & recovered_text_len)
 {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
+    auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
+    if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, nullptr, nullptr))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
 
     auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
     memcpy(tag.get(), cipher_text + cipher_text_len - AEAD_TAG_LEN, AEAD_TAG_LEN);
@@ -268,13 +283,14 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE>::decrypt(const byte key[KEY_SIZE], 
     auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - AEAD_TAG_LEN - AEAD_IV_LEN, AEAD_IV_LEN);
 
-    auto &cipher_mode = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE>::cipher_mode;
-    if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
+    //EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_TAG, AEAD_TAG_LEN, nullptr);
+
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_IVLEN, AEAD_IV_LEN, nullptr))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
 
-    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_IVLEN, AEAD_IV_LEN, nullptr))
+    if (1 != EVP_DecryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
@@ -491,7 +507,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_XTS:
             throw UnsupportedCipherException();
         case Cipher::ARIA_192_CCM:
-            return CIPHER_AUTH(KEY_192, BLK_128, EVP_aria_192_ccm());
+            return CIPHER_CCM(KEY_192, BLK_128, EVP_aria_192_ccm());
         case Cipher::ARIA_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::ARIA_192_OCB:
@@ -514,7 +530,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_XTS:
             throw UnsupportedCipherException();
         case Cipher::ARIA_128_CCM:
-            return CIPHER_AUTH(KEY_128, BLK_128, EVP_aria_128_ccm());
+            return CIPHER_CCM(KEY_128, BLK_128, EVP_aria_128_ccm());
         case Cipher::ARIA_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::ARIA_128_OCB:
