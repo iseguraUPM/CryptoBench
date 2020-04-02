@@ -19,9 +19,7 @@ public:
 class OpenSSLException : public GenericCipherException
 {
 public:
-    explicit inline OpenSSLException(char * msg) : GenericCipherException("Libgcrypt error: ", msg) {}
-
-    explicit inline OpenSSLException(const std::basic_string<char> &msg) : GenericCipherException("Libgcrypt error: ", msg.c_str()) {}
+    explicit inline OpenSSLException(const std::basic_string<char> &msg) : GenericCipherException("OpenSSL error: ", msg.c_str()) {}
 };
 
 #endif //CRYPTOBENCH_OPEN_SSL_CIPHER_FACTORY_HPP
