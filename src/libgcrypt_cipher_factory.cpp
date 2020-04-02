@@ -24,7 +24,7 @@
 #define BLK_96 12
 #define BLK_64 8
 
-#define TAG_LEN 16
+#define AEAD_TAG_LEN 16
 
 template <int KEY_LEN, int BLOCK_LEN>
 class LibgcryptCipher : public SymmetricCipher
@@ -126,8 +126,8 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
     err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
     super::handleGcryError(err);
 
-    auto tag = std::shared_ptr<byte>(new byte[TAG_LEN], std::default_delete<byte[]>());
-    err = gcry_cipher_gettag(handle, iv.get(), TAG_LEN);
+    auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
+    err = gcry_cipher_gettag(handle, iv.get(), AEAD_TAG_LEN);
     super::handleGcryError(err);
 
     cipher_text_len = padded_plain_text_len;
@@ -136,8 +136,8 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
 
     memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_LEN);
     cipher_text_len += BLOCK_LEN;
-    memcpy(cipher_text + cipher_text_len, tag.get(), TAG_LEN);
-    cipher_text_len += TAG_LEN;
+    memcpy(cipher_text + cipher_text_len, tag.get(), AEAD_TAG_LEN);
+    cipher_text_len += AEAD_TAG_LEN;
 }
 
 template<int KEY_LEN, int BLOCK_LEN>
@@ -146,7 +146,7 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], c
 {
     using super = LibgcryptCipher<KEY_LEN, BLOCK_LEN>;
 
-    auto req_len = BLOCK_LEN + TAG_LEN;
+    auto req_len = BLOCK_LEN + AEAD_TAG_LEN;
     if (recovered_text_len < req_len)
     {
         throw LibgcryptException("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
@@ -162,10 +162,10 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], c
     super::handleGcryError(err);
 
     auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
-    memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_LEN - TAG_LEN, BLOCK_LEN);
+    memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_LEN - AEAD_TAG_LEN, BLOCK_LEN);
 
-    auto tag = std::shared_ptr<byte>(new byte[TAG_LEN], std::default_delete<byte[]>());
-    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_LEN, TAG_LEN);
+    auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
+    memcpy(tag.get(), cipher_text + cipher_text_len - AEAD_TAG_LEN, AEAD_TAG_LEN);
 
     err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
     super::handleGcryError(err);
@@ -173,12 +173,12 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], c
     err = gcry_cipher_final(handle);
     super::handleGcryError(err);
 
-    recovered_text_len = cipher_text_len - BLOCK_LEN - TAG_LEN;
+    recovered_text_len = cipher_text_len - BLOCK_LEN - AEAD_TAG_LEN;
     err = gcry_cipher_decrypt(handle, recovered_text, recovered_text_len
-                              , cipher_text, cipher_text_len - BLOCK_LEN - TAG_LEN);
+                              , cipher_text, cipher_text_len - BLOCK_LEN - AEAD_TAG_LEN);
     super::handleGcryError(err);
 
-    err = gcry_cipher_checktag(handle, tag.get(), TAG_LEN);
+    err = gcry_cipher_checktag(handle, tag.get(), AEAD_TAG_LEN);
     super::handleGcryError(err);
 
     gcry_cipher_close(handle);
