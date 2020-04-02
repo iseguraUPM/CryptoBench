@@ -69,28 +69,40 @@ template<int KEY_SIZE, int BLOCK_SIZE, typename T>
 void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
                                                       , byte * recovered_text, byte_len & recovered_text_len)
 {
-    byte iv[BLOCK_SIZE];
+    byte * iv = new byte[BLOCK_SIZE];
     memcpy(iv, cipher_text + cipher_text_len, BLOCK_SIZE);
 
     recovered_text_len = cipher_text_len;
 
-    typename T::Decryption cfbDecryption(key, KEY_SIZE, iv);
-    cfbDecryption.ProcessData(recovered_text, cipher_text, cipher_text_len);
+    typename T::Decryption decryption;
+    decryption.SetKeyWithIV(key, KEY_SIZE, iv, BLOCK_SIZE);
+
+    auto sink = CryptoPP::ArraySink(recovered_text, recovered_text_len);
+    CryptoPP::ArraySource(cipher_text, cipher_text_len, true
+                          ,new CryptoPP::StreamTransformationFilter(decryption, new CryptoPP::Redirector(sink)));
+
+    recovered_text_len = sink.TotalPutLength();
+
+    delete[] iv;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, typename T>
 void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
                                                       , byte * cipher_text, byte_len & cipher_text_len)
 {
-    byte iv[BLOCK_SIZE];
+    byte * iv = new byte[BLOCK_SIZE];
     random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
 
-    cipher_text_len = plain_text_len;
+    typename T::Encryption encryption;
+    encryption.SetKeyWithIV(key, KEY_SIZE, iv, BLOCK_SIZE);
 
-    typename T::Encryption encryption(key, KEY_SIZE, iv);
-    encryption.ProcessData(cipher_text, plain_text, plain_text_len);
+    auto sink = CryptoPP::ArraySink(cipher_text, cipher_text_len);
+    CryptoPP::ArraySource(plain_text, plain_text_len, true
+                          ,new CryptoPP::StreamTransformationFilter(encryption, new CryptoPP::Redirector(sink)));
 
+    cipher_text_len = sink.TotalPutLength();
     memcpy(cipher_text + cipher_text_len, iv, BLOCK_SIZE);
+    delete[] iv;
 }
 
 
@@ -155,14 +167,15 @@ void CryptoppCipherECB<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE
 
     typename T::Encryption encryption(key, KEY_SIZE);
     encryption.ProcessData(cipher_text, plain_text, cipher_text_len);
+
 }
 
-template <int KEY_SIZE, int BLOCK_SIZE, typename T>
-class CryptoppCipherCBC : public SymmetricCipher
+template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+class CryptoppCipherAuth : public SymmetricCipher
 {
 public:
 
-    explicit CryptoppCipherCBC();
+    explicit CryptoppCipherAuth();
 
     virtual void encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
                          , byte * cipher_text, byte_len & cipher_text_len) override;
@@ -179,64 +192,61 @@ protected:
 
 };
 
-template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::CryptoppCipherCBC()
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::CryptoppCipherAuth()
 {
 
 }
 
-template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-int CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::getBlockLen()
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+int CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::getBlockLen()
 {
     return BLOCK_SIZE;
 }
 
-template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-int CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::getKeyLen()
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+int CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::getKeyLen()
 {
     return KEY_SIZE;
 }
 
-template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
-                                                         , byte * recovered_text, byte_len & recovered_text_len)
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+void CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                          , byte * recovered_text, byte_len & recovered_text_len)
 {
-    byte * iv = new byte[BLOCK_SIZE];
-    memcpy(iv, cipher_text + cipher_text_len, BLOCK_SIZE);
+    byte * iv = new byte[IV_SIZE];
+    memcpy(iv, cipher_text + cipher_text_len, IV_SIZE);
 
     recovered_text_len = cipher_text_len;
 
     typename T::Decryption decryption;
-    decryption.SetKeyWithIV(key, KEY_SIZE, iv, BLOCK_SIZE);
+    decryption.SetKeyWithIV(key, KEY_SIZE, iv, IV_SIZE);
 
     auto sink = CryptoPP::ArraySink(recovered_text, recovered_text_len);
     CryptoPP::ArraySource(cipher_text, cipher_text_len, true
-                          ,new CryptoPP::StreamTransformationFilter(decryption, new CryptoPP::Redirector(sink)));
+                          ,new CryptoPP::AuthenticatedDecryptionFilter(decryption, new CryptoPP::Redirector(sink)));
 
     recovered_text_len = sink.TotalPutLength();
 
     delete[] iv;
 }
 
-template<int KEY_SIZE, int BLOCK_SIZE, typename T>
-void CryptoppCipherCBC<KEY_SIZE, BLOCK_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
-                                                         , byte * cipher_text, byte_len & cipher_text_len)
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+void CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
+                                                          , byte * cipher_text, byte_len & cipher_text_len)
 {
-    byte * iv = new byte[BLOCK_SIZE];
-    random_bytes.generateRandomBytes(iv, BLOCK_SIZE);
-    float length = ceil((float)plain_text_len / (float)BLOCK_SIZE) * BLOCK_SIZE;
-
-    cipher_text_len = length;
+    byte * iv = new byte[IV_SIZE];
+    random_bytes.generateRandomBytes(iv, IV_SIZE);
 
     typename T::Encryption encryption;
-    encryption.SetKeyWithIV(key, KEY_SIZE, iv, BLOCK_SIZE);
+    encryption.SetKeyWithIV(key, KEY_SIZE, iv, IV_SIZE);
 
     auto sink = CryptoPP::ArraySink(cipher_text, cipher_text_len);
     CryptoPP::ArraySource(plain_text, plain_text_len, true
-            ,new CryptoPP::StreamTransformationFilter(encryption, new CryptoPP::Redirector(sink)));
+            ,new CryptoPP::AuthenticatedEncryptionFilter(encryption, new CryptoPP::Redirector(sink)));
 
     cipher_text_len = sink.TotalPutLength();
-    memcpy(cipher_text + cipher_text_len, iv, BLOCK_SIZE);
+    memcpy(cipher_text + cipher_text_len, iv, IV_SIZE);
     delete[] iv;
 }
 
