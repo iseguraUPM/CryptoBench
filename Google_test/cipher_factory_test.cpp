@@ -47,6 +47,7 @@ protected:
     byte key256[32];
     byte key192[24];
     byte key128[16];
+    byte key384[48];
     byte key448[56];
     byte key512[64];
 
@@ -73,6 +74,7 @@ protected:
         input_len = std::strlen(reinterpret_cast<const char *>(input));
         RandomBytes random_bytes;
         random_bytes.generateRandomBytes(key256, 32);
+        random_bytes.generateRandomBytes(key384, 48);
         random_bytes.generateRandomBytes(key192, 24);
         random_bytes.generateRandomBytes(key128, 16);
     }
@@ -128,6 +130,9 @@ TEST_P(CipherFactoryFixture, EncryptDecrypt)
     } else if (cipher_ptr->getKeyLen() == 128 / 8)
     {
         key = key128;
+    } else if (cipher_ptr->getKeyLen() == 384 / 8)
+    {
+        key = key384;
     } else if (cipher_ptr->getKeyLen() == 448 / 8)
     {
         key = key448;
