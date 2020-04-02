@@ -25,6 +25,7 @@
 #define BLK_64 8
 
 #define AEAD_TAG_LEN 16
+#define AEAD_IV_LEN 12
 
 template <int KEY_LEN, int BLOCK_LEN>
 class LibgcryptCipher : public SymmetricCipher
@@ -83,15 +84,7 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
 {
     using super = LibgcryptCipher<KEY_LEN, BLOCK_LEN>;
 
-    byte_len padded_plain_text_len;
-    if (super::mode == GCRY_CIPHER_MODE_OCB)
-    {
-        padded_plain_text_len = plain_text_len + GCRY_OCB_BLOCK_LEN - (plain_text_len % GCRY_OCB_BLOCK_LEN);
-    }
-    else
-    {
-        padded_plain_text_len = plain_text_len + BLOCK_LEN - (plain_text_len % BLOCK_LEN);
-    }
+    byte_len padded_plain_text_len = plain_text_len + BLOCK_LEN - (plain_text_len % BLOCK_LEN);
 
     if (cipher_text_len < padded_plain_text_len)
     {
@@ -112,10 +105,16 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
     super::handleGcryError(err);
 
-    auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
-    super::random_bytes.generateRandomBytes(iv.get(), BLOCK_LEN);
-    err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
+    auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
+    super::random_bytes.generateRandomBytes(iv.get(), AEAD_IV_LEN);
+    err = gcry_cipher_setiv(handle, iv.get(), AEAD_IV_LEN);
     super::handleGcryError(err);
+
+    {
+        int tag_len = AEAD_TAG_LEN;
+        err = gcry_cipher_ctl(handle, GCRYCTL_SET_TAGLEN, &tag_len, sizeof(int));
+        super::handleGcryError(err);
+    }
 
     auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
     memcpy(padded_plain_text.get(), plain_text, plain_text_len);
@@ -134,8 +133,8 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
 
     gcry_cipher_close(handle);
 
-    memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_LEN);
-    cipher_text_len += BLOCK_LEN;
+    memcpy(cipher_text + cipher_text_len, iv.get(), AEAD_IV_LEN);
+    cipher_text_len += AEAD_IV_LEN;
     memcpy(cipher_text + cipher_text_len, tag.get(), AEAD_TAG_LEN);
     cipher_text_len += AEAD_TAG_LEN;
 }
@@ -146,7 +145,7 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], c
 {
     using super = LibgcryptCipher<KEY_LEN, BLOCK_LEN>;
 
-    auto req_len = BLOCK_LEN + AEAD_TAG_LEN;
+    auto req_len = AEAD_IV_LEN + AEAD_TAG_LEN;
     if (recovered_text_len < req_len)
     {
         throw LibgcryptException("Libgcrypt Error: Invalid recovered text length. Must be at least: " + std::to_string(req_len));
@@ -161,21 +160,26 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], c
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
     super::handleGcryError(err);
 
-    auto iv = std::shared_ptr<byte>(new byte[BLOCK_LEN], std::default_delete<byte[]>());
-    memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_LEN - AEAD_TAG_LEN, BLOCK_LEN);
+    auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - AEAD_IV_LEN - AEAD_TAG_LEN, AEAD_IV_LEN);
+    err = gcry_cipher_setiv(handle, iv.get(), AEAD_IV_LEN);
+    super::handleGcryError(err);
 
     auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
     memcpy(tag.get(), cipher_text + cipher_text_len - AEAD_TAG_LEN, AEAD_TAG_LEN);
+    {
+        int tag_len = AEAD_TAG_LEN;
+        err = gcry_cipher_ctl(handle, GCRYCTL_SET_TAGLEN, &tag_len, sizeof(int));
+        super::handleGcryError(err);
+    }
 
-    err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
-    super::handleGcryError(err);
 
     err = gcry_cipher_final(handle);
     super::handleGcryError(err);
 
-    recovered_text_len = cipher_text_len - BLOCK_LEN - AEAD_TAG_LEN;
+    recovered_text_len = cipher_text_len - AEAD_IV_LEN - AEAD_TAG_LEN;
     err = gcry_cipher_decrypt(handle, recovered_text, recovered_text_len
-                              , cipher_text, cipher_text_len - BLOCK_LEN - AEAD_TAG_LEN);
+                              , cipher_text, cipher_text_len - AEAD_IV_LEN - AEAD_TAG_LEN);
     super::handleGcryError(err);
 
     err = gcry_cipher_checktag(handle, tag.get(), AEAD_TAG_LEN);
@@ -278,7 +282,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CTR:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CTR);
         case Cipher::AES_256_OCB:
-            return CIPHER_AUTH(KEY_256, BLK_96, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OCB);
+            return CIPHER_AUTH(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OCB);
         case Cipher::AES_256_OFB:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_256_XTS:
@@ -296,7 +300,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_OFB:
             return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_192_OCB:
-            return CIPHER(KEY_192, GCRY_OCB_BLOCK_LEN, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OCB);
+            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OCB);
         case Cipher::AES_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_128_CBC:
@@ -308,7 +312,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_OFB:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_128_OCB:
-            return CIPHER_AUTH(KEY_128, GCRY_OCB_BLOCK_LEN, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OCB);
+            return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OCB);
         case Cipher::AES_128_XTS:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_128_GCM:
@@ -355,6 +359,6 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SM4_OFB:
             throw UnsupportedCipherException();
         default:
-            throw UnsupportedCipherException();
+            return nullptr;
     }
 }
