@@ -4,11 +4,12 @@
 
 #include "gtest/gtest.h"
 
+#include "cipher_factory_test.hpp"
+
 #include <chrono>
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 #include <CryptoBench/libsodium_cipher_factory.hpp>
-#include <CryptoBench/random_bytes.hpp>
 #include <CryptoBench/cryptopp_cipher_factory.hpp>
 #include <CryptoBench/libgcrypt_cipher_factory.hpp>
 
@@ -16,59 +17,17 @@
 #include <include/CryptoBench/cipher_exception.hpp>
 #include <include/CryptoBench/botan_cipher_factory.hpp>
 
-typedef struct CipherTestParam
-{
-    CipherTestParam(std::string test_name, Cipher cipher, CipherFactory &factory)
-    : test_name(test_name), cipher(cipher), factory(factory)
-    {}
-
-    std::string test_name;
-    Cipher cipher;
-    CipherFactory &factory;
-} CipherTestParam;
-
 OpenSSLCipherFactory openssl_cipher_factory;
 LibsodiumCipherFactory libsodium_cipher_factory;
 CryptoppCipherFactory cryptopp_cipher_factory;
 LibgcryptCipherFactory libgcrypt_cipher_factory;
 BotanCipherFactory botan_cipher_factory;
 
-class CipherFactoryFixture : public testing::TestWithParam<CipherTestParam>
+class CipherPerformanceFixture : public CipherFactoryFixture
 {
-
-private:
-
-    std::chrono::high_resolution_clock::time_point t1;
-    std::chrono::high_resolution_clock::time_point t2;
-
-
 protected:
 
-    byte key256[32];
-    byte key192[24];
-    byte key128[16];
-    byte key384[48];
-    byte key448[56];
-    byte key512[64];
-
-    const byte * input;
-    byte_len input_len;
-
-public:
-
-    struct PrintToStringParamName
-    {
-        template <class ParamType>
-        std::string operator()( const testing::TestParamInfo<ParamType>& info ) const
-        {
-            auto params = static_cast<CipherTestParam>(info.param);
-            return params.test_name;
-        }
-    };
-
-protected:
-
-    void SetUp()
+    void SetUp() override
     {
         input = (byte *) "The quick brown fox jumps over the lazy dog";
         input_len = std::strlen(reinterpret_cast<const char *>(input));
@@ -79,27 +38,12 @@ protected:
         random_bytes.generateRandomBytes(key128, 16);
     }
 
-    void TearDown()
-    {
-    }
+    void TearDown() override
+    {}
 
-    void startChrono()
-    {
-        t1 = std::chrono::high_resolution_clock::now();
-    }
-
-    void stopChrono()
-    {
-        t2 = std::chrono::high_resolution_clock::now();
-    }
-
-    std::chrono::microseconds getElapsedChrono()
-    {
-        return std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
-    }
 };
 
-TEST_P(CipherFactoryFixture, EncryptDecrypt)
+TEST_P(CipherPerformanceFixture, EncryptDecrypt)
 {
     CipherPtr cipher_ptr = nullptr;
     try
@@ -246,12 +190,12 @@ std::vector<CipherTestParam> botanParams()
     return test_params;
 }
 
-INSTANTIATE_TEST_CASE_P(OpenSSL, CipherFactoryFixture, testing::ValuesIn(openSSLParams()), CipherFactoryFixture::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(OpenSSL, CipherPerformanceFixture, testing::ValuesIn(openSSLParams()), CipherFactoryFixture::PrintToStringParamName());
 
-INSTANTIATE_TEST_CASE_P(NACL, CipherFactoryFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(NACL, CipherPerformanceFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
 
-INSTANTIATE_TEST_CASE_P(CryptoPP, CipherFactoryFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(CryptoPP, CipherPerformanceFixture, testing::ValuesIn(cryptoppParams()), CipherFactoryFixture::PrintToStringParamName());
 
-INSTANTIATE_TEST_CASE_P(Libgcrypt, CipherFactoryFixture, testing::ValuesIn(libgcryptParams()), CipherFactoryFixture::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(Libgcrypt, CipherPerformanceFixture, testing::ValuesIn(libgcryptParams()), CipherFactoryFixture::PrintToStringParamName());
 
-INSTANTIATE_TEST_CASE_P(Botan, CipherFactoryFixture, testing::ValuesIn(botanParams()), CipherFactoryFixture::PrintToStringParamName());
+INSTANTIATE_TEST_CASE_P(Botan, CipherPerformanceFixture, testing::ValuesIn(botanParams()), CipherFactoryFixture::PrintToStringParamName());
