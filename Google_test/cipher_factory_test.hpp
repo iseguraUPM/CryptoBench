@@ -14,6 +14,12 @@
 
 #include <CryptoBench/random_bytes.hpp>
 
+#include <CryptoBench/open_ssl_cipher_factory.hpp>
+#include <CryptoBench/libsodium_cipher_factory.hpp>
+#include <CryptoBench/cryptopp_cipher_factory.hpp>
+#include <CryptoBench/libgcrypt_cipher_factory.hpp>
+#include <CryptoBench/botan_cipher_factory.hpp>
+
 typedef struct CipherTestParam
 {
     CipherTestParam(std::string test_name, Cipher cipher, CipherFactory &factory)
@@ -58,6 +64,7 @@ public:
         }
     };
 
+
 protected:
 
     virtual void SetUp() =0;
@@ -79,5 +86,6 @@ protected:
         return std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
     }
 };
+
 
 #endif //CRYPTOBENCH_CIPHER_FACTORY_TEST_HPP

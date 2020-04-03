@@ -8,14 +8,13 @@
 
 #include <chrono>
 
-#include <CryptoBench/open_ssl_cipher_factory.hpp>
-#include <CryptoBench/libsodium_cipher_factory.hpp>
-#include <CryptoBench/cryptopp_cipher_factory.hpp>
-#include <CryptoBench/libgcrypt_cipher_factory.hpp>
-#include <CryptoBench/botan_cipher_factory.hpp>
-
 #include <CryptoBench/secure_string.hpp>
 
+std::vector<CipherTestParam> openSSLParams();
+std::vector<CipherTestParam> libsodiumParams();
+std::vector<CipherTestParam> cryptoppParams();
+std::vector<CipherTestParam> libgcryptParams();
+std::vector<CipherTestParam> botanParams();
 
 OpenSSLCipherFactory openssl_cipher_factory;
 LibsodiumCipherFactory libsodium_cipher_factory;
