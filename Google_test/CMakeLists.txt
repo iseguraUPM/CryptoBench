@@ -1,5 +1,7 @@
 project(Google_test)
 
+add_definitions(-DCRYPTOBENCH_NO_RANDOM)
+
 set(BUILD_GMOCK "" ON)
 set(INSTALL_GTEST "" OFF)
 # 'lib' is the folder with Google Test sources
