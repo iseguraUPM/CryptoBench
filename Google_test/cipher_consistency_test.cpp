@@ -196,12 +196,11 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
     auto cipher_name = cipherDescriptionToString(getCipherDescription(GetParam().cipher));
     if (unique.size() == 1)
     {
-        std::cout << cipher_name << " All results are equal";
+        std::cout << cipher_name << " All results are equal" << std::endl;
         SUCCEED();
         return;
     }
 
-    std::cerr << cipher_name << " Results differ:\n";
     std::map<unsigned int, std::vector<std::string>> group_map;
     for (const LibraryChecksum &lib_result : results)
     {
@@ -218,15 +217,19 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
         }
     }
 
+    std::stringstream out;
+    out << cipher_name << " Results differ:\n";
     for (auto & it : group_map)
     {
-        std::cerr << "\tChecksum " << it.first << ": ";
+        out << "\tChecksum " << it.first << ": ";
         for (auto &s : it.second)
         {
-            std::cerr << s << " ";
+            out << s << " ";
         }
-        std::cerr << "\n";
+        out << "\n";
     }
+    std::cout << out.str() << std::endl;
+    FAIL();
 }
 
 auto &any_params_works = openSSLParams;
