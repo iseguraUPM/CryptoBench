@@ -40,7 +40,37 @@ struct BenchmarkResult
     }
 };
 
+struct AvalancheData
+{
+    byte key512_0[64];
+    byte key448_0[56];
+    byte key384_0[48];
+    byte key256_0[32];
+    byte key192_0[24];
+    byte key128_0[16];
+
+    byte key512_1[64];
+    byte key448_1[56];
+    byte key384_1[48];
+    byte key256_1[32];
+    byte key192_1[24];
+    byte key128_1[16];
+
+    byte key512_2[64];
+    byte key448_2[56];
+    byte key384_2[48];
+    byte key256_2[32];
+    byte key192_2[24];
+    byte key128_2[16];
+
+    std::vector<byte> input_0;
+    std::vector<byte> input_1;
+    std::vector<byte> input_2;
+    std::vector<byte> input_3;
+};
+
 void recordError(const std::string lib_name, const CipherDescription &desc, int input_size, const std::string msg, std::ostream &error_log);
+
 
 std::string timeStringNowFormat(const char * format)
 {
@@ -161,7 +191,7 @@ int readInputFile(std::ifstream &t, std::string &input_text)
     return len;
 }
 
-void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const std::string &input_text, int input_size, std::ostream &result_log, std::ostream &error_log)
+void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const std::string &input_text, std::ostream &result_log, std::ostream &error_log)
 {
     auto desc = getCipherDescription(cipher);
     CipherPtr cipherptr;
@@ -176,19 +206,19 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
 
     if (cipherptr == nullptr)
     {
-        recordError(lib_name, desc, input_size, "cipher not implemented", error_log);
+        recordError(lib_name, desc, input_text.size(), "cipher not implemented", error_log);
         return;
     }
 
     auto key = std::shared_ptr<byte>(new byte[cipherptr->getKeyLen()], std::default_delete<byte[]>());
     generateRandomBytes(key.get(), cipherptr->getKeyLen());
 
-    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_size, lib_name, std::get<0>(desc), std::get<2>(desc));
+    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_text.size(), lib_name, std::get<0>(desc), std::get<2>(desc));
 
     try {
         encryptDecryptBenchmark(key.get(), input_text, cipherptr, result);
     } catch (GenericCipherException &ex) {
-        recordError(lib_name, desc, input_size, ex.what(), error_log);
+        recordError(lib_name, desc, input_text.size(), ex.what(), error_log);
     }
     recordResult(result, result_log);
 }
@@ -203,15 +233,15 @@ void recordError(const std::string lib_name, const CipherDescription &desc, int 
               << "\n";
 }
 
-void runFullBenchmark(const std::string lib_name, CipherFactory &factory, const std::string &input_text, int input_size, std::ostream &result_log, std::ostream &error_log)
+void runFullBenchmark(const std::string lib_name, CipherFactory &factory, const std::string &input_text, std::ostream &result_log, std::ostream &error_log)
 {
-    std::cout << "\nRunning " << lib_name << " " << std::to_string(input_size) << " bytes random file benchmark\n" << std::endl;
+    std::cout << "\nRunning " << lib_name << " " << std::to_string(input_text.size()) << " bytes random file benchmark\n" << std::endl;
     const int rounds = 3;
     for(Cipher cipher : CIPHER_LIST)
     {
         for(int i = 0; i < rounds; i++)
         {
-            runSingleBenchmark(lib_name, cipher, factory, input_text, input_size, result_log, error_log);
+            runSingleBenchmark(lib_name, cipher, factory, input_text, result_log, error_log);
         }
     }
 }
@@ -223,30 +253,69 @@ void runBenchmarkWSize(int bytes, std::ofstream &results_file, std::ostream &err
 
     generateInputBinaryFile("input.bin", bytes);
     input_file.open("input.bin", std::ios::binary);
-    int input_size = readInputFile(input_file, input_text);
+    readInputFile(input_file, input_text);
     input_file.close();
 
     OpenSSLCipherFactory open_ssl_cipher_factory;
-    runFullBenchmark("openssl", open_ssl_cipher_factory, input_text, input_size, results_file, error_log);
+    runFullBenchmark("openssl", open_ssl_cipher_factory, input_text, results_file, error_log);
 
     LibsodiumCipherFactory libsodium_cipher_factory;
-    runFullBenchmark("libsodium", libsodium_cipher_factory, input_text, input_size, results_file, error_log);
+    runFullBenchmark("libsodium", libsodium_cipher_factory, input_text, results_file, error_log);
 
     LibgcryptCipherFactory libgcrypt_cipher_factory;
-    runFullBenchmark("libgcrypt", libgcrypt_cipher_factory, input_text, input_size, results_file, error_log);
+    runFullBenchmark("libgcrypt", libgcrypt_cipher_factory, input_text, results_file, error_log);
 
     //CryptoppCipherFactory cryptopp_cipher_factory;
     //runFullBenchmark("cryptopp", cryptopp_cipher_factory, input_text, input_size, results_file, error_log);
 }
 
+/*
+void initializeAvalancheData(AvalancheData &avalanche_data, int bytes)
+{
+    std::string input_text;
+    std::ifstream input_file;
+
+    generateInputBinaryFile("input.bin", bytes);
+    input_file.open("input.bin", std::ios::binary);
+    int input_size = readInputFile(input_file, input_text);
+    input_file.close();
+
+    memcpy(avalanche_data.input_0, input_text.data(), input_text.size());
+    const byte * in;
+}
+
+void runAvalancheWSize(int bytes, std::ofstream &avalanche_file)
+{
+    AvalancheData avalanche_data = {};
+    initializeAvalancheData(avalanche_data, bytes);
+
+    OpenSSLCipherFactory open_ssl_cipher_factory;
+    runFullAvalanche("openssl", open_ssl_cipher_factory, input_text, input_size, avalanche_file);
+
+    LibsodiumCipherFactory libsodium_cipher_factory;
+    runFullAvalanche("libsodium", libsodium_cipher_factory, input_text, input_size, avalanche_file);
+
+    LibgcryptCipherFactory libgcrypt_cipher_factory;
+    runFullAvalanche("libgcrypt", libgcrypt_cipher_factory, input_text, input_size, avalanche_file);
+
+}
+
+*/
 int main(int argc, char** arv)
 {
     //generateInputTextFile("fox.txt", 100000);
     //std::ifstream input_file("fox.txt", std::ios::binary);
 
+
+    auto current_time = timeStringNowFormat("%Y-%m-%d-%H-%M-%S");
+
     std::ofstream results_file;
-    results_file.open("benchmark_" + timeStringNowFormat("%Y-%m-%d-%H-%M-%S") + ".csv");
+    results_file.open("benchmark_" + current_time + ".csv");
     results_file << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,ENCRYPT_T,DECRYPT_T\n";
+
+    std::ofstream avalanche_file;
+    avalanche_file.open("avalanche_" + current_time + ".csv");
+    avalanche_file << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,MODIFICATION,AVALANCHE_EFFECT\n";
 
 #ifdef CRYPTOBENCH_DEBUG
     std::stringstream error_log;
@@ -302,11 +371,13 @@ int main(int argc, char** arv)
     for (int b : sizes)
     {
         runBenchmarkWSize(b, results_file, error_log);
+        //runAvalancheWSize(b, avalanche_file);
     }
 
     std::cout << "Done!\n";
 
     results_file.close();
+    avalanche_file.close();
 
 #ifdef CRYPTOBENCH_DEBUG
     std::cerr << "____________DEBUG ERROR LOG DUMP____________\n"
