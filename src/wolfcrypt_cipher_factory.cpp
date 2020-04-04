@@ -120,13 +120,13 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE))
-        throw std::runtime_error("Wolfcrypt error: GCM set key failure");
+        throw WolfCryptException("Encrypt set key failure");
 
 
     auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
     if (0 != enc(&algo, cipher_text, plain_text, plain_text_len, iv.get()
                  , AEAD_IV_LEN, tag.get(), AEAD_TAG_LEN, nullptr, 0))
-        throw std::runtime_error("Wolfcrypt error: encrypt failure");
+        throw WolfCryptException("Encrypt failure");
 
     cipher_text_len = plain_text_len;
 
@@ -147,11 +147,11 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::decrypt(const byte key[KEY
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE))
-        throw std::runtime_error("Wolfcrypt error: GCM set key failure");
+        throw WolfCryptException("Encrypt set key failure");
 
     if (0 != dec(&algo, recovered_text, cipher_text, cipher_text_len - AEAD_IV_LEN - AEAD_TAG_LEN, iv.get()
                  , AEAD_IV_LEN, tag.get(), AEAD_TAG_LEN, nullptr, 0))
-        throw std::runtime_error("Wolfcrypt error: decrypt failure");
+        throw WolfCryptException("Encrypt failure");
 
     recovered_text_len = cipher_text_len;
 }
@@ -167,10 +167,10 @@ void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY_SIZ
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE, iv.get(), encrypt_dir))
-        throw std::runtime_error("Wolfcrypt error: init failure");
+        throw WolfCryptException("Encrypt set key failure");
 
     if (0 != enc(&algo, cipher_text, plain_text, plain_text_len))
-        throw std::runtime_error("Wolfcrypt error: encrypt failure");
+        throw WolfCryptException("Encrypt failure");
 
     cipher_text_len = plain_text_len;
 
@@ -187,10 +187,10 @@ void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::decrypt(const byte key[KEY_SIZ
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE, iv.get(), decrypt_dir))
-        throw std::runtime_error("Wolfcrypt error: init failure");
+        throw WolfCryptException("Decrypt set key failure");
 
     if (0 != dec(&algo, recovered_text, cipher_text, cipher_text_len - BLOCK_SIZE))
-        throw std::runtime_error("Wolfcrypt error: decrypt failure");
+        throw WolfCryptException("Decrypt failure");
 
     recovered_text_len = cipher_text_len;
 }
