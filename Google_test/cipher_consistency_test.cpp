@@ -195,11 +195,25 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
         }
     };
 
-    std::set<LibraryChecksum, chksum_compare> unique(results.begin(), results.end());
+
     auto cipher_name = cipherDescriptionToString(getCipherDescription(GetParam().cipher));
-    if (unique.size() == 1)
+    if (results.size() == 0)
+    {
+        std::cout << cipher_name << " no results" << std::endl;
+        SUCCEED();
+        return;
+    }
+
+    std::set<LibraryChecksum, chksum_compare> unique(results.begin(), results.end());
+    if (unique.size() == 1 && results.size() > 1)
     {
         std::cout << cipher_name << " All results are equal" << std::endl;
+        SUCCEED();
+        return;
+    }
+    else if (unique.size() == 1 && results.size() == 1)
+    {
+        std::cout << cipher_name << " only one result from " << results.at(0).library << std::endl;
         SUCCEED();
         return;
     }
