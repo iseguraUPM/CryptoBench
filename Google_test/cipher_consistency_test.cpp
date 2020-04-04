@@ -23,6 +23,8 @@ std::vector<CipherTestParam> libgcryptParams();
 
 std::vector<CipherTestParam> botanParams();
 
+std::vector<CipherTestParam> wolfcryptParams();
+
 struct LibraryChecksum
 {
     LibraryChecksum(std::string library, unsigned int checksum) : library(std::move(library)), checksum(checksum) {}
@@ -106,6 +108,7 @@ void CipherConsistencyFixture::computeAllChecksums()
     workers.emplace_back(compute_checksum, "CryptoPP", cryptoppParams());
     workers.emplace_back(compute_checksum, "Libgcrypt", libgcryptParams());
     workers.emplace_back(compute_checksum, "Botan", botanParams());
+    workers.emplace_back(compute_checksum, "WolfCrypt", wolfcryptParams());
 
     for (auto &thread : workers)
     {
