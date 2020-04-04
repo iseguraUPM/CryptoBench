@@ -7,7 +7,7 @@
 
 #include "cipher_factory.hpp"
 
-class WolfCryptCipherFactory : CipherFactory
+class WolfCryptCipherFactory : public CipherFactory
 {
     CipherPtr getCipher(Cipher cipher) override;
 };
