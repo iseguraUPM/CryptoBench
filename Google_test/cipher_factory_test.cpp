@@ -9,18 +9,21 @@
 #include <chrono>
 
 #include <CryptoBench/secure_string.hpp>
+#include <CryptoBench/wolfcrypt_cipher_factory.hpp>
 
 std::vector<CipherTestParam> openSSLParams();
 std::vector<CipherTestParam> libsodiumParams();
 std::vector<CipherTestParam> cryptoppParams();
 std::vector<CipherTestParam> libgcryptParams();
 std::vector<CipherTestParam> botanParams();
+std::vector<CipherTestParam> wolfcryptParams();
 
 OpenSSLCipherFactory openssl_cipher_factory;
 LibsodiumCipherFactory libsodium_cipher_factory;
 CryptoppCipherFactory cryptopp_cipher_factory;
 LibgcryptCipherFactory libgcrypt_cipher_factory;
 BotanCipherFactory botan_cipher_factory;
+WolfCryptCipherFactory wolfcrypt_cipher_factory;
 
 class CipherPerformanceFixture : public CipherFactoryFixture
 {
@@ -189,6 +192,20 @@ std::vector<CipherTestParam> botanParams()
     return test_params;
 }
 
+std::vector<CipherTestParam> wolfcryptParams()
+{
+    std::vector<CipherTestParam> test_params;
+
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        std::string test_name = "WOLFCRYPT_" + cipherDescriptionToString(desc);
+        test_params.emplace_back(test_name, cipher, wolfcrypt_cipher_factory);
+    }
+
+    return test_params;
+}
+
 INSTANTIATE_TEST_CASE_P(OpenSSL, CipherPerformanceFixture, testing::ValuesIn(openSSLParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(NACL, CipherPerformanceFixture, testing::ValuesIn(libsodiumParams()), CipherFactoryFixture::PrintToStringParamName());
@@ -198,3 +215,5 @@ INSTANTIATE_TEST_CASE_P(CryptoPP, CipherPerformanceFixture, testing::ValuesIn(cr
 INSTANTIATE_TEST_CASE_P(Libgcrypt, CipherPerformanceFixture, testing::ValuesIn(libgcryptParams()), CipherFactoryFixture::PrintToStringParamName());
 
 INSTANTIATE_TEST_CASE_P(Botan, CipherPerformanceFixture, testing::ValuesIn(botanParams()), CipherFactoryFixture::PrintToStringParamName());
+
+INSTANTIATE_TEST_CASE_P(WolfCrypt, CipherPerformanceFixture, testing::ValuesIn(wolfcryptParams()), CipherFactoryFixture::PrintToStringParamName());
