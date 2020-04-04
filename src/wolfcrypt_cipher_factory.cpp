@@ -4,30 +4,53 @@
 
 #include "CryptoBench/wolfcrypt_cipher_factory.hpp"
 
+#include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/aes.h>
+#include <wolfssl/wolfcrypt/des3.h>
 
-enum class BlockMode
+#include <CryptoBench/random_bytes.hpp>
+#include <CryptoBench/cipher_exception.hpp>
+
+#define KEY_128 16
+#define KEY_192 24
+#define KEY_256 32
+#define KEY_512 64
+#define KEY_448 56
+
+#define BLK_128 16
+#define BLK_64 8
+
+#define AEAD_TAG_LEN 16
+#define AEAD_IV_LEN 12
+
+#define CIPHER(key_len, block_len, algo_t, enc_dir, dec_dir, set_key_func, enc_func, dec_func)(CipherPtr(\
+    new WolfcryptCipher<key_len, block_len, algo_t> \
+        (set_key_func, enc_func, dec_func, enc_dir, dec_dir)))
+
+#define CIPHER_AUTH(key_len, block_len, algo_t, enc_dir, dec_dir, set_key_func, enc_func, dec_func)(CipherPtr(\
+    new WolfcryptAuthCipher<key_len, block_len, algo_t> \
+        (set_key_func, enc_func, dec_func, enc_dir, dec_dir)))
+
+template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
+class WolfcryptCipher : public SymmetricCipher
 {
-    CBC,
-    CTR,
-    GCM,
-    CCM
-};
+public:
+    using set_key_func = int (&)(ALGO*, const byte*, word32, const byte*, int);
+    using cipher_func = int (&)(ALGO*, byte *, const byte *, word32);
 
-template <int KEY_SIZE>
-class AesCipher : public SymmetricCipher
-{
-    explicit AesCipher(BlockMode mode) : block_mode(mode) {};
+    explicit inline WolfcryptCipher(set_key_func &set_key, cipher_func &enc, cipher_func &dec, int encrypt_dir, int decrypt_dir)
+            : set_key(set_key), enc(enc), dec(dec)
+            , encrypt_dir(encrypt_dir), decrypt_dir(decrypt_dir), random_bytes() {};
 
-    void encrypt(const byte key[KEY_SIZE], const byte iv[16], const security::secure_string& plain_text
-                 , security::secure_string& cipher_text) override;
+    void encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                         , byte * cipher_text, byte_len & cipher_text_len) override;
 
-    void decrypt(const byte key[KEY_SIZE], const byte iv[16], const security::secure_string &cipher_text
-                 , security::secure_string &recovered_text) override;
+    void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                         , byte * recovered_text, byte_len & recovered_text_len) override;
 
     inline int getBlockLen() override
     {
-        return 16;
+        return BLOCK_SIZE;
     }
 
     inline int getKeyLen() override
@@ -35,42 +58,343 @@ class AesCipher : public SymmetricCipher
         return KEY_SIZE;
     }
 
-private:
+protected:
+    RandomBytes random_bytes;
 
-    BlockMode block_mode;
-
+    set_key_func &set_key;
+    cipher_func &enc;
+    cipher_func &dec;
+    const int encrypt_dir;
+    const int decrypt_dir;
 };
 
-template<int KEY_SIZE>
-void AesCipher<KEY_SIZE>::encrypt(const byte key[KEY_SIZE], const byte iv[16], const security::secure_string& plain_text
-                                  , security::secure_string& cipher_text)
+template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
+class WolfcryptAuthCipher : public SymmetricCipher
 {
-    Aes enc;
+public:
+    using set_key_func = int (&)(ALGO*, const byte*, word32);
+    using cipher_enc_func = int (&)(ALGO*, byte*, const byte*, word32,
+            const byte*, word32, byte*, word32, const byte*, word32);
+    using cipher_dec_func = int (&)(ALGO*, byte*, const byte*, word32,
+            const byte*, word32, const byte*, word32, const byte*, word32);
 
-    switch (block_mode)
+    explicit inline WolfcryptAuthCipher(set_key_func &set_key, cipher_enc_func &enc, cipher_dec_func &dec
+                                        , int encrypt_dir, int decrypt_dir)
+            : set_key(set_key), enc(enc), dec(dec)
+            , encrypt_dir(encrypt_dir), decrypt_dir(decrypt_dir), random_bytes() {};
+
+    void encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                 , byte * cipher_text, byte_len & cipher_text_len) override;
+
+    void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                 , byte * recovered_text, byte_len & recovered_text_len) override;
+
+    inline int getBlockLen() override
     {
-        case BlockMode::CBC:
-            wc_AesSetKey(&enc, key, KEY_SIZE, iv, 16);
-            wc_AesCbcEncrypt(&enc, (byte *) cipher_text.c_str(), (byte *) plain_text.c_str(), plain_text.length());
-        case BlockMode::GCM:
-            wc_AesGcmSetKey(&enc, key, KEY_SIZE);
-            security::secure_string auth_tag;
-            wc_AesGcmEncrypt(&enc, (byte *) cipher_text.c_str(), (byte *) plain_text.c_str(), plain_text.length(), iv, 12, auth_tag, 16, nullptr, 0);
+        return BLOCK_SIZE;
     }
 
+    inline int getKeyLen() override
+    {
+        return KEY_SIZE;
+    }
+
+protected:
+    RandomBytes random_bytes;
+
+    set_key_func &set_key;
+    cipher_enc_func &enc;
+    cipher_dec_func &dec;
+    const int encrypt_dir;
+    const int decrypt_dir;
+};
+
+template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
+void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                                                              , byte * cipher_text, byte_len & cipher_text_len)
+{
+    auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
+    random_bytes.generateRandomBytes(iv.get(), AEAD_IV_LEN);
+
+    plain_text_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
+
+    ALGO algo;
+    if (0 != set_key(&algo, key, KEY_SIZE))
+        throw WolfCryptException("Encrypt set key failure");
 
 
+    auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
+    if (0 != enc(&algo, cipher_text, plain_text, plain_text_len, iv.get()
+                 , AEAD_IV_LEN, tag.get(), AEAD_TAG_LEN, nullptr, 0))
+        throw WolfCryptException("Encrypt failure");
 
+    cipher_text_len = plain_text_len;
+
+    memcpy(cipher_text + cipher_text_len, iv.get(), AEAD_IV_LEN);
+    cipher_text_len += AEAD_IV_LEN;
+    memcpy(cipher_text + cipher_text_len, tag.get(), AEAD_TAG_LEN);
+    cipher_text_len += AEAD_TAG_LEN;
 }
 
-template<int KEY_SIZE>
-void AesCipher<KEY_SIZE>::decrypt(const byte key[KEY_SIZE], const byte iv[16], const security::secure_string &cipher_text
-                                  , security::secure_string &recovered_text)
+template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
+void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                              , byte * recovered_text, byte_len & recovered_text_len)
 {
+    auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
+    memcpy(tag.get(), cipher_text + cipher_text_len - AEAD_TAG_LEN, AEAD_TAG_LEN);
+    auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - AEAD_IV_LEN - AEAD_TAG_LEN, AEAD_IV_LEN);
 
+    ALGO algo;
+    if (0 != set_key(&algo, key, KEY_SIZE))
+        throw WolfCryptException("Encrypt set key failure");
+
+    if (0 != dec(&algo, recovered_text, cipher_text, cipher_text_len - AEAD_IV_LEN - AEAD_TAG_LEN, iv.get()
+                 , AEAD_IV_LEN, tag.get(), AEAD_TAG_LEN, nullptr, 0))
+        throw WolfCryptException("Encrypt failure");
+
+    recovered_text_len = cipher_text_len;
+}
+
+template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
+void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
+                                                          , byte * cipher_text, byte_len & cipher_text_len)
+{
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
+    random_bytes.generateRandomBytes(iv.get(), BLOCK_SIZE);
+
+    plain_text_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
+
+    ALGO algo;
+    if (0 != set_key(&algo, key, KEY_SIZE, iv.get(), encrypt_dir))
+        throw WolfCryptException("Encrypt set key failure");
+
+    if (0 != enc(&algo, cipher_text, plain_text, plain_text_len))
+        throw WolfCryptException("Encrypt failure");
+
+    cipher_text_len = plain_text_len;
+
+    memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_SIZE);
+    cipher_text_len += BLOCK_SIZE;
+}
+
+template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
+void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
+                                                          , byte * recovered_text, byte_len & recovered_text_len)
+{
+    auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_SIZE, BLOCK_SIZE);
+
+    ALGO algo;
+    if (0 != set_key(&algo, key, KEY_SIZE, iv.get(), decrypt_dir))
+        throw WolfCryptException("Decrypt set key failure");
+
+    if (0 != dec(&algo, recovered_text, cipher_text, cipher_text_len - BLOCK_SIZE))
+        throw WolfCryptException("Decrypt failure");
+
+    recovered_text_len = cipher_text_len;
 }
 
 CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
 {
-    return nullptr;
+    switch (cipher) {
+        case Cipher::AES_256_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_CBC:
+            return CIPHER(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
+        case Cipher::AES_256_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_CTR:
+            return CIPHER(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
+        case Cipher::AES_256_GCM:
+            return CIPHER_AUTH(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
+        case Cipher::AES_256_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_CCM:
+            return CIPHER_AUTH(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesCcmSetKey, wc_AesCcmEncrypt, wc_AesCcmDecrypt);
+        case Cipher::AES_256_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_CBC:
+            return CIPHER(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
+        case Cipher::AES_192_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_CTR:
+            return CIPHER(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
+        case Cipher::AES_192_GCM:
+            return CIPHER_AUTH(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
+        case Cipher::AES_192_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_CCM:
+            return CIPHER_AUTH(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesCcmSetKey, wc_AesCcmEncrypt, wc_AesCcmDecrypt);
+        case Cipher::AES_192_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_192_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_CBC:
+            return CIPHER(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
+        case Cipher::AES_128_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_CTR:
+            return CIPHER(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
+        case Cipher::AES_128_GCM:
+            return CIPHER_AUTH(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
+        case Cipher::AES_128_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_CCM:
+            return CIPHER_AUTH(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesCcmSetKey, wc_AesCcmEncrypt, wc_AesCcmDecrypt);
+        case Cipher::AES_128_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::AES_128_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_256_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_192_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::ARIA_128_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::SM4_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::SEED_SIV:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_CBC:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_CFB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_OFB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_CTR:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_SIV:
+            throw UnsupportedCipherException();
+    }
 }

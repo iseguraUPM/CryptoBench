@@ -23,6 +23,8 @@ std::vector<CipherTestParam> libgcryptParams();
 
 std::vector<CipherTestParam> botanParams();
 
+std::vector<CipherTestParam> wolfcryptParams();
+
 struct LibraryChecksum
 {
     LibraryChecksum(std::string library, unsigned int checksum) : library(std::move(library)), checksum(checksum) {}
@@ -106,6 +108,7 @@ void CipherConsistencyFixture::computeAllChecksums()
     workers.emplace_back(compute_checksum, "CryptoPP", cryptoppParams());
     workers.emplace_back(compute_checksum, "Libgcrypt", libgcryptParams());
     workers.emplace_back(compute_checksum, "Botan", botanParams());
+    workers.emplace_back(compute_checksum, "WolfCrypt", wolfcryptParams());
 
     for (auto &thread : workers)
     {
@@ -192,16 +195,29 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
         }
     };
 
-    std::set<LibraryChecksum, chksum_compare> unique(results.begin(), results.end());
+
     auto cipher_name = cipherDescriptionToString(getCipherDescription(GetParam().cipher));
-    if (unique.size() == 1)
+    if (results.size() == 0)
     {
-        std::cout << cipher_name << " All results are equal";
+        std::cout << cipher_name << " no results" << std::endl;
         SUCCEED();
         return;
     }
 
-    std::cerr << cipher_name << " Results differ:\n";
+    std::set<LibraryChecksum, chksum_compare> unique(results.begin(), results.end());
+    if (unique.size() == 1 && results.size() > 1)
+    {
+        std::cout << cipher_name << " All results are equal" << std::endl;
+        SUCCEED();
+        return;
+    }
+    else if (unique.size() == 1 && results.size() == 1)
+    {
+        std::cout << cipher_name << " only one result from " << results.at(0).library << std::endl;
+        SUCCEED();
+        return;
+    }
+
     std::map<unsigned int, std::vector<std::string>> group_map;
     for (const LibraryChecksum &lib_result : results)
     {
@@ -218,15 +234,19 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
         }
     }
 
+    std::stringstream out;
+    out << cipher_name << " Results differ:\n";
     for (auto & it : group_map)
     {
-        std::cerr << "\tChecksum " << it.first << ": ";
+        out << "\tChecksum " << it.first << ": ";
         for (auto &s : it.second)
         {
-            std::cerr << s << " ";
+            out << s << " ";
         }
-        std::cerr << "\n";
+        out << "\n";
     }
+    std::cout << out.str() << std::endl;
+    FAIL();
 }
 
 auto &any_params_works = openSSLParams;

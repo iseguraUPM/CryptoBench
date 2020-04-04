@@ -8,7 +8,8 @@
 
 #include "gtest/gtest.h"
 
-#include <wolfssl/wolfcrypt/aes.h>
+#include <wolfssl/options.h>
+#include <wolfssl/wolfcrypt/wc_encrypt.h>
 
 class WolfcryptFixture : public ::testing::Test
 {
@@ -89,6 +90,6 @@ TEST_F(WolfcryptFixture, Full)
 
     for (int i = 0; i < inputTextLen; i++)
     {
-        ASSERT_EQ(inputText[i], decryptedText[i]);
+        EXPECT_EQ(inputText[i], decryptedText[i]);
     }
 }
