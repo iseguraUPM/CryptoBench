@@ -13,6 +13,7 @@
 #include <cryptopp/eax.h>
 #include <cryptopp/sm4.h>
 #include <cryptopp/blowfish.h>
+#include <cryptopp/camellia.h>
 #include <cryptopp/gcm.h>
 #include <cryptopp/seed.h>
 #include <cryptopp/authenc.h>
@@ -106,6 +107,75 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_OCB:
             throw UnsupportedCipherException();
         case Cipher::AES_128_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_256_ECB:
+            return CRYPTOPP_CIPHER_ECB(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_CBC:
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CBC_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_CFB:
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CFB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_OFB:
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::OFB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_CTR:
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CTR_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_GCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, 16, 12, CryptoPP::GCM<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_256_CCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, 16,12, CryptoPP::CCM<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_EAX:
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, 16,12, CryptoPP::EAX<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_256_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_256_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_192_ECB:
+            return CRYPTOPP_CIPHER_ECB(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_CBC:
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CBC_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_CFB:
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CFB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_OFB:
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::OFB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_CTR:
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CTR_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_GCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_192, 16, 12, CryptoPP::GCM<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_192_CCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_192, 16,12, CryptoPP::CCM<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_EAX:
+            return CRYPTOPP_CIPHER_AUTH(KEY_192, 16,12, CryptoPP::EAX<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_192_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_192_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_128_ECB:
+            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_CBC:
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CBC_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_CFB:
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CFB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_OFB:
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::OFB_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_CTR:
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CTR_Mode<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_GCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, 16, 12, CryptoPP::GCM<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_128_CCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, 16,12, CryptoPP::CCM<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_EAX:
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, 16,12, CryptoPP::EAX<CryptoPP::Camellia>);
+        case Cipher::CAMELLIA_128_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_128_SIV:
             throw UnsupportedCipherException();
 
         case Cipher::ARIA_256_ECB:
