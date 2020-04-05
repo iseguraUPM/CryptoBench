@@ -254,6 +254,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_EAX:
         case Cipher::AES_128_OCB:
         case Cipher::AES_128_SIV:
+
         case Cipher::ARIA_256_ECB:
         case Cipher::ARIA_256_CBC:
         case Cipher::ARIA_256_CFB:
@@ -265,6 +266,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_EAX:
         case Cipher::ARIA_256_OCB:
         case Cipher::ARIA_256_SIV:
+
         case Cipher::ARIA_192_ECB:
         case Cipher::ARIA_192_CBC:
         case Cipher::ARIA_192_CFB:
@@ -276,6 +278,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_EAX:
         case Cipher::ARIA_192_OCB:
         case Cipher::ARIA_192_SIV:
+
         case Cipher::ARIA_128_ECB:
         case Cipher::ARIA_128_CBC:
         case Cipher::ARIA_128_CFB:
@@ -287,6 +290,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_EAX:
         case Cipher::ARIA_128_OCB:
         case Cipher::ARIA_128_SIV:
+
         case Cipher::SM4_ECB:
         case Cipher::SM4_CBC:
         case Cipher::SM4_CFB:
@@ -298,6 +302,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SM4_EAX:
         case Cipher::SM4_OCB:
         case Cipher::SM4_SIV:
+
         case Cipher::SEED_ECB:
         case Cipher::SEED_CBC:
         case Cipher::SEED_CFB:
@@ -309,6 +314,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_EAX:
         case Cipher::SEED_OCB:
         case Cipher::SEED_SIV:
+
         case Cipher::BLOWFISH_ECB:
         case Cipher::BLOWFISH_CBC:
         case Cipher::BLOWFISH_CFB:
