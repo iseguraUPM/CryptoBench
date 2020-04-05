@@ -245,7 +245,5 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
             throw UnsupportedCipherException();
-        default:
-            return nullptr;
     }
 }
