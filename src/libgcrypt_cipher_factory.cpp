@@ -5,7 +5,7 @@
 #include "CryptoBench/libgcrypt_cipher_factory.hpp"
 
 #include <gcrypt.h>
-
+#include <atomic>
 #include <cstring>
 
 #include "CryptoBench/cipher_exception.hpp"
@@ -27,12 +27,32 @@
 #define AEAD_TAG_LEN 16
 #define AEAD_IV_LEN 12
 
+std::atomic<bool> LibgcryptCipherFactory::libgcrypt_initialized(false);
+
+constexpr const char* HARDWARE_OPTS[] = {
+        "padlock-rng",
+        "padlock-aes",
+        "padlock-sha",
+        "padlock-mmul",
+        "intel-cpu",
+        "intel-fast-shld",
+        "intel-bmi2",
+        "intel-ssse3",
+        "intel-pclmul",
+        "intel-aesni",
+       "intel-rdrand",
+        "intel-avx",
+        "intel-avx2",
+        "intel-rdtsc",
+        "arm-neon" };
+
 template <int KEY_LEN, int BLOCK_LEN>
 class LibgcryptCipher : public SymmetricCipher
 {
 public:
     explicit inline LibgcryptCipher(gcry_cipher_algos alg, gcry_cipher_modes mode) : alg(alg), mode(mode), random_bytes()
-    {}
+    {
+    }
 
     virtual void encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
                          , byte * cipher_text, byte_len & cipher_text_len);
@@ -266,6 +286,17 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::handleGcryError(gcry_error_t err)
     if (err != GPG_ERR_NO_ERROR)
     {
         throw LibgcryptException(std::string(gcry_strsource(err)) + " " + std::string(gcry_strerror(err)));
+    }
+}
+
+LibgcryptCipherFactory::LibgcryptCipherFactory()
+{
+    if (!libgcrypt_initialized.exchange(true))
+    {
+        for (const char * hwf : HARDWARE_OPTS)
+        {
+            gcry_control(GCRYCTL_DISABLE_HWF, hwf, NULL);
+        }
     }
 }
 

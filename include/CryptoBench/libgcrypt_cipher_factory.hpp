@@ -13,15 +13,19 @@ class LibgcryptCipherFactory : public CipherFactory
 
 public:
 
+    explicit LibgcryptCipherFactory();
+
     CipherPtr getCipher(Cipher cipher) override;
+
+private:
+
+    static std::atomic<bool> libgcrypt_initialized;
 
 };
 
 class LibgcryptException : public GenericCipherException
 {
 public:
-    explicit inline LibgcryptException(char * msg) : GenericCipherException("Libgcrypt error: ", msg) {}
-
     explicit inline LibgcryptException(const std::basic_string<char> &msg) : GenericCipherException("Libgcrypt error: ", msg.c_str()) {}
 };
 
