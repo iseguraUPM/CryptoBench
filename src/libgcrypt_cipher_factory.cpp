@@ -378,6 +378,75 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_SIV:
             throw UnsupportedCipherException();
 
+        case Cipher::CAMELLIA_256_ECB:
+            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_ECB);
+        case Cipher::CAMELLIA_256_CBC:
+            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CBC);
+        case Cipher::CAMELLIA_256_CFB:
+            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CFB);
+        case Cipher::CAMELLIA_256_OFB:
+            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_OFB);
+        case Cipher::CAMELLIA_256_CTR:
+            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CTR);
+        case Cipher::CAMELLIA_256_GCM:
+            return CIPHER_AUTH(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_GCM);
+        case Cipher::CAMELLIA_256_XTS:
+            return CIPHER(KEY_512, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_XTS);
+        case Cipher::CAMELLIA_256_CCM:
+            return CIPHER_AUTH(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CCM);
+        case Cipher::CAMELLIA_256_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_256_OCB:
+            return CIPHER_AUTH(KEY_256, BLK_96, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_OCB);
+        case Cipher::CAMELLIA_256_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_192_ECB:
+            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_ECB);
+        case Cipher::CAMELLIA_192_CBC:
+            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CBC);
+        case Cipher::CAMELLIA_192_CFB:
+            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CFB);
+        case Cipher::CAMELLIA_192_OFB:
+            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_OFB);
+        case Cipher::CAMELLIA_192_CTR:
+            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CTR);
+        case Cipher::CAMELLIA_192_GCM:
+            return CIPHER_AUTH(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_GCM);
+        case Cipher::CAMELLIA_192_XTS:
+            return CIPHER(KEY_384, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_XTS);
+        case Cipher::CAMELLIA_192_CCM:
+            return CIPHER_AUTH(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CCM);
+        case Cipher::CAMELLIA_192_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_192_OCB:
+            return CIPHER_AUTH(KEY_192, BLK_96, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_OCB);
+        case Cipher::CAMELLIA_192_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_128_ECB:
+            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_ECB);
+        case Cipher::CAMELLIA_128_CBC:
+            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CBC);
+        case Cipher::CAMELLIA_128_CFB:
+            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CFB);
+        case Cipher::CAMELLIA_128_OFB:
+            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_OFB);
+        case Cipher::CAMELLIA_128_CTR:
+            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CTR);
+        case Cipher::CAMELLIA_128_GCM:
+            return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_GCM);
+        case Cipher::CAMELLIA_128_XTS:
+            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_XTS);
+        case Cipher::CAMELLIA_128_CCM:
+            return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CCM);
+        case Cipher::CAMELLIA_128_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_128_OCB:
+            return CIPHER_AUTH(KEY_128, BLK_96, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_OCB);
+        case Cipher::CAMELLIA_128_SIV:
+            throw UnsupportedCipherException();
+
         case Cipher::SM4_ECB:
         case Cipher::SM4_CBC:
         case Cipher::SM4_CFB:
