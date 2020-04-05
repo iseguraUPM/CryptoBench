@@ -71,7 +71,6 @@ struct AvalancheData
 
 void recordError(const std::string lib_name, const CipherDescription &desc, int input_size, const std::string msg, std::ostream &error_log);
 
-
 std::string timeStringNowFormat(const char * format)
 {
     auto now = std::chrono::system_clock::now();
@@ -128,6 +127,21 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
 #ifdef CRYPTOBENCH_DEBUG
     std::cout << result_line.str();
 #endif
+}
+
+void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, float avalanche, std::string mode)
+{
+    std::stringstream result_line;
+    result_line << result.cipher_lib << ","
+                << result.cipher_alg << ","
+                << result.key_bits << ","
+                << result.block_mode << ","
+                << result.block_bits << ","
+                << result.input_size << ","
+                << mode << ","
+                << avalanche << "\n";
+
+    file_stream << result_line.str();
 }
 
 int min(std::size_t x, std::size_t y)
@@ -191,90 +205,9 @@ int readInputFile(std::ifstream &t, std::string &input_text)
     return len;
 }
 
-void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const std::string &input_text, std::ostream &result_log, std::ostream &error_log)
-{
-    auto desc = getCipherDescription(cipher);
-    CipherPtr cipherptr;
-    try
-    {
-        cipherptr = factory.getCipher(cipher);
-    } catch (UnsupportedCipherException &ex)
-    {
-        // Cipher not supported
-        return;
-    }
 
-    if (cipherptr == nullptr)
-    {
-        recordError(lib_name, desc, input_text.size(), "cipher not implemented", error_log);
-        return;
-    }
-
-    auto key = std::shared_ptr<byte>(new byte[cipherptr->getKeyLen()], std::default_delete<byte[]>());
-    generateRandomBytes(key.get(), cipherptr->getKeyLen());
-
-    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_text.size(), lib_name, std::get<0>(desc), std::get<2>(desc));
-
-    try {
-        encryptDecryptBenchmark(key.get(), input_text, cipherptr, result);
-    } catch (GenericCipherException &ex) {
-        recordError(lib_name, desc, input_text.size(), ex.what(), error_log);
-    }
-    recordResult(result, result_log);
-}
-
-void recordError(const std::string lib_name, const CipherDescription &desc, int input_size, const std::string msg, std::ostream &error_log)
-{
-    error_log << timeStringNowFormat("%Y-%m-%d %H:%M:%S ")
-              << "[" << lib_name << "] "
-              << cipherDescriptionToString(desc)
-              << " (" << std::to_string(input_size) << "B) : "
-              << msg
-              << "\n";
-}
-
-void runFullBenchmark(const std::string lib_name, CipherFactory &factory, const std::string &input_text, std::ostream &result_log, std::ostream &error_log)
-{
-    std::cout << "\nRunning " << lib_name << " " << std::to_string(input_text.size()) << " bytes random file benchmark\n" << std::endl;
-    const int rounds = 3;
-    for(Cipher cipher : CIPHER_LIST)
-    {
-        for(int i = 0; i < rounds; i++)
-        {
-            runSingleBenchmark(lib_name, cipher, factory, input_text, result_log, error_log);
-        }
-    }
-}
-
-void createInputFile(std::string &input_text, int bytes)
-{
-    std::ifstream input_file;
-
-    generateInputBinaryFile("input.bin", bytes);
-    input_file.open("input.bin", std::ios::binary);
-    readInputFile(input_file, input_text);
-    input_file.close();
-}
-
-void runBenchmarkWSize(int bytes, std::ofstream &results_file, std::ostream &error_log)
-{
-    std::string input_text;
-    createInputFile(input_text, bytes);
-
-    OpenSSLCipherFactory open_ssl_cipher_factory;
-    runFullBenchmark("openssl", open_ssl_cipher_factory, input_text, results_file, error_log);
-
-    LibsodiumCipherFactory libsodium_cipher_factory;
-    runFullBenchmark("libsodium", libsodium_cipher_factory, input_text, results_file, error_log);
-
-    LibgcryptCipherFactory libgcrypt_cipher_factory;
-    runFullBenchmark("libgcrypt", libgcrypt_cipher_factory, input_text, results_file, error_log);
-
-    //CryptoppCipherFactory cryptopp_cipher_factory;
-    //runFullBenchmark("cryptopp", cryptopp_cipher_factory, input_text, input_size, results_file, error_log);
-}
-
-void avalancheBenchmark(CipherPtr &cipherptr, AvalancheData &avalanche_data, std::ostream &avalanche_file)
+void avalancheBenchmark(CipherPtr &cipherptr, AvalancheData &avalanche_data, std::ostream &avalanche_file
+                        , BenchmarkResult &result)
 {
     // First we have the key initialization
     byte *key_0 = nullptr;
@@ -364,6 +297,21 @@ void avalancheBenchmark(CipherPtr &cipherptr, AvalancheData &avalanche_data, std
         if(output_0_0[i] != output_2_0[i]) matching_elems_2_0++;
     }
 
+    float avalanche_0_1 = (float)matching_elems_0_1 / (float)output_len_0_0 * 100;
+    float avalanche_0_2 = (float)matching_elems_0_2 / (float)output_len_0_0 * 100;
+    float avalanche_0_3 = (float)matching_elems_0_3 / (float)output_len_0_0 * 100;
+    float avalanche_1_0 = (float)matching_elems_1_0 / (float)output_len_0_0 * 100;
+    float avalanche_2_0 = (float)matching_elems_2_0 / (float)output_len_0_0 * 100;
+
+
+    recordAvalancheResult(result, avalanche_file, avalanche_0_1, "key_0_pt_1");
+    recordAvalancheResult(result, avalanche_file, avalanche_0_1, "key_0_pt_1");
+    recordAvalancheResult(result, avalanche_file, avalanche_0_2, "key_0_pt_2");
+    recordAvalancheResult(result, avalanche_file, avalanche_0_3, "key_0_pt_3");
+    recordAvalancheResult(result, avalanche_file, avalanche_1_0, "key_1_pt_0");
+    recordAvalancheResult(result, avalanche_file, avalanche_2_0, "key_2_pt_0");
+
+
     delete[] output_0_0;
     delete[] output_0_1;
     delete[] output_0_2;
@@ -373,8 +321,7 @@ void avalancheBenchmark(CipherPtr &cipherptr, AvalancheData &avalanche_data, std
 }
 
 
-
-void runSingleAvalancheBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, AvalancheData &avalanche_data, std::ostream &avalanche_file)
+void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const std::string &input_text, std::ostream &result_log, std::ostream &error_log, AvalancheData &avalanche_data, std::ostream &avalanche_file)
 {
     auto desc = getCipherDescription(cipher);
     CipherPtr cipherptr;
@@ -389,28 +336,55 @@ void runSingleAvalancheBenchmark(const std::string lib_name, Cipher cipher, Ciph
 
     if (cipherptr == nullptr)
     {
-        // Cipher not implemented
+        recordError(lib_name, desc, input_text.size(), "cipher not implemented", error_log);
         return;
     }
 
-    try{
-        avalancheBenchmark(cipherptr, avalanche_data, avalanche_file);
-    }catch (GenericCipherException &ex){}
+    auto key = std::shared_ptr<byte>(new byte[cipherptr->getKeyLen()], std::default_delete<byte[]>());
+    generateRandomBytes(key.get(), cipherptr->getKeyLen());
 
+    BenchmarkResult result = BenchmarkResult(cipherptr->getKeyLen()*8, cipherptr->getBlockLen()*8, input_text.size(), lib_name, std::get<0>(desc), std::get<2>(desc));
 
+    try {
+        encryptDecryptBenchmark(key.get(), input_text, cipherptr, result);
+        avalancheBenchmark(cipherptr, avalanche_data, avalanche_file, result);
+    } catch (GenericCipherException &ex) {
+        recordError(lib_name, desc, input_text.size(), ex.what(), error_log);
+    }
+    recordResult(result, result_log);
 }
 
-void runFullAvalanche(const std::string lib_name, CipherFactory &factory, AvalancheData &avalanche_data, std::ostream &avalanche_file)
+void recordError(const std::string lib_name, const CipherDescription &desc, int input_size, const std::string msg, std::ostream &error_log)
 {
-    std::cout << "\nRunning " << lib_name << " " << std::to_string(avalanche_data.input_0.size()) << " bytes random file avalanche benchmark.\n" << std::endl;
+    error_log << timeStringNowFormat("%Y-%m-%d %H:%M:%S ")
+              << "[" << lib_name << "] "
+              << cipherDescriptionToString(desc)
+              << " (" << std::to_string(input_size) << "B) : "
+              << msg
+              << "\n";
+}
+
+void runFullBenchmark(const std::string lib_name, CipherFactory &factory, const std::string &input_text, std::ostream &result_log, std::ostream &error_log, AvalancheData &avalanche_data, std::ostream &avalanche_file)
+{
+    std::cout << "\nRunning " << lib_name << " " << std::to_string(input_text.size()) << " bytes random file benchmark\n" << std::endl;
     const int rounds = 3;
     for(Cipher cipher : CIPHER_LIST)
     {
         for(int i = 0; i < rounds; i++)
         {
-            runSingleAvalancheBenchmark(lib_name, cipher, factory, avalanche_data, avalanche_file);
+            runSingleBenchmark(lib_name, cipher, factory, input_text, result_log, error_log, avalanche_data, avalanche_file);
         }
     }
+}
+
+void createInputFile(std::string &input_text, int bytes)
+{
+    std::ifstream input_file;
+
+    generateInputBinaryFile("input.bin", bytes);
+    input_file.open("input.bin", std::ios::binary);
+    readInputFile(input_file, input_text);
+    input_file.close();
 }
 
 void initializeAvalancheData(AvalancheData &avalanche_data, int bytes)
@@ -465,33 +439,58 @@ void initializeAvalancheData(AvalancheData &avalanche_data, int bytes)
     avalanche_data.key192_1[0]++;
     avalanche_data.key128_1[0]++;
 
-    // Todo: Third key
+    // Third key has 25% modification
     memcpy(avalanche_data.key512_2, key.get(), 64);
     memcpy(avalanche_data.key448_2, key.get(), 56);
     memcpy(avalanche_data.key384_2, key.get(), 48);
     memcpy(avalanche_data.key256_2, key.get(), 32);
     memcpy(avalanche_data.key192_2, key.get(), 24);
     memcpy(avalanche_data.key128_2, key.get(), 16);
+    for(int i = 0; i < 64/4; i++){
+        avalanche_data.key512_2[i] = rand() % 255;
+    }
+    for(int i = 0; i < 56/4; i++){
+        avalanche_data.key448_2[i] = rand() % 255;
+    }
+    for(int i = 0; i < 48/4; i++){
+        avalanche_data.key384_2[i] = rand() % 255;
+    }
+    for(int i = 0; i < 32/4; i++){
+        avalanche_data.key256_2[i] = rand() % 255;
+    }
+    for(int i = 0; i < 24/4; i++){
+        avalanche_data.key192_2[i] = rand() % 255;
+    }
+    for(int i = 0; i < 16/4; i++){
+        avalanche_data.key128_2[i] = rand() % 255;
+    }
+
+
+
 
 
 }
 
-void runAvalancheWSize(int bytes, std::ofstream &avalanche_file)
+void runBenchmarkWSize(int bytes, std::ofstream &results_file, std::ostream &error_log, std::ofstream &avalanche_file)
 {
+    std::string input_text;
+    createInputFile(input_text, bytes);
+
     AvalancheData avalanche_data = {};
     initializeAvalancheData(avalanche_data, bytes);
 
     OpenSSLCipherFactory open_ssl_cipher_factory;
-    runFullAvalanche("openssl", open_ssl_cipher_factory, avalanche_data, avalanche_file);
+    runFullBenchmark("openssl", open_ssl_cipher_factory, input_text, results_file, error_log, avalanche_data, avalanche_file);
 
     LibsodiumCipherFactory libsodium_cipher_factory;
-    runFullAvalanche("libsodium", libsodium_cipher_factory, avalanche_data, avalanche_file);
+    runFullBenchmark("libsodium", libsodium_cipher_factory, input_text, results_file, error_log, avalanche_data, avalanche_file);
 
     LibgcryptCipherFactory libgcrypt_cipher_factory;
-    runFullAvalanche("libgcrypt", libgcrypt_cipher_factory, avalanche_data, avalanche_file);
+    runFullBenchmark("libgcrypt", libgcrypt_cipher_factory, input_text, results_file, error_log, avalanche_data, avalanche_file);
 
+    //CryptoppCipherFactory cryptopp_cipher_factory;
+    //runFullBenchmark("cryptopp", cryptopp_cipher_factory, input_text, input_size, results_file, error_log);
 }
-
 
 int main(int argc, char** arv)
 {
@@ -562,8 +561,7 @@ int main(int argc, char** arv)
 
     for (int b : sizes)
     {
-        //runBenchmarkWSize(b, results_file, error_log);
-        runAvalancheWSize(b, avalanche_file);
+        runBenchmarkWSize(b, results_file, error_log, avalanche_file);
     }
 
     std::cout << "Done!\n";

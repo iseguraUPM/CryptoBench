@@ -32,7 +32,6 @@ protected:
     {
         input = (byte *) "The quick brown fox jumps over the lazy dog";
         input_modified = (byte *) "0he quick brown fox jumps over the lazy dog";
-        input_modified[0] = 0xFF;
         input_len = std::strlen(reinterpret_cast<const char *>(input));
         input_len_modified = std::strlen(reinterpret_cast<const char *>(input_modified));
 
