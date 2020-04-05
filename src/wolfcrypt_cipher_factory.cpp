@@ -203,7 +203,6 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CBC:
             return CIPHER(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
         case Cipher::AES_256_CFB:
-            throw UnsupportedCipherException();
         case Cipher::AES_256_OFB:
             throw UnsupportedCipherException();
         case Cipher::AES_256_CTR:
@@ -215,17 +214,14 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CCM:
             return CIPHER_AUTH(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesCcmSetKey, wc_AesCcmEncrypt, wc_AesCcmDecrypt);
         case Cipher::AES_256_EAX:
-            throw UnsupportedCipherException();
         case Cipher::AES_256_OCB:
-            throw UnsupportedCipherException();
         case Cipher::AES_256_SIV:
-            throw UnsupportedCipherException();
+
         case Cipher::AES_192_ECB:
             throw UnsupportedCipherException();
         case Cipher::AES_192_CBC:
             return CIPHER(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
         case Cipher::AES_192_CFB:
-            throw UnsupportedCipherException();
         case Cipher::AES_192_OFB:
             throw UnsupportedCipherException();
         case Cipher::AES_192_CTR:
@@ -237,17 +233,14 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_CCM:
             return CIPHER_AUTH(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesCcmSetKey, wc_AesCcmEncrypt, wc_AesCcmDecrypt);
         case Cipher::AES_192_EAX:
-            throw UnsupportedCipherException();
         case Cipher::AES_192_OCB:
-            throw UnsupportedCipherException();
         case Cipher::AES_192_SIV:
-            throw UnsupportedCipherException();
+
         case Cipher::AES_128_ECB:
             throw UnsupportedCipherException();
         case Cipher::AES_128_CBC:
             return CIPHER(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
         case Cipher::AES_128_CFB:
-            throw UnsupportedCipherException();
         case Cipher::AES_128_OFB:
             throw UnsupportedCipherException();
         case Cipher::AES_128_CTR:
@@ -259,141 +252,73 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_CCM:
             return CIPHER_AUTH(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesCcmSetKey, wc_AesCcmEncrypt, wc_AesCcmDecrypt);
         case Cipher::AES_128_EAX:
-            throw UnsupportedCipherException();
         case Cipher::AES_128_OCB:
-            throw UnsupportedCipherException();
         case Cipher::AES_128_SIV:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_ECB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CBC:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_OFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CTR:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_GCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_XTS:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_CCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_EAX:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_OCB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_256_SIV:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_ECB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CBC:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_OFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CTR:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_GCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_XTS:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_CCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_EAX:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_OCB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_192_SIV:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_ECB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CBC:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_OFB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CTR:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_GCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_XTS:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_CCM:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_EAX:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_OCB:
-            throw UnsupportedCipherException();
         case Cipher::ARIA_128_SIV:
-            throw UnsupportedCipherException();
         case Cipher::SM4_ECB:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CBC:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CFB:
-            throw UnsupportedCipherException();
         case Cipher::SM4_OFB:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CTR:
-            throw UnsupportedCipherException();
         case Cipher::SM4_GCM:
-            throw UnsupportedCipherException();
         case Cipher::SM4_XTS:
-            throw UnsupportedCipherException();
         case Cipher::SM4_CCM:
-            throw UnsupportedCipherException();
         case Cipher::SM4_EAX:
-            throw UnsupportedCipherException();
         case Cipher::SM4_OCB:
-            throw UnsupportedCipherException();
         case Cipher::SM4_SIV:
-            throw UnsupportedCipherException();
         case Cipher::SEED_ECB:
-            throw UnsupportedCipherException();
         case Cipher::SEED_CBC:
-            throw UnsupportedCipherException();
         case Cipher::SEED_CFB:
-            throw UnsupportedCipherException();
         case Cipher::SEED_OFB:
-            throw UnsupportedCipherException();
         case Cipher::SEED_CTR:
-            throw UnsupportedCipherException();
         case Cipher::SEED_GCM:
-            throw UnsupportedCipherException();
         case Cipher::SEED_XTS:
-            throw UnsupportedCipherException();
         case Cipher::SEED_CCM:
-            throw UnsupportedCipherException();
         case Cipher::SEED_EAX:
-            throw UnsupportedCipherException();
         case Cipher::SEED_OCB:
-            throw UnsupportedCipherException();
         case Cipher::SEED_SIV:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_ECB:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_CBC:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_CFB:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_OFB:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_CTR:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_GCM:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_XTS:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_CCM:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_EAX:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_OCB:
-            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
             throw UnsupportedCipherException();
     }
