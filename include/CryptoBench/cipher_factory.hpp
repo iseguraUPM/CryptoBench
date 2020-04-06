@@ -16,6 +16,7 @@
 #define STR_SM4 "SM4"
 #define STR_SEED "SEED"
 #define STR_BLOWFISH "BLOWFISH"
+#define STR_CAMELLIA "CAMELLIA"
 
 #define STR_CBC "CBC"
 #define STR_ECB "ECB"
@@ -106,8 +107,41 @@ enum class Cipher
     ARIA_128_OCB,
     ARIA_128_SIV,
 
-    //CAMELLIA,
+    CAMELLIA_256_ECB,
+    CAMELLIA_256_CBC,
+    CAMELLIA_256_CFB,
+    CAMELLIA_256_OFB,
+    CAMELLIA_256_CTR,
+    CAMELLIA_256_GCM,
+    CAMELLIA_256_XTS,
+    CAMELLIA_256_CCM,
+    CAMELLIA_256_EAX,
+    CAMELLIA_256_OCB,
+    CAMELLIA_256_SIV,
 
+    CAMELLIA_192_ECB,
+    CAMELLIA_192_CBC,
+    CAMELLIA_192_CFB,
+    CAMELLIA_192_OFB,
+    CAMELLIA_192_CTR,
+    CAMELLIA_192_GCM,
+    CAMELLIA_192_XTS,
+    CAMELLIA_192_CCM,
+    CAMELLIA_192_EAX,
+    CAMELLIA_192_OCB,
+    CAMELLIA_192_SIV,
+
+    CAMELLIA_128_ECB,
+    CAMELLIA_128_CBC,
+    CAMELLIA_128_CFB,
+    CAMELLIA_128_OFB,
+    CAMELLIA_128_CTR,
+    CAMELLIA_128_GCM,
+    CAMELLIA_128_XTS,
+    CAMELLIA_128_CCM,
+    CAMELLIA_128_EAX,
+    CAMELLIA_128_OCB,
+    CAMELLIA_128_SIV,
 
     SM4_ECB,
     SM4_CBC,
@@ -133,10 +167,6 @@ enum class Cipher
     SEED_OCB,
     SEED_SIV,
 
-    //THREEDES,
-
-    //TWOFISH,
-
     BLOWFISH_ECB,
     BLOWFISH_CBC,
     BLOWFISH_CFB,
@@ -147,7 +177,7 @@ enum class Cipher
     BLOWFISH_CCM,
     BLOWFISH_EAX,
     BLOWFISH_OCB,
-    BLOWFISH_SIV
+    BLOWFISH_SIV,
 };
 
 const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
@@ -221,6 +251,42 @@ const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
                               Cipher::ARIA_128_EAX,
                               Cipher::ARIA_128_OCB,
                               Cipher::ARIA_128_SIV,
+
+                              Cipher::CAMELLIA_256_ECB,
+                              Cipher::CAMELLIA_256_CBC,
+                              Cipher::CAMELLIA_256_CFB,
+                              Cipher::CAMELLIA_256_OFB,
+                              Cipher::CAMELLIA_256_CTR,
+                              Cipher::CAMELLIA_256_GCM,
+                              Cipher::CAMELLIA_256_XTS,
+                              Cipher::CAMELLIA_256_CCM,
+                              Cipher::CAMELLIA_256_EAX,
+                              Cipher::CAMELLIA_256_OCB,
+                              Cipher::CAMELLIA_256_SIV,
+
+                              Cipher::CAMELLIA_192_ECB,
+                              Cipher::CAMELLIA_192_CBC,
+                              Cipher::CAMELLIA_192_CFB,
+                              Cipher::CAMELLIA_192_OFB,
+                              Cipher::CAMELLIA_192_CTR,
+                              Cipher::CAMELLIA_192_GCM,
+                              Cipher::CAMELLIA_192_XTS,
+                              Cipher::CAMELLIA_192_CCM,
+                              Cipher::CAMELLIA_192_EAX,
+                              Cipher::CAMELLIA_192_OCB,
+                              Cipher::CAMELLIA_192_SIV,
+
+                              Cipher::CAMELLIA_128_ECB,
+                              Cipher::CAMELLIA_128_CBC,
+                              Cipher::CAMELLIA_128_CFB,
+                              Cipher::CAMELLIA_128_OFB,
+                              Cipher::CAMELLIA_128_CTR,
+                              Cipher::CAMELLIA_128_GCM,
+                              Cipher::CAMELLIA_128_XTS,
+                              Cipher::CAMELLIA_128_CCM,
+                              Cipher::CAMELLIA_128_EAX,
+                              Cipher::CAMELLIA_128_OCB,
+                              Cipher::CAMELLIA_128_SIV,
 
                               Cipher::SM4_ECB,
                               Cipher::SM4_CBC,
@@ -400,6 +466,75 @@ inline CipherDescription getCipherDescription(Cipher cipher)
             return std::make_tuple(STR_ARIA, 128, STR_OCB);
         case Cipher::ARIA_128_SIV:
             return std::make_tuple(STR_ARIA, 128, STR_SIV);
+
+        case Cipher::CAMELLIA_256_ECB:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_ECB);
+        case Cipher::CAMELLIA_256_CBC:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_CBC);
+        case Cipher::CAMELLIA_256_CFB:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_CFB);
+        case Cipher::CAMELLIA_256_OFB:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_OFB);
+        case Cipher::CAMELLIA_256_CTR:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_CTR);
+        case Cipher::CAMELLIA_256_GCM:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_GCM);
+        case Cipher::CAMELLIA_256_XTS:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_XTS);
+        case Cipher::CAMELLIA_256_CCM:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_CCM);
+        case Cipher::CAMELLIA_256_EAX:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_EAX);
+        case Cipher::CAMELLIA_256_OCB:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_OCB);
+        case Cipher::CAMELLIA_256_SIV:
+            return std::make_tuple(STR_CAMELLIA, 256, STR_SIV);
+
+        case Cipher::CAMELLIA_192_ECB:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_ECB);
+        case Cipher::CAMELLIA_192_CBC:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_CBC);
+        case Cipher::CAMELLIA_192_CFB:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_CFB);
+        case Cipher::CAMELLIA_192_OFB:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_OFB);
+        case Cipher::CAMELLIA_192_CTR:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_CTR);
+        case Cipher::CAMELLIA_192_GCM:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_GCM);
+        case Cipher::CAMELLIA_192_XTS:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_XTS);
+        case Cipher::CAMELLIA_192_CCM:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_CCM);
+        case Cipher::CAMELLIA_192_EAX:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_EAX);
+        case Cipher::CAMELLIA_192_OCB:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_OCB);
+        case Cipher::CAMELLIA_192_SIV:
+            return std::make_tuple(STR_CAMELLIA, 192, STR_SIV);
+
+        case Cipher::CAMELLIA_128_ECB:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_ECB);
+        case Cipher::CAMELLIA_128_CBC:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_CBC);
+        case Cipher::CAMELLIA_128_CFB:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_CFB);
+        case Cipher::CAMELLIA_128_OFB:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_OFB);
+        case Cipher::CAMELLIA_128_CTR:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_CTR);
+        case Cipher::CAMELLIA_128_GCM:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_GCM);
+        case Cipher::CAMELLIA_128_XTS:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_XTS);
+        case Cipher::CAMELLIA_128_CCM:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_CCM);
+        case Cipher::CAMELLIA_128_EAX:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_EAX);
+        case Cipher::CAMELLIA_128_OCB:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_OCB);
+        case Cipher::CAMELLIA_128_SIV:
+            return std::make_tuple(STR_CAMELLIA, 128, STR_SIV);
 
         case Cipher::SM4_ECB:
             return std::make_tuple(STR_SM4, 128, STR_ECB);

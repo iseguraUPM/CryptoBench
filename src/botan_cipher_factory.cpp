@@ -90,8 +90,6 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_SIV:
             return BOTAN_CIPHER(KEY_256, 16, "AES-128/SIV");
 
-
-
         case Cipher::ARIA_256_ECB:
             throw UnsupportedCipherException();
         case Cipher::ARIA_256_CBC:
@@ -161,6 +159,74 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_SIV:
             return BOTAN_CIPHER(KEY_256, 16, "ARIA-128/SIV");
 
+        case Cipher::CAMELLIA_256_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_256_CBC:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-256/CBC");
+        case Cipher::CAMELLIA_256_CFB:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-256/CFB");
+        case Cipher::CAMELLIA_256_OFB:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-256/OFB");
+        case Cipher::CAMELLIA_256_CTR:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-256/CTR");
+        case Cipher::CAMELLIA_256_GCM:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-256/GCM");
+        case Cipher::CAMELLIA_256_XTS:
+            return BOTAN_CIPHER(KEY_512, 16, "Camellia-256/XTS");
+        case Cipher::CAMELLIA_256_CCM:
+            return BOTAN_CIPHER(KEY_256, 12, "Camellia-256/CCM");
+        case Cipher::CAMELLIA_256_EAX:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-256/EAX");
+        case Cipher::CAMELLIA_256_OCB:
+            return BOTAN_CIPHER(KEY_256, 12, "Camellia-256/OCB");
+        case Cipher::CAMELLIA_256_SIV:
+            return BOTAN_CIPHER(KEY_512, 16, "Camellia-256/SIV");
+
+        case Cipher::CAMELLIA_192_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_192_CBC:
+            return BOTAN_CIPHER(KEY_192, 16, "Camellia-192/CBC");
+        case Cipher::CAMELLIA_192_CFB:
+            return BOTAN_CIPHER(KEY_192, 16, "Camellia-192/CFB");
+        case Cipher::CAMELLIA_192_OFB:
+            return BOTAN_CIPHER(KEY_192, 16, "Camellia-192/OFB");
+        case Cipher::CAMELLIA_192_CTR:
+            return BOTAN_CIPHER(KEY_192, 16, "Camellia-192/CTR");
+        case Cipher::CAMELLIA_192_GCM:
+            return BOTAN_CIPHER(KEY_192, 16, "Camellia-192/GCM");
+        case Cipher::CAMELLIA_192_XTS:
+            return BOTAN_CIPHER(KEY_384, 16, "Camellia-192/XTS");
+        case Cipher::CAMELLIA_192_CCM:
+            return BOTAN_CIPHER(KEY_192, 12, "Camellia-192/CCM");
+        case Cipher::CAMELLIA_192_EAX:
+            return BOTAN_CIPHER(KEY_192, 16, "Camellia-192/EAX");
+        case Cipher::CAMELLIA_192_OCB:
+            return BOTAN_CIPHER(KEY_192, 12, "Camellia-192/OCB");
+        case Cipher::CAMELLIA_192_SIV:
+            return BOTAN_CIPHER(KEY_384, 16, "Camellia-192/SIV");
+
+        case Cipher::CAMELLIA_128_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::CAMELLIA_128_CBC:
+            return BOTAN_CIPHER(KEY_128, 16, "Camellia-128/CBC");
+        case Cipher::CAMELLIA_128_CFB:
+            return BOTAN_CIPHER(KEY_128, 16, "Camellia-128/CFB");
+        case Cipher::CAMELLIA_128_OFB:
+            return BOTAN_CIPHER(KEY_128, 16, "Camellia-128/OFB");
+        case Cipher::CAMELLIA_128_CTR:
+            return BOTAN_CIPHER(KEY_128, 16, "Camellia-128/CTR");
+        case Cipher::CAMELLIA_128_GCM:
+            return BOTAN_CIPHER(KEY_128, 16, "Camellia-128/GCM");
+        case Cipher::CAMELLIA_128_XTS:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-128/XTS");
+        case Cipher::CAMELLIA_128_CCM:
+            return BOTAN_CIPHER(KEY_128, 12, "Camellia-128/CCM");
+        case Cipher::CAMELLIA_128_EAX:
+            return BOTAN_CIPHER(KEY_128, 16, "Camellia-128/EAX");
+        case Cipher::CAMELLIA_128_OCB:
+            return BOTAN_CIPHER(KEY_128, 12, "Camellia-128/OCB");
+        case Cipher::CAMELLIA_128_SIV:
+            return BOTAN_CIPHER(KEY_256, 16, "Camellia-128/SIV");
 
         case Cipher::SM4_ECB:
             throw UnsupportedCipherException();
@@ -232,8 +298,5 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
             throw UnsupportedCipherException();
-
-        default:
-            return nullptr;
     }
 }
