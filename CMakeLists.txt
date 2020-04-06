@@ -16,6 +16,8 @@ set(SYSTEM_OPENSSL OFF CACHE BOOL "Use system OpenSSL" FORCE)
 set(BUILD_OPENSSL ON CACHE BOOL "Build own OpenSSL" FORCE)
 set(OPENSSL_BRANCH OpenSSL_1_1_1d CACHE STRING "OpenSSL Git branch" FORCE)
 set(OPENSSL_BUILD_VERSION 1.1.1d CACHE STRING "OpenSSL version" FORCE)
+set(CONFIGURE_OPENSSL_MODULES "no-asm no-tests no-hw no-engine no-threads enable-camellia enable-seed no-cast no-md2 no-md4 no-mdc2 no-rc4 no-rc5 no-engine no-idea no-mdc2 no-rc5 no-ssl3 no-heartbeats no-gost no-deprecated no-capieng no-comp no-dtls no-psk no-srp no-dso no-dsa no-rc2 no-des"
+        CACHE STRING "OpenSSL Options" FORCE)
 add_subdirectory(OpenSSL-CMake)
 
 add_subdirectory(cryptopp-8.2)
