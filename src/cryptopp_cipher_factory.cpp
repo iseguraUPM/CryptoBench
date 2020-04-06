@@ -315,5 +315,74 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
             throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_256_ECB:
+            return CRYPTOPP_CIPHER_ECB(KEY_256, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_CBC:
+            return CRYPTOPP_CIPHER(KEY_256, 8,  CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_CFB:
+            return CRYPTOPP_CIPHER(KEY_256, 8,  CryptoPP::CFB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_OFB:
+            return CRYPTOPP_CIPHER(KEY_256, 8,  CryptoPP::OFB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_CTR:
+            return CRYPTOPP_CIPHER(KEY_256, 8,  CryptoPP::CTR_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_GCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, 8,  8,  CryptoPP::GCM<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_CCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, 8, 8,  CryptoPP::CCM<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_EAX:
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, 8, 8,  CryptoPP::EAX<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_256_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_192_ECB:
+            return CRYPTOPP_CIPHER_ECB(KEY_192, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_CBC:
+            return CRYPTOPP_CIPHER(KEY_192, 8,  CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_CFB:
+            return CRYPTOPP_CIPHER(KEY_192, 8,  CryptoPP::CFB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_OFB:
+            return CRYPTOPP_CIPHER(KEY_192, 8,  CryptoPP::OFB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_CTR:
+            return CRYPTOPP_CIPHER(KEY_192, 8,  CryptoPP::CTR_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_GCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_192, 8,  8,  CryptoPP::GCM<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_CCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_192, 8, 8,  CryptoPP::CCM<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_EAX:
+            return CRYPTOPP_CIPHER_AUTH(KEY_192, 8, 8,  CryptoPP::EAX<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_192_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_128_ECB:
+            return CRYPTOPP_CIPHER_ECB(KEY_128, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_CBC:
+            return CRYPTOPP_CIPHER(KEY_128, 8,  CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_CFB:
+            return CRYPTOPP_CIPHER(KEY_128, 8,  CryptoPP::CFB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_OFB:
+            return CRYPTOPP_CIPHER(KEY_128, 8,  CryptoPP::OFB_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_CTR:
+            return CRYPTOPP_CIPHER(KEY_128, 8,  CryptoPP::CTR_Mode<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_GCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, 8,  8,  CryptoPP::GCM<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_CCM:
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, 8, 8,  CryptoPP::CCM<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_EAX:
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, 8, 8,  CryptoPP::EAX<CryptoPP::Blowfish>);
+        case Cipher::BLOWFISH_128_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_SIV:
+            throw UnsupportedCipherException();
     }
 }

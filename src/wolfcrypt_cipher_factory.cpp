@@ -363,6 +363,42 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_EAX:
         case Cipher::BLOWFISH_OCB:
         case Cipher::BLOWFISH_SIV:
+
+        case Cipher::BLOWFISH_256_ECB:
+        case Cipher::BLOWFISH_256_CBC:
+        case Cipher::BLOWFISH_256_CFB:
+        case Cipher::BLOWFISH_256_OFB:
+        case Cipher::BLOWFISH_256_CTR:
+        case Cipher::BLOWFISH_256_GCM:
+        case Cipher::BLOWFISH_256_XTS:
+        case Cipher::BLOWFISH_256_CCM:
+        case Cipher::BLOWFISH_256_EAX:
+        case Cipher::BLOWFISH_256_OCB:
+        case Cipher::BLOWFISH_256_SIV:
+
+        case Cipher::BLOWFISH_192_ECB:
+        case Cipher::BLOWFISH_192_CBC:
+        case Cipher::BLOWFISH_192_CFB:
+        case Cipher::BLOWFISH_192_OFB:
+        case Cipher::BLOWFISH_192_CTR:
+        case Cipher::BLOWFISH_192_GCM:
+        case Cipher::BLOWFISH_192_XTS:
+        case Cipher::BLOWFISH_192_CCM:
+        case Cipher::BLOWFISH_192_EAX:
+        case Cipher::BLOWFISH_192_OCB:
+        case Cipher::BLOWFISH_192_SIV:
+
+        case Cipher::BLOWFISH_128_ECB:
+        case Cipher::BLOWFISH_128_CBC:
+        case Cipher::BLOWFISH_128_CFB:
+        case Cipher::BLOWFISH_128_OFB:
+        case Cipher::BLOWFISH_128_CTR:
+        case Cipher::BLOWFISH_128_GCM:
+        case Cipher::BLOWFISH_128_XTS:
+        case Cipher::BLOWFISH_128_CCM:
+        case Cipher::BLOWFISH_128_EAX:
+        case Cipher::BLOWFISH_128_OCB:
+        case Cipher::BLOWFISH_128_SIV:
             throw UnsupportedCipherException();
     }
 }

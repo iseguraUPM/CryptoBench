@@ -279,13 +279,13 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_ECB:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_CBC:
-            return BOTAN_CIPHER(KEY_448,8, 8, "Blowfish/CBC");
+            return BOTAN_CIPHER(KEY_448, 8, 8, "Blowfish/CBC");
         case Cipher::BLOWFISH_CFB:
-            return BOTAN_CIPHER(KEY_448,8, 8, "Blowfish/CFB");
+            return BOTAN_CIPHER(KEY_448, 8, 8, "Blowfish/CFB");
         case Cipher::BLOWFISH_OFB:
-            return BOTAN_CIPHER(KEY_448,8, 8, "Blowfish/OFB");
+            return BOTAN_CIPHER(KEY_448, 8, 8, "Blowfish/OFB");
         case Cipher::BLOWFISH_CTR:
-            return BOTAN_CIPHER(KEY_448,8, 8, "Blowfish/CTR");
+            return BOTAN_CIPHER(KEY_448, 8, 8, "Blowfish/CTR");
         case Cipher::BLOWFISH_GCM:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_XTS:
@@ -293,10 +293,79 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_CCM:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_EAX:
-            return BOTAN_CIPHER(KEY_448,8, 8, "Blowfish/EAX");
+            return BOTAN_CIPHER(KEY_448, 8, 8, "Blowfish/EAX");
         case Cipher::BLOWFISH_OCB:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_256_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_CBC:
+            return BOTAN_CIPHER(KEY_256, 8,8, "Blowfish/CBC");
+        case Cipher::BLOWFISH_256_CFB:
+            return BOTAN_CIPHER(KEY_256, 8,8, "Blowfish/CFB");
+        case Cipher::BLOWFISH_256_OFB:
+            return BOTAN_CIPHER(KEY_256, 8,8, "Blowfish/OFB");
+        case Cipher::BLOWFISH_256_CTR:
+            return BOTAN_CIPHER(KEY_256, 8,8, "Blowfish/CTR");
+        case Cipher::BLOWFISH_256_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_EAX:
+            return BOTAN_CIPHER(KEY_256, 8,8, "Blowfish/EAX");
+        case Cipher::BLOWFISH_256_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_256_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_192_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_CBC:
+            return BOTAN_CIPHER(KEY_192, 8,8, "Blowfish/CBC");
+        case Cipher::BLOWFISH_192_CFB:
+            return BOTAN_CIPHER(KEY_192, 8,8, "Blowfish/CFB");
+        case Cipher::BLOWFISH_192_OFB:
+            return BOTAN_CIPHER(KEY_192, 8,8, "Blowfish/OFB");
+        case Cipher::BLOWFISH_192_CTR:
+            return BOTAN_CIPHER(KEY_192, 8,8, "Blowfish/CTR");
+        case Cipher::BLOWFISH_192_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_EAX:
+            return BOTAN_CIPHER(KEY_192, 8,8, "Blowfish/EAX");
+        case Cipher::BLOWFISH_192_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_192_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_128_ECB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_CBC:
+            return BOTAN_CIPHER(KEY_128, 8,8, "Blowfish/CBC");
+        case Cipher::BLOWFISH_128_CFB:
+            return BOTAN_CIPHER(KEY_128, 8,8, "Blowfish/CFB");
+        case Cipher::BLOWFISH_128_OFB:
+            return BOTAN_CIPHER(KEY_128, 8,8, "Blowfish/OFB");
+        case Cipher::BLOWFISH_128_CTR:
+            return BOTAN_CIPHER(KEY_128, 8,8, "Blowfish/CTR");
+        case Cipher::BLOWFISH_128_GCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_XTS:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_CCM:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_EAX:
+            return BOTAN_CIPHER(KEY_128, 8,8, "Blowfish/EAX");
+        case Cipher::BLOWFISH_128_OCB:
+            throw UnsupportedCipherException();
+        case Cipher::BLOWFISH_128_SIV:
             throw UnsupportedCipherException();
     }
 }
