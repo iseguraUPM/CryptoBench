@@ -6,6 +6,7 @@
 
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/aes.h>
+#include <wolfssl/wolfcrypt/camellia.h>
 #include <wolfssl/wolfcrypt/des3.h>
 
 #include <CryptoBench/random_bytes.hpp>
@@ -290,6 +291,42 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_EAX:
         case Cipher::ARIA_128_OCB:
         case Cipher::ARIA_128_SIV:
+
+        case Cipher::CAMELLIA_256_ECB:
+        case Cipher::CAMELLIA_256_CBC:
+        case Cipher::CAMELLIA_256_CFB:
+        case Cipher::CAMELLIA_256_OFB:
+        case Cipher::CAMELLIA_256_CTR:
+        case Cipher::CAMELLIA_256_GCM:
+        case Cipher::CAMELLIA_256_XTS:
+        case Cipher::CAMELLIA_256_CCM:
+        case Cipher::CAMELLIA_256_EAX:
+        case Cipher::CAMELLIA_256_OCB:
+        case Cipher::CAMELLIA_256_SIV:
+
+        case Cipher::CAMELLIA_192_ECB:
+        case Cipher::CAMELLIA_192_CBC:
+        case Cipher::CAMELLIA_192_CFB:
+        case Cipher::CAMELLIA_192_OFB:
+        case Cipher::CAMELLIA_192_CTR:
+        case Cipher::CAMELLIA_192_GCM:
+        case Cipher::CAMELLIA_192_XTS:
+        case Cipher::CAMELLIA_192_CCM:
+        case Cipher::CAMELLIA_192_EAX:
+        case Cipher::CAMELLIA_192_OCB:
+        case Cipher::CAMELLIA_192_SIV:
+
+        case Cipher::CAMELLIA_128_ECB:
+        case Cipher::CAMELLIA_128_CBC:
+        case Cipher::CAMELLIA_128_CFB:
+        case Cipher::CAMELLIA_128_OFB:
+        case Cipher::CAMELLIA_128_CTR:
+        case Cipher::CAMELLIA_128_GCM:
+        case Cipher::CAMELLIA_128_XTS:
+        case Cipher::CAMELLIA_128_CCM:
+        case Cipher::CAMELLIA_128_EAX:
+        case Cipher::CAMELLIA_128_OCB:
+        case Cipher::CAMELLIA_128_SIV:
 
         case Cipher::SM4_ECB:
         case Cipher::SM4_CBC:

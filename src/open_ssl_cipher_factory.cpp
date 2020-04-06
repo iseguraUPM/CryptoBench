@@ -8,6 +8,7 @@
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
+#include <openssl/camellia.h>
 #include <CryptoBench/cipher_exception.hpp>
 
 #include "CryptoBench/random_bytes.hpp"
@@ -397,7 +398,6 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
 {
     switch (cipher)
     {
-
         case Cipher::AES_256_ECB:
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_256_ecb());
         case Cipher::AES_256_CBC:
@@ -410,13 +410,14 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             return CIPHER_128_BLOCK(KEY_256, EVP_aes_256_ctr());
         case Cipher::AES_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, EVP_aes_256_gcm());
-        case Cipher::AES_256_OCB:
-            return CIPHER_AUTH(KEY_256, BLK_128, EVP_aes_256_ocb());
         case Cipher::AES_256_XTS:
             return CIPHER_128_BLOCK(KEY_512, EVP_aes_256_xts()); // XTS mode expects key doubled
         case Cipher::AES_256_CCM:
             return CIPHER_CCM(KEY_256, BLK_128, EVP_aes_256_ccm());
         case Cipher::AES_256_EAX:
+            throw UnsupportedCipherException();
+        case Cipher::AES_256_OCB:
+            return CIPHER_AUTH(KEY_256, BLK_128, EVP_aes_256_ocb());
         case Cipher::AES_256_SIV:
             throw UnsupportedCipherException();
 
@@ -468,7 +469,6 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
 
-            //XTS & OCB not available for ARIA. CHECK OTHER LIBRARIES
         case Cipher::ARIA_256_ECB:
             return CIPHER_128_BLOCK(KEY_256, EVP_aria_256_ecb());
         case Cipher::ARIA_256_CBC:
@@ -536,6 +536,46 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_OCB:
             throw UnsupportedCipherException();
         case Cipher::ARIA_128_SIV:
+            throw UnsupportedCipherException();
+
+
+        case Cipher::CAMELLIA_256_ECB:
+        case Cipher::CAMELLIA_256_CBC:
+        case Cipher::CAMELLIA_256_CFB:
+        case Cipher::CAMELLIA_256_OFB:
+        case Cipher::CAMELLIA_256_CTR:
+        case Cipher::CAMELLIA_256_GCM:
+        case Cipher::CAMELLIA_256_XTS:
+        case Cipher::CAMELLIA_256_CCM:
+        case Cipher::CAMELLIA_256_EAX:
+        case Cipher::CAMELLIA_256_OCB:
+        case Cipher::CAMELLIA_256_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_192_ECB:
+        case Cipher::CAMELLIA_192_CBC:
+        case Cipher::CAMELLIA_192_CFB:
+        case Cipher::CAMELLIA_192_OFB:
+        case Cipher::CAMELLIA_192_CTR:
+        case Cipher::CAMELLIA_192_GCM:
+        case Cipher::CAMELLIA_192_XTS:
+        case Cipher::CAMELLIA_192_CCM:
+        case Cipher::CAMELLIA_192_EAX:
+        case Cipher::CAMELLIA_192_OCB:
+        case Cipher::CAMELLIA_192_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::CAMELLIA_128_ECB:
+        case Cipher::CAMELLIA_128_CBC:
+        case Cipher::CAMELLIA_128_CFB:
+        case Cipher::CAMELLIA_128_OFB:
+        case Cipher::CAMELLIA_128_CTR:
+        case Cipher::CAMELLIA_128_GCM:
+        case Cipher::CAMELLIA_128_XTS:
+        case Cipher::CAMELLIA_128_CCM:
+        case Cipher::CAMELLIA_128_EAX:
+        case Cipher::CAMELLIA_128_OCB:
+        case Cipher::CAMELLIA_128_SIV:
             throw UnsupportedCipherException();
 
 
