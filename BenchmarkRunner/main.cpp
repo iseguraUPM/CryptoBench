@@ -479,7 +479,7 @@ int main(int argc, char** arv)
     std::stringstream error_log;
 #else
     std::ofstream error_log;
-    error_log.open("err_benchmark_" + ss.str() + ".log");
+    error_log.open("err_benchmark_" + current_time + ".log");
 #endif
     //security::secure_string input_text;
     //input_text = "The quick fox jumps over the lazy dog";
