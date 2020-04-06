@@ -24,7 +24,8 @@ public:
     inline void generateRandomBytes(unsigned char *arr, int len) noexcept(false)
     {
 #ifdef CRYPTOBENCH_NO_RANDOM
-        memset(arr, 0xFF, len);
+        for (int i = 0; i < len; i++)
+            arr[i] = i % 0xFF;
 #else
         if (len <= 0)
             throw std::runtime_error("Random bytes length must be greater than 0");
