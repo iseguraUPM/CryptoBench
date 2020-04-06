@@ -354,7 +354,7 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
         return;
     }
 
-    BenchmarkResult result_record = BenchmarkResult(cipher_ptr->getKeyLen() * 8, cipher_ptr->getBlockLen() * 8, input_text.size(), lib_name, std::get<0>(desc), std::get<2>(desc));
+    BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_text.size(), lib_name, std::get<0>(desc), std::get<2>(desc));
 
     const byte * key = nullptr;
     if (cipher_ptr->getKeyLen() == 256 / 8)
