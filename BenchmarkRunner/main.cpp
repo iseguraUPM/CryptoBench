@@ -21,6 +21,7 @@
 #include <CryptoBench/botan_cipher_factory.hpp>
 #include <CryptoBench/wolfcrypt_cipher_factory.hpp>
 
+
 struct BenchmarkResult
 {
     unsigned long encrypt_time_micro{};
@@ -145,7 +146,7 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
 #endif
 }
 
-void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, float hamming_distance, float avalanche_index, const std::string avalanche_conf)
+void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, byte_len hamming_distance, float avalanche_index, const std::string avalanche_conf)
 {
     std::stringstream result_line;
     result_line << result.cipher_lib << ","
@@ -291,10 +292,10 @@ void avalancheBenchmark(CipherPtr &cipherptr, const byte * key, AvalancheData &a
     byte_len hamming_dist_0_3 = hamming_distance(output_0_0, output_0_3, output_len_0_3);
     byte_len hamming_dist_0_4 = hamming_distance(output_0_0, output_0_4, output_len_0_4);
 
-    float avalanche_0_1 = (float)hamming_dist_0_1 / (float)output_len_0_0;
-    float avalanche_0_2 = (float)hamming_dist_0_2 / (float)output_len_0_0;
-    float avalanche_0_3 = (float)hamming_dist_0_3 / (float)output_len_0_0;
-    float avalanche_0_4 = (float)hamming_dist_0_4 / (float)output_len_0_0;
+    float avalanche_0_1 = (float)hamming_dist_0_1 / (float)output_len_0_0 / 8.f;
+    float avalanche_0_2 = (float)hamming_dist_0_2 / (float)output_len_0_0 / 8.f;
+    float avalanche_0_3 = (float)hamming_dist_0_3 / (float)output_len_0_0 / 8.f;
+    float avalanche_0_4 = (float)hamming_dist_0_4 / (float)output_len_0_0 / 8.f;
 
     recordAvalancheResult(result, avalanche_file, hamming_dist_0_1, avalanche_0_1, "key_0_pt_1");
     recordAvalancheResult(result, avalanche_file, hamming_dist_0_2, avalanche_0_2, "key_0_pt_2");
