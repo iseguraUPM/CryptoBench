@@ -178,6 +178,42 @@ enum class Cipher
     BLOWFISH_EAX,
     BLOWFISH_OCB,
     BLOWFISH_SIV,
+
+    BLOWFISH_128_ECB,
+    BLOWFISH_128_CBC,
+    BLOWFISH_128_CFB,
+    BLOWFISH_128_OFB,
+    BLOWFISH_128_CTR,
+    BLOWFISH_128_GCM,
+    BLOWFISH_128_XTS,
+    BLOWFISH_128_CCM,
+    BLOWFISH_128_EAX,
+    BLOWFISH_128_OCB,
+    BLOWFISH_128_SIV,
+
+    BLOWFISH_192_ECB,
+    BLOWFISH_192_CBC,
+    BLOWFISH_192_CFB,
+    BLOWFISH_192_OFB,
+    BLOWFISH_192_CTR,
+    BLOWFISH_192_GCM,
+    BLOWFISH_192_XTS,
+    BLOWFISH_192_CCM,
+    BLOWFISH_192_EAX,
+    BLOWFISH_192_OCB,
+    BLOWFISH_192_SIV,
+
+    BLOWFISH_256_ECB,
+    BLOWFISH_256_CBC,
+    BLOWFISH_256_CFB,
+    BLOWFISH_256_OFB,
+    BLOWFISH_256_CTR,
+    BLOWFISH_256_GCM,
+    BLOWFISH_256_XTS,
+    BLOWFISH_256_CCM,
+    BLOWFISH_256_EAX,
+    BLOWFISH_256_OCB,
+    BLOWFISH_256_SIV,
 };
 
 const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
@@ -322,7 +358,44 @@ const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
                               Cipher::BLOWFISH_CCM,
                               Cipher::BLOWFISH_EAX,
                               Cipher::BLOWFISH_OCB,
-                              Cipher::BLOWFISH_SIV,};
+                              Cipher::BLOWFISH_SIV,
+
+                              Cipher::BLOWFISH_128_ECB,
+                              Cipher::BLOWFISH_128_CBC,
+                              Cipher::BLOWFISH_128_CFB,
+                              Cipher::BLOWFISH_128_OFB,
+                              Cipher::BLOWFISH_128_CTR,
+                              Cipher::BLOWFISH_128_GCM,
+                              Cipher::BLOWFISH_128_XTS,
+                              Cipher::BLOWFISH_128_CCM,
+                              Cipher::BLOWFISH_128_EAX,
+                              Cipher::BLOWFISH_128_OCB,
+                              Cipher::BLOWFISH_128_SIV,
+
+                              Cipher::BLOWFISH_192_ECB,
+                              Cipher::BLOWFISH_192_CBC,
+                              Cipher::BLOWFISH_192_CFB,
+                              Cipher::BLOWFISH_192_OFB,
+                              Cipher::BLOWFISH_192_CTR,
+                              Cipher::BLOWFISH_192_GCM,
+                              Cipher::BLOWFISH_192_XTS,
+                              Cipher::BLOWFISH_192_CCM,
+                              Cipher::BLOWFISH_192_EAX,
+                              Cipher::BLOWFISH_192_OCB,
+                              Cipher::BLOWFISH_192_SIV,
+
+                              Cipher::BLOWFISH_256_ECB,
+                              Cipher::BLOWFISH_256_CBC,
+                              Cipher::BLOWFISH_256_CFB,
+                              Cipher::BLOWFISH_256_OFB,
+                              Cipher::BLOWFISH_256_CTR,
+                              Cipher::BLOWFISH_256_GCM,
+                              Cipher::BLOWFISH_256_XTS,
+                              Cipher::BLOWFISH_256_CCM,
+                              Cipher::BLOWFISH_256_EAX,
+                              Cipher::BLOWFISH_256_OCB,
+                              Cipher::BLOWFISH_256_SIV,
+                              };
 
 typedef std::tuple<std::string, int, std::string> CipherDescription;
 inline CipherDescription getCipherDescription(Cipher cipher)
@@ -604,6 +677,75 @@ inline CipherDescription getCipherDescription(Cipher cipher)
             return std::make_tuple(STR_BLOWFISH, 448, STR_OCB);
         case Cipher::BLOWFISH_SIV:
             return std::make_tuple(STR_BLOWFISH, 448, STR_SIV);
+
+        case Cipher::BLOWFISH_256_ECB:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_ECB);
+        case Cipher::BLOWFISH_256_CBC:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_CBC);
+        case Cipher::BLOWFISH_256_CFB:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_CFB);
+        case Cipher::BLOWFISH_256_OFB:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_OFB);
+        case Cipher::BLOWFISH_256_CTR:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_CTR);
+        case Cipher::BLOWFISH_256_GCM:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_GCM);
+        case Cipher::BLOWFISH_256_XTS:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_XTS);
+        case Cipher::BLOWFISH_256_CCM:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_CCM);
+        case Cipher::BLOWFISH_256_EAX:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_EAX);
+        case Cipher::BLOWFISH_256_OCB:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_OCB);
+        case Cipher::BLOWFISH_256_SIV:
+            return std::make_tuple(STR_BLOWFISH, 256, STR_SIV);
+
+        case Cipher::BLOWFISH_192_ECB:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_ECB);
+        case Cipher::BLOWFISH_192_CBC:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_CBC);
+        case Cipher::BLOWFISH_192_CFB:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_CFB);
+        case Cipher::BLOWFISH_192_OFB:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_OFB);
+        case Cipher::BLOWFISH_192_CTR:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_CTR);
+        case Cipher::BLOWFISH_192_GCM:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_GCM);
+        case Cipher::BLOWFISH_192_XTS:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_XTS);
+        case Cipher::BLOWFISH_192_CCM:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_CCM);
+        case Cipher::BLOWFISH_192_EAX:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_EAX);
+        case Cipher::BLOWFISH_192_OCB:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_OCB);
+        case Cipher::BLOWFISH_192_SIV:
+            return std::make_tuple(STR_BLOWFISH, 192, STR_SIV);
+
+        case Cipher::BLOWFISH_128_ECB:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_ECB);
+        case Cipher::BLOWFISH_128_CBC:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_CBC);
+        case Cipher::BLOWFISH_128_CFB:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_CFB);
+        case Cipher::BLOWFISH_128_OFB:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_OFB);
+        case Cipher::BLOWFISH_128_CTR:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_CTR);
+        case Cipher::BLOWFISH_128_GCM:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_GCM);
+        case Cipher::BLOWFISH_128_XTS:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_XTS);
+        case Cipher::BLOWFISH_128_CCM:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_CCM);
+        case Cipher::BLOWFISH_128_EAX:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_EAX);
+        case Cipher::BLOWFISH_128_OCB:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_OCB);
+        case Cipher::BLOWFISH_128_SIV:
+            return std::make_tuple(STR_BLOWFISH, 128, STR_SIV);
     }
 }
 
