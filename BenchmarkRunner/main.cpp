@@ -511,21 +511,6 @@ int main(int argc, char** arv)
 
     std::cout << "Starting...\n";
 
-    /*generateInputTextFile("fox.txt", 10000);
-    std::ifstream input_file("fox.txt", std::ios::binary);
-    security::secure_string plaintext;
-    int text_size = readInputFile(input_file, plaintext);
-    OpenSSLCipherFactory cipherFactory;
-    runSingleBenchmark(Cipher::AES_256_GCM, cipherFactory, plaintext, text_size, results_file);
-    input_file.close();
-
-    LibsodiumCipherFactory naclFactory;
-    generateInputBinaryFile("input.bin", text_size);
-    input_file.open("input.bin", std::ios::binary);
-    text_size = readInputFile(input_file, plaintext);
-    runSingleBenchmark(Cipher::AES_256_GCM, naclFactory, plaintext, text_size, results_file);
-    input_file.close();*/
-
     OutputSet output_set(results_file, avalanche_file, error_log);
 
     for (int b : sizes)
