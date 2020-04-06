@@ -7,7 +7,7 @@ set(WOLFSSL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 ExternalProject_Add(libwolfssl
         SOURCE_DIR ${WOLFSSL_SRC}
         PREFIX ${WOLFSSL_PREFIX}
-        CONFIGURE_COMMAND rm -f ${WOLFSSL_SRC}/config.status && ${WOLFSSL_SRC}/configure --prefix=${WOLFSSL_PREFIX} --enable-shared --enable-static  --enable-harden --enable-aescbc --enable-aesctr --enable-camellia --enable-aesgcm --enable-aesccm --enable-ecc --enable-des3 --enable-xts
+        CONFIGURE_COMMAND rm -f ${WOLFSSL_SRC}/config.status && ${WOLFSSL_SRC}/configure --prefix=${WOLFSSL_PREFIX} --enable-shared --enable-static  --enable-harden --enable-aescbc --enable-aesctr --enable-camellia --enable-aesgcm --enable-aesccm --enable-ecc --enable-des3 --enable-xts --disable-fastmath
         BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         BUILD_BYPRODUCTS ${WOLFSSL_PREFIX}/lib/libwolfssl.a
