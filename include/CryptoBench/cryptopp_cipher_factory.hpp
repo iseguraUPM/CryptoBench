@@ -195,7 +195,7 @@ protected:
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
 CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::CryptoppCipherAuth()
 {
-
+    random_bytes = RandomBytes();
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
