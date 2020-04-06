@@ -11,7 +11,7 @@ ExternalProject_Add(libbotan
         #BASE_DIR          ${CMAKE_CURRENT_BINARY_DIR}/botan
         SOURCE_DIR        ${BOTAN_SRC}/src/lib
 
-        CONFIGURE_COMMAND ${BOTAN_SRC}/configure.py --prefix=${BOTAN_PREFIX} --enable-static-library
+        CONFIGURE_COMMAND ${BOTAN_SRC}/configure.py --prefix=${BOTAN_PREFIX} --enable-static-library --disable-sse2 --disable-ssse3 --disable-sse4.1 --disable-sse4.2 --disable-avx2 --disable-bmi2 --disable-rdrand --disable-rdseed --disable-aes-ni --disable-sha-ni --disable-altivec --disable-neon --disable-armv8crypto
         BUILD_COMMAND     ${MAKE}
         INSTALL_COMMAND   make install
         BUILD_BYPRODUCTS  ${BOTAN_PREFIX}/lib/libbotan-2.a
