@@ -287,7 +287,7 @@ avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanc
     for (int i = 0; i < avalanche_data.alt_inputs.size(); i++)
     {
         // Can be done in parallel. No need for throughput
-        hamming_results.emplace_back(std::async([&]()
+        hamming_results.emplace_back(std::async([output_size, i, &cipherptr, &avalanche_data, key, &output_0_ptr]()
                                                 {
                                                     auto output = byte_ptr(new byte[output_size]
                                                                            , std::default_delete<byte[]>());
@@ -299,7 +299,7 @@ avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanc
                                                 }));
     }
 
-    if (hamming_results.size() != avalanche_data.input_size)
+    if (hamming_results.size() != avalanche_data.alt_inputs.size())
     {
         throw std::runtime_error("Unable to collect all avalanche output data");
     }
@@ -307,7 +307,7 @@ avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanc
     int i = 0;
     for (auto &future : hamming_results)
     {
-        auto conf = "key_0_pt_" + std::to_string(i++);
+        auto conf = "key_0_pt_" + std::to_string(++i);
         byte_len hamming_dist = future.get();
         double avalanche = (double) hamming_dist / (double) output_size / 8.f;
         recordAvalancheResult(result, avalanche_file, hamming_dist, avalanche, conf.c_str());
@@ -319,6 +319,7 @@ void initializeAvalancheData(const byte *input_text, const byte_len input_size, 
 {
     avalanche_data.input_0 = input_text;
     avalanche_data.input_size = input_size;
+    avalanche_data.alt_inputs.clear();
     avalanche_data.alt_inputs.reserve(4);
     for (int i = 0; i < 4; i++)
     {
@@ -403,17 +404,26 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
     try
     {
         encryptDecryptBenchmark(key, input_text, input_size, cipher_ptr, result_record);
+        recordResult(result_record, output_set.perf_result);
+    } catch (GenericCipherException &ex)
+    {
+        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+    } catch (std::exception &ex)
+    {
+        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+    }
+
+
+    try
+    {
         avalancheBenchmark(cipher_ptr, key, avalanche_data, output_set.avl_result, result_record);
     } catch (GenericCipherException &ex)
     {
         recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
-        return;
     } catch (std::exception &ex)
     {
         recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
-        return;
     }
-    recordResult(result_record, output_set.perf_result);
 }
 
 void createInputFile(byte *input_text, const byte_len bytes)
@@ -530,7 +540,7 @@ int main(int argc, char **arv)
             1073741824
     };*/
 
-    int sizes[] = {2048};
+    int sizes[] = { 2048 };
 
     std::cout << "Starting...\n";
 
