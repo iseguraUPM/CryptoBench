@@ -67,13 +67,13 @@ template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE>
 void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::decrypt(const byte key[KEY_SIZE], const byte *cipher_text, byte_len cipher_text_len
                                                    , byte *recovered_text, byte_len &recovered_text_len)
 {
-    byte * iv = new byte[IV_SIZE];
-    memcpy(iv, cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
+    auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
     cipher_text_len -= IV_SIZE;
 
     std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create(cipherDescription, Botan::DECRYPTION);
-    dec->set_key(&key[0], KEY_SIZE);
-    dec->start(&iv[0], IV_SIZE);
+    dec->set_key(key, KEY_SIZE);
+    dec->start(iv.get(), IV_SIZE);
 
     Botan::secure_vector<uint8_t> ct((const char *)&cipher_text[0], (const char *)&cipher_text[0] + cipher_text_len);
 
@@ -81,21 +81,18 @@ void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::decrypt(const byte key[KEY_SIZE
 
     memcpy(recovered_text, ct.data(), ct.size());
     recovered_text_len = ct.size();
-
-    delete[] iv;
-
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE>
 void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::encrypt(const byte key[KEY_SIZE], const byte *plain_text, byte_len plain_text_len
                                                    , byte * cipher_text, byte_len &cipher_text_len)
 {
-    byte * iv = new byte[IV_SIZE];
-    random_bytes.generateRandomBytes(iv, IV_SIZE);
+    auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
+    random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
     std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create(cipherDescription, Botan::ENCRYPTION);
-    enc->set_key(&key[0], KEY_SIZE);
-    enc->start(&iv[0], IV_SIZE);
+    enc->set_key(key, KEY_SIZE);
+    enc->start(iv.get(), IV_SIZE);
 
     // Copy input data to a buffer that will be encrypted
     Botan::secure_vector<uint8_t> pt((const char *)&plain_text[0], (const char *)&plain_text[0] + plain_text_len);
@@ -104,9 +101,8 @@ void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::encrypt(const byte key[KEY_SIZE
     memcpy(cipher_text, pt.data(), pt.size());
     cipher_text_len = pt.size();
 
-    memcpy(cipher_text + cipher_text_len, iv, IV_SIZE);
+    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
     cipher_text_len += IV_SIZE;
-    delete[] iv;
 }
 
 #endif //CRYPTOBENCH_BOTAN_CIPHER_FACTORY_HPP
