@@ -38,8 +38,10 @@ struct BenchmarkResult
 
     BenchmarkResult() = default;
 
-    BenchmarkResult(int key_len, int block_len, byte_len input_size, const std::string lib, std::string cipher, std::string mode)
-    : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_lib(lib), cipher_alg(std::move(cipher)), block_mode(std::move(mode))
+    BenchmarkResult(int key_len, int block_len, byte_len input_size, const std::string lib, std::string cipher
+                    , std::string mode)
+            : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_lib(lib),
+              cipher_alg(std::move(cipher)), block_mode(std::move(mode))
     {
         encrypt_time_micro = 0;
         decrypt_time_micro = 0;
@@ -59,14 +61,15 @@ struct KeyChain
 
 struct AvalancheData
 {
-    const byte * input_0;
+    const byte *input_0;
     byte_len input_size;
     std::vector<byte_ptr> alt_inputs{};
 };
 
 struct OutputSet
 {
-    OutputSet(std::ostream &perf, std::ostream &avl, std::ostream &err) : perf_result(perf), avl_result(avl), error_log(err)
+    OutputSet(std::ostream &perf, std::ostream &avl, std::ostream &err) : perf_result(perf), avl_result(avl),
+                                                                          error_log(err)
     {
     }
 
@@ -76,7 +79,7 @@ struct OutputSet
 };
 
 
-std::string timeStringNowFormat(const char * format)
+std::string timeStringNowFormat(const char *format)
 {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -86,7 +89,8 @@ std::string timeStringNowFormat(const char * format)
     return std::move(ss.str());
 }
 
-void recordError(const std::string lib_name, const CipherDescription &desc, byte_len input_size, const std::string msg, std::ostream &error_log)
+void recordError(const std::string lib_name, const CipherDescription &desc, byte_len input_size, const std::string msg
+                 , std::ostream &error_log)
 {
     error_log << timeStringNowFormat("%Y-%m-%d %H:%M:%S ")
               << "[" << lib_name << "] "
@@ -96,7 +100,8 @@ void recordError(const std::string lib_name, const CipherDescription &desc, byte
               << "\n";
 }
 
-void encryptDecryptBenchmark(const byte* key, const byte * input_text, const byte_len input_size, CipherPtr &cipher, BenchmarkResult &result)
+void encryptDecryptBenchmark(const byte *key, const byte *input_text, const byte_len input_size, CipherPtr &cipher
+                             , BenchmarkResult &result)
 {
     using namespace std::chrono;
 
@@ -124,14 +129,14 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
 {
     std::stringstream result_line;
     result_line << result.cipher_lib << ","
-    << result.cipher_alg << ","
-    << result.key_bits << ","
-    << result.block_mode << ","
-    << result.block_bits << ","
-    << result.input_size << ","
-    << result.ciphertext_size << ","
-    << result.encrypt_time_micro << ","
-    << result.decrypt_time_micro << "\n";
+                << result.cipher_alg << ","
+                << result.key_bits << ","
+                << result.block_mode << ","
+                << result.block_bits << ","
+                << result.input_size << ","
+                << result.ciphertext_size << ","
+                << result.encrypt_time_micro << ","
+                << result.decrypt_time_micro << "\n";
 
     file_stream << result_line.str();
 #ifdef CRYPTOBENCH_DEBUG
@@ -139,7 +144,8 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
 #endif
 }
 
-void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, byte_len hamming_distance, double avalanche_index, const char * avalanche_conf)
+void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, byte_len hamming_distance
+                           , double avalanche_index, const char *avalanche_conf)
 {
     std::stringstream result_line;
     result_line << result.cipher_lib << ","
@@ -155,16 +161,16 @@ void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, b
     file_stream << result_line.str();
 }
 
-std::size_t min(std::size_t x, std::size_t y)
+byte_len min(byte_len x, byte_len y)
 {
     return x > y ? y : x;
 }
 
-void generateInputBinaryFile(const std::string& filename, std::size_t target_size)
+void generateInputBinaryFile(const std::string &filename, byte_len target_size)
 {
-    std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned char> rbe;
+    std::independent_bits_engine<std::default_random_engine, CHAR_BIT, byte> rbe;
     std::ofstream binaryFile(filename, std::ios::binary);
-    std::size_t file_size = 0;
+    byte_len file_size = 0;
 
     const int buffer_size = 1024;
     unsigned char buffer[buffer_size];
@@ -172,12 +178,12 @@ void generateInputBinaryFile(const std::string& filename, std::size_t target_siz
     {
         std::generate(std::begin(buffer), std::end(buffer), std::ref(rbe));
         std::size_t to_write = min(buffer_size, target_size - file_size);
-        binaryFile.write((char *) &buffer[0], min(buffer_size, target_size - file_size));
+        binaryFile.write((char *) &buffer[0], to_write);
         file_size += to_write;
     }
 }
 
-void generateRandomBytes(byte *arr, int len) noexcept (false)
+void generateRandomBytes(byte *arr, int len) noexcept(false)
 {
     if (len <= 0)
         throw std::runtime_error("Random bytes length must be greater than 0");
@@ -187,7 +193,7 @@ void generateRandomBytes(byte *arr, int len) noexcept (false)
     }
 }
 
-void generateInputTextFile(const std::string& filename, int line_count)
+void generateInputTextFile(const std::string &filename, int line_count)
 {
     const std::string foxStr = "The Quick Brown Fox Jumps Over The Lazy Dog";
 
@@ -205,7 +211,7 @@ void generateInputTextFile(const std::string& filename, int line_count)
     textFile.close();
 }
 
-int readInputFile(std::ifstream &t, byte * input_text, byte_len input_size)
+int readInputFile(std::ifstream &t, byte *input_text, byte_len input_size)
 {
     t.seekg(0, std::ios::end);
     byte_len len = t.tellg();
@@ -233,8 +239,7 @@ int readInputFile(std::ifstream &t, std::string &input_text)
     int len = t.tellg();
     input_text.reserve(len);
     t.seekg(0, std::ios::beg);
-    input_text.assign((std::istreambuf_iterator<char>(t)),
-            std::istreambuf_iterator<char>());
+    input_text.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
     return len;
 }
 
@@ -245,11 +250,12 @@ int readInputFile(std::ifstream &t, std::string &input_text)
  * @param n size in bytes
  * @return the bit hamming distance of p and q
  */
-unsigned long long hammingDistance(const byte * p, const byte * q, size_t n)
+unsigned long long hammingDistance(const byte *p, const byte *q, size_t n)
 {
     byte_len counter = 0;
-    for (size_t i = 0; i < n; ++i) {
-        byte diff = p[i] ^ q[i];
+    for (size_t i = 0; i < n; ++i)
+    {
+        byte diff = p[i] ^q[i];
 
         while (diff > 0x00)
         {
@@ -262,8 +268,9 @@ unsigned long long hammingDistance(const byte * p, const byte * q, size_t n)
 }
 
 
-void avalancheBenchmark(CipherPtr &cipherptr, const byte * key, AvalancheData &avalanche_data, std::ostream &avalanche_file
-                        , BenchmarkResult &result)
+void
+avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanche_data, std::ostream &avalanche_file
+                   , BenchmarkResult &result)
 {
     auto input_0 = avalanche_data.input_0;
 
@@ -281,13 +288,15 @@ void avalancheBenchmark(CipherPtr &cipherptr, const byte * key, AvalancheData &a
     {
         // Can be done in parallel. No need for throughput
         hamming_results.emplace_back(std::async([&]()
-                                 {
-                                     auto output = byte_ptr(new byte[output_size], std::default_delete<byte[]>());
-                                     byte_len out_len = output_size;
-                                     cipherptr->encrypt(key, avalanche_data.alt_inputs.at(i).get()
-                                             , avalanche_data.input_size, output.get(), out_len);
-                                     return hammingDistance(output_0_ptr.get(), output.get(), out_len);
-                                 }));
+                                                {
+                                                    auto output = byte_ptr(new byte[output_size]
+                                                                           , std::default_delete<byte[]>());
+                                                    byte_len out_len = output_size;
+                                                    cipherptr->encrypt(key, avalanche_data.alt_inputs.at(i).get()
+                                                                       , avalanche_data.input_size, output.get()
+                                                                       , out_len);
+                                                    return hammingDistance(output_0_ptr.get(), output.get(), out_len);
+                                                }));
     }
 
     if (hamming_results.size() != avalanche_data.input_size)
@@ -305,7 +314,8 @@ void avalancheBenchmark(CipherPtr &cipherptr, const byte * key, AvalancheData &a
     }
 }
 
-void initializeAvalancheData(const byte * input_text, const byte_len input_size, const int block_len, AvalancheData &avalanche_data)
+void initializeAvalancheData(const byte *input_text, const byte_len input_size, const int block_len
+                             , AvalancheData &avalanche_data)
 {
     avalanche_data.input_0 = input_text;
     avalanche_data.input_size = input_size;
@@ -335,7 +345,9 @@ void initializeAvalancheData(const byte * input_text, const byte_len input_size,
     }
 }
 
-void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const byte * input_text, byte_len input_size, const KeyChain &key_chain, AvalancheData &avalanche_data, const OutputSet &output_set)
+void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const byte *input_text
+                        , byte_len input_size, const KeyChain &key_chain, AvalancheData &avalanche_data
+                        , const OutputSet &output_set)
 {
     auto desc = getCipherDescription(cipher);
     CipherPtr cipher_ptr;
@@ -354,9 +366,10 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
         return;
     }
 
-    BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_size, lib_name, std::get<0>(desc), std::get<2>(desc));
+    BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_size
+                                                    , lib_name, std::get<0>(desc), std::get<2>(desc));
 
-    const byte * key = nullptr;
+    const byte *key = nullptr;
     if (cipher_ptr->getKeyLen() == 256 / 8)
     {
         key = key_chain.key256;
@@ -378,29 +391,32 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
     } else if (cipher_ptr->getKeyLen() == 64 / 8)
     {
         key = key_chain.key64;
-    }
-    else
+    } else
     {
-        recordError(lib_name, desc, input_size, "No key generated for " + std::to_string(cipher_ptr->getKeyLen()) + " size", output_set.error_log);
+        recordError(lib_name, desc, input_size,
+                "No key generated for " + std::to_string(cipher_ptr->getKeyLen()) + " size", output_set.error_log);
         return;
     }
 
     initializeAvalancheData(input_text, input_size, cipher_ptr->getBlockLen(), avalanche_data);
 
-    try {
+    try
+    {
         encryptDecryptBenchmark(key, input_text, input_size, cipher_ptr, result_record);
         avalancheBenchmark(cipher_ptr, key, avalanche_data, output_set.avl_result, result_record);
-    } catch (GenericCipherException &ex) {
+    } catch (GenericCipherException &ex)
+    {
         recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
         return;
-    } catch (std::exception &ex) {
+    } catch (std::exception &ex)
+    {
         recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
         return;
     }
     recordResult(result_record, output_set.perf_result);
 }
 
-void createInputFile(byte * input_text, const byte_len bytes)
+void createInputFile(byte *input_text, const byte_len bytes)
 {
     std::ifstream input_file;
 
@@ -410,7 +426,8 @@ void createInputFile(byte * input_text, const byte_len bytes)
     input_file.close();
 }
 
-void initializeInputData(const byte_len input_size, byte * input_text, AvalancheData &avalanche_data, KeyChain &key_chain)
+void
+initializeInputData(const byte_len input_size, byte *input_text, AvalancheData &avalanche_data, KeyChain &key_chain)
 {
     createInputFile(input_text, input_size);
 
@@ -423,17 +440,21 @@ void initializeInputData(const byte_len input_size, byte * input_text, Avalanche
     generateRandomBytes(key_chain.key64, 8);
 }
 
-void runFullBenchmark(const int rounds, const byte_len input_size, const char * lib_name, CipherFactory &factory, const OutputSet & output_set)
+void runFullBenchmark(const int rounds, const byte_len input_size, const char *lib_name, CipherFactory &factory
+                      , const OutputSet &output_set)
 {
-    std::cout << "\nRunning " << lib_name << " " << std::to_string(input_size) << " bytes random file benchmark\n" << std::endl;
-    auto input_text = byte_ptr (new byte[input_size], std::default_delete<byte[]>());
-    for(int i = 0; i < rounds; i++)
+    std::cout << "\nRunning " << lib_name << " " << std::to_string(input_size) << " bytes random file benchmark\n"
+              << std::endl;
+    auto input_text = byte_ptr(new byte[input_size], std::default_delete<byte[]>());
+    for (int i = 0; i < rounds; i++)
     {
-        AvalancheData avalanche_data{}; KeyChain key_chain{};
+        AvalancheData avalanche_data{};
+        KeyChain key_chain{};
         initializeInputData(input_size, input_text.get(), avalanche_data, key_chain);
-        for(Cipher cipher : CIPHER_LIST)
+        for (Cipher cipher : CIPHER_LIST)
         {
-            runSingleBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain, avalanche_data, output_set);
+            runSingleBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain, avalanche_data
+                               , output_set);
         }
     }
 }
@@ -459,7 +480,7 @@ void runBenchmarkWSize(int rounds, byte_len bytes, const OutputSet &output_set)
     runFullBenchmark(rounds, bytes, "wolfcrypt", wolf_crypt_cipher_factory, output_set);
 }
 
-int main(int argc, char** arv)
+int main(int argc, char **arv)
 {
     //generateInputTextFile("fox.txt", 100000);
     //std::ifstream input_file("fox.txt", std::ios::binary);
@@ -472,7 +493,8 @@ int main(int argc, char** arv)
 
     std::ofstream avalanche_file;
     avalanche_file.open("avalanche_" + current_time + ".csv");
-    avalanche_file << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,AVALANCHE_CONF,HAMMING_DIST,AVALANCHE_EFFECT\n";
+    avalanche_file
+            << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,AVALANCHE_CONF,HAMMING_DIST,AVALANCHE_EFFECT\n";
 
 #ifdef CRYPTOBENCH_DEBUG
     std::stringstream error_log;
@@ -508,7 +530,7 @@ int main(int argc, char** arv)
             1073741824
     };*/
 
-    int sizes[] = { 2048 };
+    int sizes[] = {2048};
 
     std::cout << "Starting...\n";
 
@@ -526,7 +548,7 @@ int main(int argc, char** arv)
 
 #ifdef CRYPTOBENCH_DEBUG
     std::cerr << "____________DEBUG ERROR LOG DUMP____________\n"
-    << error_log.str() << "\n";
+              << error_log.str() << "\n";
 #else
     error_log.close();
 #endif
