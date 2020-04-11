@@ -102,7 +102,17 @@ TEST_P(CipherPerformanceFixture, EncryptDecrypt)
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
 
-    std::cout << "\nCipher text: " << output << "\n";
+    {
+        std::stringstream ss;
+        for (int i = 0; i < output_len; i++)
+            if (output[i] > 0x0F)
+                ss << std::hex << int(output[i]) << " ";
+            else
+                ss << "0" << std::hex << int(output[i]) << " ";
+
+        std::cout << "\nCipher text: " << ss.str() << "\n";
+    }
+
     std::cout << "\nCipher text len: " << output_len << "\n";
 
     byte * recovered = new byte[input_len];
