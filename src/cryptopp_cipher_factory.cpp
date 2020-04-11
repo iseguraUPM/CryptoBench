@@ -24,7 +24,6 @@
 #include "CryptoBench/random_bytes.hpp"
 
 #define CRYPTOPP_CIPHER(key_len, block_len, cipher) (CipherPtr(new CryptoppCipher<key_len, block_len, cipher>()))
-#define CRYPTOPP_CIPHER_ECB(key_len, block_len, cipher) (CipherPtr(new CryptoppCipherECB<key_len, block_len, cipher>()))
 #define CRYPTOPP_CIPHER_AUTH(key_len, block_len, iv_len, cipher) (CipherPtr(new CryptoppCipherAuth<key_len, block_len, iv_len, cipher>()))
 
 #define KEY_128 16
@@ -41,7 +40,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
     switch(cipher)
     {
         case Cipher::AES_256_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
         case Cipher::AES_256_CBC:
             return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CBC_Mode<CryptoPP::AES>);
         case Cipher::AES_256_CFB:
@@ -64,7 +63,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::AES_192_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
         case Cipher::AES_192_CBC:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CBC_Mode<CryptoPP::AES>);
         case Cipher::AES_192_CFB:
@@ -87,7 +86,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::AES_128_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::AES>);
         case Cipher::AES_128_CBC:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CBC_Mode<CryptoPP::AES>);
         case Cipher::AES_128_CFB:
@@ -110,7 +109,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::CAMELLIA_256_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_256_CBC:
             return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CBC_Mode<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_256_CFB:
@@ -133,7 +132,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::CAMELLIA_192_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_192_CBC:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CBC_Mode<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_192_CFB:
@@ -156,7 +155,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::CAMELLIA_128_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_128_CBC:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CBC_Mode<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_128_CFB:
@@ -179,7 +178,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::ARIA_256_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
+            return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_256_CBC:
             return CRYPTOPP_CIPHER(KEY_256, 16, CryptoPP::CBC_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_256_CFB:
@@ -202,7 +201,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::ARIA_192_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
+            return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_192_CBC:
             return CRYPTOPP_CIPHER(KEY_192, 16, CryptoPP::CBC_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_192_CFB:
@@ -225,7 +224,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::ARIA_128_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_128_CBC:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CBC_Mode<CryptoPP::ARIA>);
         case Cipher::ARIA_128_CFB:
@@ -248,7 +247,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::SM4_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::SM4>);
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::SM4>);
         case Cipher::SM4_CBC:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CBC_Mode<CryptoPP::SM4>);
         case Cipher::SM4_CFB:
@@ -271,7 +270,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::SEED_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::SEED>);
+            return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::ECB_Mode<CryptoPP::SEED>);
         case Cipher::SEED_CBC:
             return CRYPTOPP_CIPHER(KEY_128, 16, CryptoPP::CBC_Mode<CryptoPP::SEED>);
         case Cipher::SEED_CFB:
@@ -294,7 +293,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_448, 8, CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+            return CRYPTOPP_CIPHER(KEY_448, 8, CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_CBC:
             return CRYPTOPP_CIPHER(KEY_448, 8, CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_CFB:
@@ -317,7 +316,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_256_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_256, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+            return CRYPTOPP_CIPHER(KEY_256, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_256_CBC:
             return CRYPTOPP_CIPHER(KEY_256, 8,  CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_256_CFB:
@@ -340,7 +339,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_192_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_192, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+            return CRYPTOPP_CIPHER(KEY_192, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_192_CBC:
             return CRYPTOPP_CIPHER(KEY_192, 8,  CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_192_CFB:
@@ -363,7 +362,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_128_ECB:
-            return CRYPTOPP_CIPHER_ECB(KEY_128, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
+            return CRYPTOPP_CIPHER(KEY_128, 8,  CryptoPP::ECB_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_128_CBC:
             return CRYPTOPP_CIPHER(KEY_128, 8,  CryptoPP::CBC_Mode<CryptoPP::Blowfish>);
         case Cipher::BLOWFISH_128_CFB:
