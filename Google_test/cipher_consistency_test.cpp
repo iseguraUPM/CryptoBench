@@ -203,7 +203,13 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
     std::set<LibraryChecksum, chksum_compare> unique(results.begin(), results.end());
     if (unique.size() == 1 && results.size() > 1)
     {
-        std::cout << cipher_name << " All results are equal (" << results.size() << ")" << std::endl;
+        std::stringstream out;
+        out << cipher_name << " All results are equal: ";
+        for (auto &s : results)
+        {
+            out << s.library << " ";
+        }
+        std::cout << out.str() << std::endl;
         SUCCEED();
         return;
     }
