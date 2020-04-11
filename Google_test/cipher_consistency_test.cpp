@@ -30,7 +30,7 @@ struct LibraryChecksum
     LibraryChecksum(std::string library, unsigned int checksum) : library(std::move(library)), checksum(checksum) {}
 
     std::string library;
-    unsigned int checksum;
+    unsigned long checksum;
 };
 
 class CipherConsistencyFixture : public CipherFactoryFixture
@@ -80,7 +80,7 @@ private:
 
     static void computeCipherText(byte *cipher_text, byte_len &cipher_text_len, std::shared_ptr<SymmetricCipher> &cipher_ptr);
 
-    static unsigned int computeChecksum(const unsigned char *arr, byte_len len);
+    static unsigned long computeChecksum(const unsigned char *arr, byte_len len);
 
 protected:
 
@@ -152,20 +152,16 @@ void CipherConsistencyFixture::computeCipherText(byte *cipher_text, byte_len &ci
     cipher_ptr->encrypt(s_global_key, s_input, s_input_len, cipher_text, cipher_text_len);
 }
 
-unsigned int CipherConsistencyFixture::computeChecksum(const unsigned char *arr, byte_len m)
+unsigned long CipherConsistencyFixture::computeChecksum(const unsigned char *arr, byte_len m)
 {
-    int i;
-    unsigned int sum = 0;
+    unsigned long hash = 5381;
+    int c;
 
-    // MOD 255 SUM
-    assert(m >= 0);
-    assert(m < (1 << 24));        /* else `sum' might overflow 32 bits */
-    for (i = 0; i < m; i++)
-        sum += arr[i];        /* add up the 8-bit "digits" of `x[]' */
-    while (sum > 255)
-        sum = (sum & 0xFF) + (sum >> 8);    /* add up the 8-bit "digits" of `sum' */
+    int i = 0;
+    while (i++ < m && (c = *arr++))
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-    return sum;
+    return hash;
 }
 
 void CipherConsistencyFixture::generateRandomBytes(byte *arr, int len) noexcept(false)
@@ -207,7 +203,7 @@ TEST_P(CipherConsistencyFixture, CiphertextChecksum)
     std::set<LibraryChecksum, chksum_compare> unique(results.begin(), results.end());
     if (unique.size() == 1 && results.size() > 1)
     {
-        std::cout << cipher_name << " All results are equal" << std::endl;
+        std::cout << cipher_name << " All results are equal (" << results.size() << ")" << std::endl;
         SUCCEED();
         return;
     }
