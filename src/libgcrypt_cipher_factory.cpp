@@ -11,7 +11,8 @@
 #include "CryptoBench/cipher_exception.hpp"
 #include "CryptoBench/random_bytes.hpp"
 
-#define CIPHER(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len>(alg, mode)))
+#define CIPHER(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len>(alg, mode, true)))
+#define CIPHER_NO_PAD(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len>(alg, mode, false)))
 #define CIPHER_AUTH(key_len, block_len, alg, mode) (CipherPtr(new LibgcryptAuthCipher<key_len, block_len>(alg, mode)))
 
 #define KEY_128 16
@@ -51,7 +52,7 @@ template <int KEY_LEN, int BLOCK_LEN>
 class LibgcryptCipher : public SymmetricCipher
 {
 public:
-    explicit inline LibgcryptCipher(gcry_cipher_algos alg, gcry_cipher_modes mode) : alg(alg), mode(mode), random_bytes()
+    explicit inline LibgcryptCipher(gcry_cipher_algos alg, gcry_cipher_modes mode, bool padded) : alg(alg), mode(mode), random_bytes(), padded(padded)
     {
     }
 
@@ -81,6 +82,8 @@ protected:
     const gcry_cipher_algos alg;
     const gcry_cipher_modes mode;
 
+    bool padded;
+
 };
 
 template <int KEY_LEN, int BLOCK_LEN>
@@ -88,7 +91,7 @@ class LibgcryptAuthCipher : public LibgcryptCipher<KEY_LEN, BLOCK_LEN>
 {
 public:
 
-    explicit inline LibgcryptAuthCipher(gcry_cipher_algos alg, gcry_cipher_modes mode) : LibgcryptCipher<KEY_LEN, BLOCK_LEN>(alg, mode)
+    explicit inline LibgcryptAuthCipher(gcry_cipher_algos alg, gcry_cipher_modes mode) : LibgcryptCipher<KEY_LEN, BLOCK_LEN>(alg, mode, true)
     {}
 
     virtual void encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
@@ -138,14 +141,15 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
         super::handleGcryError(err);
     }
 
-    //auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
-    //memcpy(padded_plain_text.get(), plain_text, plain_text_len);
+    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
+    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
+    memset(padded_plain_text.get() + plain_text_len, padded_plain_text_len - plain_text_len, padded_plain_text_len - plain_text_len);
 
     err = gcry_cipher_final(handle);
     super::handleGcryError(err);
 
     cipher_text_len = padded_plain_text_len;
-    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, plain_text, plain_text_len);
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
     super::handleGcryError(err);
 
     auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
@@ -215,16 +219,17 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
                                                   , byte * cipher_text, byte_len & cipher_text_len)
 {
     byte_len padded_plain_text_len = plain_text_len;
-    if (padded_plain_text_len % BLOCK_LEN != 0)
+    if (padded_plain_text_len % BLOCK_LEN != 0 && padded)
         padded_plain_text_len += BLOCK_LEN - (plain_text_len % BLOCK_LEN);
     if (cipher_text_len < padded_plain_text_len)
     {
         throw LibgcryptException("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
     }
+
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
 
-    err = gcry_cipher_open(&handle, alg, mode, gcry_cipher_flags::GCRY_CIPHER_CBC_CTS);
+    err = gcry_cipher_open(&handle, alg, mode, 0);
     handleGcryError(err);
 
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
@@ -235,14 +240,18 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
 
-    //auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
-    //memcpy(padded_plain_text.get(), plain_text, plain_text_len);
+    err = gcry_cipher_setctr(handle, iv.get(), BLOCK_LEN);
+    handleGcryError(err);
+
+    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
+    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
+    memset(padded_plain_text.get() + plain_text_len, padded_plain_text_len - plain_text_len, padded_plain_text_len - plain_text_len);
 
     err = gcry_cipher_final(handle);
     handleGcryError(err);
 
     cipher_text_len = padded_plain_text_len;
-    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, plain_text, plain_text_len);
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
     handleGcryError(err);
 
     gcry_cipher_close(handle);
@@ -264,7 +273,7 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
 
-    err = gcry_cipher_open(&handle, alg, mode, gcry_cipher_flags::GCRY_CIPHER_CBC_CTS);
+    err = gcry_cipher_open(&handle, alg, mode, 0);
     handleGcryError(err);
 
     err = gcry_cipher_setkey(handle, key, KEY_LEN);
@@ -274,6 +283,9 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::decrypt(const byte key[KEY_LEN], const
     memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_LEN, BLOCK_LEN);
 
     err = gcry_cipher_setiv(handle, iv.get(), BLOCK_LEN);
+    handleGcryError(err);
+
+    err = gcry_cipher_setctr(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
 
     err = gcry_cipher_final(handle);
@@ -316,11 +328,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CBC:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_256_CFB:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CFB);
         case Cipher::AES_256_OFB:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_256_CTR:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CTR);
         case Cipher::AES_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_256_XTS:
@@ -339,11 +351,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_CBC:
             return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_192_CFB:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CFB);
         case Cipher::AES_192_OFB:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_192_CTR:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CTR);
         case Cipher::AES_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_192_XTS:
@@ -362,11 +374,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_CBC:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_128_CFB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CFB);
         case Cipher::AES_128_OFB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_OFB);
         case Cipher::AES_128_CTR:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CTR);
         case Cipher::AES_128_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_128_XTS:
@@ -420,11 +432,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_256_CBC:
             return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CBC);
         case Cipher::CAMELLIA_256_CFB:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CFB);
         case Cipher::CAMELLIA_256_OFB:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_OFB);
         case Cipher::CAMELLIA_256_CTR:
-            return CIPHER(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CTR);
         case Cipher::CAMELLIA_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_GCM);
         case Cipher::CAMELLIA_256_XTS:
@@ -443,11 +455,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_192_CBC:
             return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CBC);
         case Cipher::CAMELLIA_192_CFB:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CFB);
         case Cipher::CAMELLIA_192_OFB:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_OFB);
         case Cipher::CAMELLIA_192_CTR:
-            return CIPHER(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CTR);
         case Cipher::CAMELLIA_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_GCM);
         case Cipher::CAMELLIA_192_XTS:
@@ -466,11 +478,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_CBC:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CBC);
         case Cipher::CAMELLIA_128_CFB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CFB);
         case Cipher::CAMELLIA_128_OFB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_OFB);
         case Cipher::CAMELLIA_128_CTR:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CTR);
         case Cipher::CAMELLIA_128_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_GCM);
         case Cipher::CAMELLIA_128_XTS:
@@ -502,11 +514,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_CBC:
             return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CBC);
         case Cipher::SEED_CFB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CFB);
         case Cipher::SEED_OFB:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_OFB);
         case Cipher::SEED_CTR:
-            return CIPHER(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CTR);
         case Cipher::SEED_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_GCM);
         case Cipher::SEED_XTS:
@@ -525,11 +537,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_CBC:
             return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_CFB:
-            return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_OFB:
-            return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
         case Cipher::BLOWFISH_CTR:
-            return CIPHER(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_GCM:
             return CIPHER_AUTH(KEY_448, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
         case Cipher::BLOWFISH_XTS:
@@ -548,11 +560,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_256_CBC:
             return CIPHER(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_256_CFB:
-            return CIPHER(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_256_OFB:
-            return CIPHER(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
         case Cipher::BLOWFISH_256_CTR:
-            return CIPHER(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
         case Cipher::BLOWFISH_256_XTS:
@@ -571,11 +583,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_192_CBC:
             return CIPHER(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_192_CFB:
-            return CIPHER(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_192_OFB:
-            return CIPHER(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
         case Cipher::BLOWFISH_192_CTR:
-            return CIPHER(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
         case Cipher::BLOWFISH_192_XTS:
@@ -594,11 +606,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_128_CBC:
             return CIPHER(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_128_CFB:
-            return CIPHER(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_128_OFB:
-            return CIPHER(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
+            return CIPHER_NO_PAD(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OFB);
         case Cipher::BLOWFISH_128_CTR:
-            return CIPHER(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
+            return CIPHER_NO_PAD(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_128_GCM:
             return CIPHER_AUTH(KEY_128, BLK_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
         case Cipher::BLOWFISH_128_XTS:
