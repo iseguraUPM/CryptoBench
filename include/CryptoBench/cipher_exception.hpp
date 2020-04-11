@@ -20,6 +20,12 @@ private:
     const char * msg;
 };
 
+class PaddingException : public GenericCipherException
+{
+public:
+    explicit PaddingException(const char * msg = "Wrong buffer padding");
+};
+
 class UnsupportedCipherException : public GenericCipherException
 {
 public:

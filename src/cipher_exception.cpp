@@ -20,9 +20,11 @@ const char *GenericCipherException::what() const noexcept
     return msg;
 }
 
+PaddingException::PaddingException(const char *msg) : GenericCipherException(msg)
+{
+}
 
 
 UnsupportedCipherException::UnsupportedCipherException(const char *msg) : GenericCipherException(msg)
 {}
-
 

@@ -96,9 +96,22 @@ TEST_P(CipherPerformanceFixture, EncryptDecrypt)
     byte_len output_len = input_len * 2;
     byte * output = new byte[output_len];
 
-    startChrono();
-    cipher_ptr->encrypt(key, input, input_len, output, output_len);
-    stopChrono();
+    try {
+        startChrono();
+        cipher_ptr->encrypt(key, input, input_len, output, output_len);
+        stopChrono();
+    } catch (PaddingException &ex)
+    {
+        byte_len padded_input_text_len = input_len + cipher_ptr->getBlockLen() - input_len % cipher_ptr->getBlockLen();
+        auto padded_input_text = std::shared_ptr<byte>(new byte[padded_input_text_len], std::default_delete<byte[]>());
+        memcpy(padded_input_text.get(), input, input_len);
+        memset(padded_input_text.get() + input_len, padded_input_text_len - input_len, padded_input_text_len - input_len);
+
+        startChrono();
+        cipher_ptr->encrypt(key, padded_input_text.get(), padded_input_text_len, output, output_len);
+        stopChrono();
+    }
+
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
 

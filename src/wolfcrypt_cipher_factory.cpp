@@ -122,9 +122,8 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY
     auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), AEAD_IV_LEN);
 
-    cipher_text_len = plain_text_len;
-    if (cipher_text_len % BLOCK_SIZE != 0)
-        cipher_text_len += BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
+    if (plain_text_len % BLOCK_SIZE != 0)
+        throw PaddingException();
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE))
@@ -136,6 +135,7 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY
                  , AEAD_IV_LEN, tag.get(), AEAD_TAG_LEN, nullptr, 0))
         throw WolfCryptException("Encrypt failure");
 
+    cipher_text_len = plain_text_len;
     memcpy(cipher_text + cipher_text_len, iv.get(), AEAD_IV_LEN);
     cipher_text_len += AEAD_IV_LEN;
     memcpy(cipher_text + cipher_text_len, tag.get(), AEAD_TAG_LEN);
@@ -166,26 +166,20 @@ template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
 void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
                                                           , byte * cipher_text, byte_len & cipher_text_len)
 {
+    if (plain_text_len % BLOCK_SIZE != 0 && padded)
+        throw PaddingException();
+
     auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), BLOCK_SIZE);
-
-    byte_len padded_plain_text_len = plain_text_len;
-    if (padded_plain_text_len % BLOCK_SIZE != 0 && padded)
-        padded_plain_text_len += BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
-
-    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
-    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
-    memset(padded_plain_text.get() + plain_text_len, padded_plain_text_len - plain_text_len, padded_plain_text_len - plain_text_len);
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE, iv.get(), encrypt_dir))
         throw WolfCryptException("Encrypt set key failure");
 
-    cipher_text_len = padded_plain_text_len;
-    if (0 != enc(&algo, cipher_text, padded_plain_text.get(), padded_plain_text_len))
+    if (0 != enc(&algo, cipher_text, plain_text, plain_text_len))
         throw WolfCryptException("Encrypt failure");
 
-
+    cipher_text_len = plain_text_len;
     memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_SIZE);
     cipher_text_len += BLOCK_SIZE;
 }

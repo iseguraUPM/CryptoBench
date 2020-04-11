@@ -149,7 +149,18 @@ void CipherConsistencyFixture::computeFactoryChecksums(std::string library, std:
 void CipherConsistencyFixture::computeCipherText(byte *cipher_text, byte_len &cipher_text_len
                                                  , std::shared_ptr<SymmetricCipher> &cipher_ptr)
 {
-    cipher_ptr->encrypt(s_global_key, s_input, s_input_len, cipher_text, cipher_text_len);
+    try{
+        cipher_ptr->encrypt(s_global_key, s_input, s_input_len, cipher_text, cipher_text_len);
+    } catch (PaddingException &ex)
+    {
+        byte_len padded_input_text_len = s_input_len + cipher_ptr->getBlockLen() - s_input_len % cipher_ptr->getBlockLen();
+        auto padded_input_text = std::shared_ptr<byte>(new byte[padded_input_text_len], std::default_delete<byte[]>());
+        memcpy(padded_input_text.get(), s_input, s_input_len);
+        memset(padded_input_text.get() + s_input_len, padded_input_text_len - s_input_len,
+                padded_input_text_len - s_input_len);
+
+        cipher_ptr->encrypt(s_global_key, padded_input_text.get(), padded_input_text_len, cipher_text, cipher_text_len);
+    }
 }
 
 unsigned long CipherConsistencyFixture::computeChecksum(const unsigned char *arr, byte_len m)

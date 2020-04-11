@@ -108,13 +108,8 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
 {
     using super = LibgcryptCipher<KEY_LEN, BLOCK_LEN>;
 
-    byte_len padded_plain_text_len = plain_text_len;
-    if (padded_plain_text_len % BLOCK_LEN != 0)
-        padded_plain_text_len += BLOCK_LEN - (plain_text_len % BLOCK_LEN);
-    if (cipher_text_len < padded_plain_text_len)
-    {
-        throw LibgcryptException("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
-    }
+    if (plain_text_len % BLOCK_LEN != 0)
+        throw PaddingException();
 
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
@@ -141,15 +136,11 @@ void LibgcryptAuthCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN], c
         super::handleGcryError(err);
     }
 
-    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
-    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
-    memset(padded_plain_text.get() + plain_text_len, padded_plain_text_len - plain_text_len, padded_plain_text_len - plain_text_len);
-
     err = gcry_cipher_final(handle);
     super::handleGcryError(err);
 
-    cipher_text_len = padded_plain_text_len;
-    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
+    cipher_text_len = plain_text_len;
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, plain_text, plain_text_len);
     super::handleGcryError(err);
 
     auto tag = std::shared_ptr<byte>(new byte[AEAD_TAG_LEN], std::default_delete<byte[]>());
@@ -218,13 +209,8 @@ template<int KEY_LEN, int BLOCK_LEN>
 void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  const byte * plain_text, byte_len plain_text_len
                                                   , byte * cipher_text, byte_len & cipher_text_len)
 {
-    byte_len padded_plain_text_len = plain_text_len;
-    if (padded_plain_text_len % BLOCK_LEN != 0 && padded)
-        padded_plain_text_len += BLOCK_LEN - (plain_text_len % BLOCK_LEN);
-    if (cipher_text_len < padded_plain_text_len)
-    {
-        throw LibgcryptException("Libgcrypt Error: Invalid cipher text length. Must be at least: " + std::to_string(padded_plain_text_len));
-    }
+    if (plain_text_len % BLOCK_LEN != 0 && padded)
+        throw PaddingException();
 
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
@@ -243,15 +229,11 @@ void LibgcryptCipher<KEY_LEN, BLOCK_LEN>::encrypt(const byte key[KEY_LEN],  cons
     err = gcry_cipher_setctr(handle, iv.get(), BLOCK_LEN);
     handleGcryError(err);
 
-    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
-    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
-    memset(padded_plain_text.get() + plain_text_len, padded_plain_text_len - plain_text_len, padded_plain_text_len - plain_text_len);
-
     err = gcry_cipher_final(handle);
     handleGcryError(err);
 
-    cipher_text_len = padded_plain_text_len;
-    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, padded_plain_text.get(), padded_plain_text_len);
+    cipher_text_len = plain_text_len;
+    err = gcry_cipher_encrypt(handle, cipher_text, cipher_text_len, plain_text, plain_text_len);
     handleGcryError(err);
 
     gcry_cipher_close(handle);
