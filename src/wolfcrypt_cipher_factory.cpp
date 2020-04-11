@@ -26,7 +26,11 @@
 
 #define CIPHER(key_len, block_len, algo_t, enc_dir, dec_dir, set_key_func, enc_func, dec_func)(CipherPtr(\
     new WolfcryptCipher<key_len, block_len, algo_t> \
-        (set_key_func, enc_func, dec_func, enc_dir, dec_dir)))
+        (set_key_func, enc_func, dec_func, enc_dir, dec_dir, true)))
+
+#define CIPHER_CTR(key_len, block_len, algo_t, enc_dir, dec_dir, set_key_func, enc_func, dec_func)(CipherPtr(\
+    new WolfcryptCipher<key_len, block_len, algo_t> \
+        (set_key_func, enc_func, dec_func, enc_dir, dec_dir, false)))
 
 #define CIPHER_AUTH(key_len, block_len, algo_t, enc_dir, dec_dir, set_key_func, enc_func, dec_func)(CipherPtr(\
     new WolfcryptAuthCipher<key_len, block_len, algo_t> \
@@ -39,9 +43,9 @@ public:
     using set_key_func = int (&)(ALGO*, const byte*, word32, const byte*, int);
     using cipher_func = int (&)(ALGO*, byte *, const byte *, word32);
 
-    explicit inline WolfcryptCipher(set_key_func &set_key, cipher_func &enc, cipher_func &dec, int encrypt_dir, int decrypt_dir)
+    explicit inline WolfcryptCipher(set_key_func &set_key, cipher_func &enc, cipher_func &dec, int encrypt_dir, int decrypt_dir, bool padded)
             : set_key(set_key), enc(enc), dec(dec)
-            , encrypt_dir(encrypt_dir), decrypt_dir(decrypt_dir), random_bytes() {};
+            , encrypt_dir(encrypt_dir), decrypt_dir(decrypt_dir), random_bytes(), padded(padded) {};
 
     void encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
                          , byte * cipher_text, byte_len & cipher_text_len) override;
@@ -67,6 +71,7 @@ protected:
     cipher_func &dec;
     const int encrypt_dir;
     const int decrypt_dir;
+    bool padded;
 };
 
 template <int KEY_SIZE, int BLOCK_SIZE, typename ALGO>
@@ -117,7 +122,9 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY
     auto iv = std::shared_ptr<byte>(new byte[AEAD_IV_LEN], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), AEAD_IV_LEN);
 
-    plain_text_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
+    cipher_text_len = plain_text_len;
+    if (cipher_text_len % BLOCK_SIZE != 0)
+        cipher_text_len += BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE))
@@ -128,8 +135,6 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY
     if (0 != enc(&algo, cipher_text, plain_text, plain_text_len, iv.get()
                  , AEAD_IV_LEN, tag.get(), AEAD_TAG_LEN, nullptr, 0))
         throw WolfCryptException("Encrypt failure");
-
-    cipher_text_len = plain_text_len;
 
     memcpy(cipher_text + cipher_text_len, iv.get(), AEAD_IV_LEN);
     cipher_text_len += AEAD_IV_LEN;
@@ -164,16 +169,22 @@ void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, ALGO>::encrypt(const byte key[KEY_SIZ
     auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), BLOCK_SIZE);
 
-    plain_text_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
+    byte_len padded_plain_text_len = plain_text_len;
+    if (padded_plain_text_len % BLOCK_SIZE != 0 && padded)
+        padded_plain_text_len += BLOCK_SIZE - (plain_text_len % BLOCK_SIZE);
+
+    auto padded_plain_text = std::shared_ptr<byte>(new byte[padded_plain_text_len], std::default_delete<byte[]>());
+    memcpy(padded_plain_text.get(), plain_text, plain_text_len);
+    memset(padded_plain_text.get() + plain_text_len, padded_plain_text_len - plain_text_len, padded_plain_text_len - plain_text_len);
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE, iv.get(), encrypt_dir))
         throw WolfCryptException("Encrypt set key failure");
 
-    if (0 != enc(&algo, cipher_text, plain_text, plain_text_len))
+    cipher_text_len = padded_plain_text_len;
+    if (0 != enc(&algo, cipher_text, padded_plain_text.get(), padded_plain_text_len))
         throw WolfCryptException("Encrypt failure");
 
-    cipher_text_len = plain_text_len;
 
     memcpy(cipher_text + cipher_text_len, iv.get(), BLOCK_SIZE);
     cipher_text_len += BLOCK_SIZE;
@@ -207,7 +218,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_OFB:
             throw UnsupportedCipherException();
         case Cipher::AES_256_CTR:
-            return CIPHER(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
+            return CIPHER_CTR(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
         case Cipher::AES_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
         case Cipher::AES_256_XTS:
@@ -226,7 +237,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_OFB:
             throw UnsupportedCipherException();
         case Cipher::AES_192_CTR:
-            return CIPHER(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
+            return CIPHER_CTR(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
         case Cipher::AES_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
         case Cipher::AES_192_XTS:
@@ -245,7 +256,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_OFB:
             throw UnsupportedCipherException();
         case Cipher::AES_128_CTR:
-            return CIPHER(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
+            return CIPHER_CTR(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
         case Cipher::AES_128_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
         case Cipher::AES_128_XTS:
