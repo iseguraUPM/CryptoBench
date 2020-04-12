@@ -239,7 +239,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CCM:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "AES-256/CCM");
         case Cipher::AES_256_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "AES-256/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "AES-256/EAX");
         case Cipher::AES_256_OCB:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "AES-256/OCB");
         case Cipher::AES_256_SIV:
@@ -262,7 +263,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_CCM:
             return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "AES-192/CCM");
         case Cipher::AES_192_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "AES-192/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "AES-192/EAX");
         case Cipher::AES_192_OCB:
             return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "AES-192/OCB");
         case Cipher::AES_192_SIV:
@@ -285,7 +287,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_CCM:
             return BOTAN_CIPHER(KEY_128,BLK_128,IV_96, "AES-128/CCM");
         case Cipher::AES_128_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "AES-128/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "AES-128/EAX");
         case Cipher::AES_128_OCB:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "AES-128/OCB");
         case Cipher::AES_128_SIV:
@@ -308,7 +311,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_CCM:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "ARIA-256/CCM");
         case Cipher::ARIA_256_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "ARIA-256/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "ARIA-256/EAX");
         case Cipher::ARIA_256_OCB:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "ARIA-256/OCB");
         case Cipher::ARIA_256_SIV:
@@ -331,7 +335,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_CCM:
             return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "ARIA-192/CCM");
         case Cipher::ARIA_192_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "ARIA-192/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "ARIA-192/EAX");
         case Cipher::ARIA_192_OCB:
             return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "ARIA-192/OCB");
         case Cipher::ARIA_192_SIV:
@@ -354,7 +359,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_CCM:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "ARIA-128/CCM");
         case Cipher::ARIA_128_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "ARIA-128/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "ARIA-128/EAX");
         case Cipher::ARIA_128_OCB:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "ARIA-128/OCB");
         case Cipher::ARIA_128_SIV:
@@ -377,7 +383,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_256_CCM:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "Camellia-256/CCM");
         case Cipher::CAMELLIA_256_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "Camellia-256/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "Camellia-256/EAX");
         case Cipher::CAMELLIA_256_OCB:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "Camellia-256/OCB");
         case Cipher::CAMELLIA_256_SIV:
@@ -400,7 +407,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_192_CCM:
             return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "Camellia-192/CCM");
         case Cipher::CAMELLIA_192_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "Camellia-192/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "Camellia-192/EAX");
         case Cipher::CAMELLIA_192_OCB:
             return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "Camellia-192/OCB");
         case Cipher::CAMELLIA_192_SIV:
@@ -423,7 +431,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_CCM:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "Camellia-128/CCM");
         case Cipher::CAMELLIA_128_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "Camellia-128/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "Camellia-128/EAX");
         case Cipher::CAMELLIA_128_OCB:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "Camellia-128/OCB");
         case Cipher::CAMELLIA_128_SIV:
@@ -446,7 +455,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::SM4_CCM:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SM4/CCM");
         case Cipher::SM4_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SM4/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SM4/EAX");
         case Cipher::SM4_OCB:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SM4/OCB");
         case Cipher::SM4_SIV:
@@ -470,7 +480,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_CCM:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SEED/CCM");
         case Cipher::SEED_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SEED/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SEED/EAX");
         case Cipher::SEED_OCB:
             return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SEED/OCB");
         case Cipher::SEED_SIV:
@@ -494,7 +505,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_CCM:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_448,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_448,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
         case Cipher::BLOWFISH_OCB:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
@@ -517,7 +529,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_256_CCM:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_256,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
         case Cipher::BLOWFISH_256_OCB:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_SIV:
@@ -540,7 +553,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_192_CCM:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_192,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
         case Cipher::BLOWFISH_192_OCB:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_SIV:
@@ -563,7 +577,8 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_128_CCM:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_EAX:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
+            throw UnsupportedCipherException();
+            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_64,IV_64, TAG_128, "Blowfish/EAX");
         case Cipher::BLOWFISH_128_OCB:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_SIV:
