@@ -46,18 +46,18 @@
 #define TAG_96 12
 #define TAG_128 16
 
-template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
 class CryptoppCipher : public SymmetricCipher
 {
 public:
 
     explicit CryptoppCipher();
 
-    virtual void encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
-                         , byte * cipher_text, byte_len & cipher_text_len) override;
+    virtual void encrypt(const byte key[KEY_SIZE], const byte *plain_text, byte_len plain_text_len
+                         , byte *cipher_text, byte_len &cipher_text_len) override;
 
-    virtual void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
-                         , byte * recovered_text, byte_len & recovered_text_len) override;
+    virtual void decrypt(const byte key[KEY_SIZE], const byte *cipher_text, byte_len cipher_text_len
+                         , byte *recovered_text, byte_len &recovered_text_len) override;
 
     int getBlockLen() override;
 
@@ -75,22 +75,24 @@ CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::CryptoppCipher()
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
-int CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE,T>::getBlockLen()
+int CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::getBlockLen()
 {
     return BLOCK_SIZE;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
-int CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE,T>::getKeyLen()
+int CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::getKeyLen()
 {
     return KEY_SIZE;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
-void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE,T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
-                                                      , byte * recovered_text, byte_len & recovered_text_len)
+void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte *cipher_text
+                                                               , byte_len cipher_text_len
+                                                               , byte *recovered_text, byte_len &recovered_text_len)
 {
-    try{
+    try
+    {
         auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
         memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
 
@@ -107,19 +109,22 @@ void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE,T>::decrypt(const byte key[KEY
 
         auto sink = CryptoPP::ArraySink(recovered_text, recovered_text_len);
         CryptoPP::ArraySource(cipher_text, cipher_text_len - BLOCK_SIZE, true
-                              ,new CryptoPP::StreamTransformationFilter(decryption, new CryptoPP::Redirector(sink)));
+                              , new CryptoPP::StreamTransformationFilter(decryption, new CryptoPP::Redirector(sink)));
 
         recovered_text_len = sink.TotalPutLength();
-    }catch(CryptoPP::Exception ex){
+    } catch (CryptoPP::Exception ex)
+    {
         throw CryptoppException(ex.what());
     }
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, typename T>
-void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
-                                                      , byte * cipher_text, byte_len & cipher_text_len)
+void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte *plain_text
+                                                               , byte_len plain_text_len
+                                                               , byte *cipher_text, byte_len &cipher_text_len)
 {
-    try{
+    try
+    {
         auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
         random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
@@ -134,28 +139,29 @@ void CryptoppCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, T>::encrypt(const byte key[KE
 
         auto sink = CryptoPP::ArraySink(cipher_text, cipher_text_len);
         CryptoPP::ArraySource(plain_text, plain_text_len, true
-                              ,new CryptoPP::StreamTransformationFilter(encryption, new CryptoPP::Redirector(sink)));
+                              , new CryptoPP::StreamTransformationFilter(encryption, new CryptoPP::Redirector(sink)));
 
         cipher_text_len = sink.TotalPutLength();
         memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
         cipher_text_len += IV_SIZE;
-    }catch(CryptoPP::Exception ex){
+    } catch (CryptoPP::Exception ex)
+    {
         throw CryptoppException(ex.what());
     }
 }
 
-template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename T>
+template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename T>
 class CryptoppCipherAuth : public SymmetricCipher
 {
 public:
 
     explicit CryptoppCipherAuth();
 
-    virtual void encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
-                         , byte * cipher_text, byte_len & cipher_text_len) override;
+    virtual void encrypt(const byte key[KEY_SIZE], const byte *plain_text, byte_len plain_text_len
+                         , byte *cipher_text, byte_len &cipher_text_len) override;
 
-    virtual void decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
-                         , byte * recovered_text, byte_len & recovered_text_len) override;
+    virtual void decrypt(const byte key[KEY_SIZE], const byte *cipher_text, byte_len cipher_text_len
+                         , byte *recovered_text, byte_len &recovered_text_len) override;
 
     int getBlockLen() override;
 
@@ -185,10 +191,14 @@ int CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::getKeyLen()
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename T>
-void CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
-                                                                             , byte * recovered_text, byte_len & recovered_text_len)
+void CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::decrypt(const byte key[KEY_SIZE]
+                                                                             , const byte *cipher_text
+                                                                             , byte_len cipher_text_len
+                                                                             , byte *recovered_text
+                                                                             , byte_len &recovered_text_len)
 {
-    try{
+    try
+    {
         auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
         memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
 
@@ -196,38 +206,45 @@ void CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::decrypt(con
 
         typename T::Decryption decryption;
         decryption.SetKeyWithIV(key, KEY_SIZE, iv.get(), IV_SIZE);
-        decryption.SpecifyDataLengths( 0, cipher_text_len-TAG_SIZE-IV_SIZE, 0 );
+        decryption.SpecifyDataLengths(0, cipher_text_len - TAG_SIZE - IV_SIZE, 0);
 
         auto sink = CryptoPP::ArraySink(recovered_text, recovered_text_len);
         CryptoPP::ArraySource(cipher_text, cipher_text_len - IV_SIZE, true
-                              ,new CryptoPP::AuthenticatedDecryptionFilter(decryption, new CryptoPP::Redirector(sink), false, TAG_SIZE));
+                              , new CryptoPP::AuthenticatedDecryptionFilter(decryption, new CryptoPP::Redirector(sink)
+                                                                            , false, TAG_SIZE));
 
         recovered_text_len = sink.TotalPutLength();
-    }catch(CryptoPP::Exception ex){
+    } catch (CryptoPP::Exception ex)
+    {
         throw CryptoppException(ex.what());
     }
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename T>
-void CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte * plain_text, byte_len plain_text_len
-                                                                             , byte * cipher_text, byte_len & cipher_text_len)
+void
+CryptoppCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::encrypt(const byte key[KEY_SIZE], const byte *plain_text
+                                                                        , byte_len plain_text_len
+                                                                        , byte *cipher_text, byte_len &cipher_text_len)
 {
-    try{
+    try
+    {
         auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
         random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
         typename T::Encryption encryption;
         encryption.SetKeyWithIV(key, KEY_SIZE, iv.get(), IV_SIZE);
-        encryption.SpecifyDataLengths( 0, plain_text_len, 0 );
+        encryption.SpecifyDataLengths(0, plain_text_len, 0);
 
         auto sink = CryptoPP::ArraySink(cipher_text, cipher_text_len);
         CryptoPP::ArraySource(plain_text, plain_text_len, true
-                              ,new CryptoPP::AuthenticatedEncryptionFilter(encryption, new CryptoPP::Redirector(sink), false, TAG_SIZE));
+                              , new CryptoPP::AuthenticatedEncryptionFilter(encryption, new CryptoPP::Redirector(sink)
+                                                                            , false, TAG_SIZE));
 
         cipher_text_len = sink.TotalPutLength();
         memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
         cipher_text_len += IV_SIZE;
-    }catch(CryptoPP::Exception ex){
+    } catch (CryptoPP::Exception ex)
+    {
         throw CryptoppException(ex.what());
     }
 }
@@ -325,7 +342,7 @@ void CryptoppCipherCCM<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::encrypt(cons
 CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
 {
 
-    switch(cipher)
+    switch (cipher)
     {
         case Cipher::AES_256_ECB:
             return CRYPTOPP_CIPHER(KEY_256, BLK_128, IV_128, CryptoPP::ECB_Mode<CryptoPP::AES>);
@@ -344,7 +361,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, 7, 12, CryptoPP::CCM<CryptoPP::AES>);
         case Cipher::AES_256_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
+            throw UnsupportedCipherException();
+            //return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
         case Cipher::AES_256_OCB:
             throw UnsupportedCipherException();
         case Cipher::AES_256_SIV:
@@ -367,7 +385,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::AES>);
         case Cipher::AES_192_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
+            throw UnsupportedCipherException();
+            //return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
         case Cipher::AES_192_OCB:
             throw UnsupportedCipherException();
         case Cipher::AES_192_SIV:
@@ -390,7 +409,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::AES>);
         case Cipher::AES_128_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
+            throw UnsupportedCipherException();
+            //return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
         case Cipher::AES_128_OCB:
             throw UnsupportedCipherException();
         case Cipher::AES_128_SIV:
@@ -413,7 +433,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_256_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_256_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::Camellia>);
+            throw UnsupportedCipherException();
+            //return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_256_OCB:
             throw UnsupportedCipherException();
         case Cipher::CAMELLIA_256_SIV:
@@ -436,7 +457,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_192_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_192_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::Camellia>);
+            throw UnsupportedCipherException();
+            //return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_192_OCB:
             throw UnsupportedCipherException();
         case Cipher::CAMELLIA_192_SIV:
@@ -459,7 +481,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_128_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::Camellia>);
+            throw UnsupportedCipherException();
+            //return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::Camellia>);
         case Cipher::CAMELLIA_128_OCB:
             throw UnsupportedCipherException();
         case Cipher::CAMELLIA_128_SIV:
@@ -482,7 +505,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::ARIA>);
         case Cipher::ARIA_256_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::ARIA>);
+            throw UnsupportedCipherException();
+//            return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::ARIA>);
         case Cipher::ARIA_256_OCB:
             throw UnsupportedCipherException();
         case Cipher::ARIA_256_SIV:
@@ -505,7 +529,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::ARIA>);
         case Cipher::ARIA_192_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::ARIA>);
+            throw UnsupportedCipherException();
+//            return CRYPTOPP_CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::ARIA>);
         case Cipher::ARIA_192_OCB:
             throw UnsupportedCipherException();
         case Cipher::ARIA_192_SIV:
@@ -528,7 +553,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::ARIA>);
         case Cipher::ARIA_128_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::ARIA>);
+            throw UnsupportedCipherException();
+//            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::ARIA>);
         case Cipher::ARIA_128_OCB:
             throw UnsupportedCipherException();
         case Cipher::ARIA_128_SIV:
@@ -551,7 +577,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::SM4_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::SM4>);
         case Cipher::SM4_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::SM4>);
+            throw UnsupportedCipherException();
+//            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::SM4>);
         case Cipher::SM4_OCB:
             throw UnsupportedCipherException();
         case Cipher::SM4_SIV:
@@ -574,7 +601,8 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_CCM:
             return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::SEED>);
         case Cipher::SEED_EAX:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::SEED>);
+            throw UnsupportedCipherException();
+//            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::SEED>);
         case Cipher::SEED_OCB:
             throw UnsupportedCipherException();
         case Cipher::SEED_SIV:
