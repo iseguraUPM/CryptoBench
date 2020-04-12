@@ -257,7 +257,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_CTR:
             return BOTAN_CIPHER(KEY_192,BLK_128,IV_128, "AES-192/CTR");
         case Cipher::AES_192_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "AES-192/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "AES-192/GCM");
         case Cipher::AES_192_XTS:
             return BOTAN_CIPHER(KEY_384,BLK_128,IV_128, "AES-192/XTS");
         case Cipher::AES_192_CCM:
@@ -281,7 +281,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_CTR:
             return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "AES-128/CTR");
         case Cipher::AES_128_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "AES-128/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "AES-128/GCM");
         case Cipher::AES_128_XTS:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "AES-128/XTS");
         case Cipher::AES_128_CCM:
@@ -305,7 +305,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_CTR:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "ARIA-256/CTR");
         case Cipher::ARIA_256_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "ARIA-256/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "ARIA-256/GCM");
         case Cipher::ARIA_256_XTS:
             return BOTAN_CIPHER(KEY_512,BLK_128,IV_128, "ARIA-256/XTS");
         case Cipher::ARIA_256_CCM:
@@ -329,7 +329,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_CTR:
             return BOTAN_CIPHER(KEY_192,BLK_128,IV_128, "ARIA-192/CTR");
         case Cipher::ARIA_192_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "ARIA-192/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "ARIA-192/GCM");
         case Cipher::ARIA_192_XTS:
             return BOTAN_CIPHER(KEY_384,BLK_128,IV_128, "ARIA-192/XTS");
         case Cipher::ARIA_192_CCM:
@@ -353,7 +353,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_CTR:
             return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "ARIA-128/CTR");
         case Cipher::ARIA_128_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "ARIA-128/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "ARIA-128/GCM");
         case Cipher::ARIA_128_XTS:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "ARIA-128/XTS");
         case Cipher::ARIA_128_CCM:
@@ -377,7 +377,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_256_CTR:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "Camellia-256/CTR");
         case Cipher::CAMELLIA_256_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "Camellia-256/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "Camellia-256/GCM");
         case Cipher::CAMELLIA_256_XTS:
             return BOTAN_CIPHER(KEY_512,BLK_128,IV_128, "Camellia-256/XTS");
         case Cipher::CAMELLIA_256_CCM:
@@ -401,7 +401,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_192_CTR:
             return BOTAN_CIPHER(KEY_192,BLK_128,IV_128, "Camellia-192/CTR");
         case Cipher::CAMELLIA_192_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_128, TAG_128, "Camellia-192/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_192,BLK_128,IV_96, TAG_128, "Camellia-192/GCM");
         case Cipher::CAMELLIA_192_XTS:
             return BOTAN_CIPHER(KEY_384,BLK_128,IV_128, "Camellia-192/XTS");
         case Cipher::CAMELLIA_192_CCM:
@@ -425,7 +425,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_CTR:
             return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "Camellia-128/CTR");
         case Cipher::CAMELLIA_128_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "Camellia-128/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "Camellia-128/GCM");
         case Cipher::CAMELLIA_128_XTS:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "Camellia-128/XTS");
         case Cipher::CAMELLIA_128_CCM:
@@ -449,7 +449,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::SM4_CTR:
             return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "SM4/CTR");
         case Cipher::SM4_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SM4/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SM4/GCM");
         case Cipher::SM4_XTS:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "SM4/XTS");
         case Cipher::SM4_CCM:
@@ -474,7 +474,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_CTR:
             return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "SEED/CTR");
         case Cipher::SEED_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SEED/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SEED/GCM");
         case Cipher::SEED_XTS:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "SEED/XTS");
         case Cipher::SEED_CCM:

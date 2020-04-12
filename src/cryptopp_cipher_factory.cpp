@@ -595,7 +595,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_CTR:
             return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::CTR_Mode<CryptoPP::SEED>);
         case Cipher::SEED_GCM:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_128, TAG_128, CryptoPP::GCM<CryptoPP::SEED>);
+            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::GCM<CryptoPP::SEED>);
         case Cipher::SEED_XTS:
             throw UnsupportedCipherException();
         case Cipher::SEED_CCM:
