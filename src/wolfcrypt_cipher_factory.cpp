@@ -139,10 +139,10 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, ALGO>::encrypt
         throw WolfCryptException("Encrypt failure");
 
     cipher_text_len = plain_text_len;
-    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
-    cipher_text_len += IV_SIZE;
     memcpy(cipher_text + cipher_text_len, tag.get(), TAG_SIZE);
     cipher_text_len += TAG_SIZE;
+    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
+    cipher_text_len += IV_SIZE;
 }
 
 template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename ALGO>
@@ -217,7 +217,7 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CTR:
             return CIPHER_CTR(KEY_256, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_ENCRYPTION, wc_AesSetKey, wc_AesCtrEncrypt, wc_AesCtrEncrypt);
         case Cipher::AES_256_GCM:
-            return CIPHER_AUTH(KEY_256, BLK_128, 7, 12, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
+            return CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesGcmSetKey, wc_AesGcmEncrypt, wc_AesGcmDecrypt);
         case Cipher::AES_256_XTS:
             throw UnsupportedCipherException();
         case Cipher::AES_256_CCM:

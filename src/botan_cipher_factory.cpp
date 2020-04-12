@@ -233,7 +233,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_CTR:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "AES-256/CTR");
         case Cipher::AES_256_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "AES-256/GCM");
+            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_96, TAG_128, "AES-256/GCM");
         case Cipher::AES_256_XTS:
             return BOTAN_CIPHER(KEY_512,BLK_128,IV_128, "AES-256/XTS");
         case Cipher::AES_256_CCM:
