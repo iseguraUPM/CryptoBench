@@ -420,7 +420,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_256_XTS:
-            return CIPHER(KEY_512, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_512, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_256_CCM:
             return CIPHER_CCM(KEY_256, BLK_128, IV_88, TAG_64, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CCM);
         case Cipher::AES_256_EAX:
@@ -443,7 +444,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_192_XTS:
-            return CIPHER(KEY_384, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_384, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_192_CCM:
             return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CCM);
         case Cipher::AES_192_EAX:
@@ -466,7 +468,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_GCM);
         case Cipher::AES_128_XTS:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_128_CCM:
             return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CCM);
         case Cipher::AES_128_EAX:
@@ -524,7 +527,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_256_GCM:
             return CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_GCM);
         case Cipher::CAMELLIA_256_XTS:
-            return CIPHER(KEY_512, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_512, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_XTS);
         case Cipher::CAMELLIA_256_CCM:
             return CIPHER_CCM(KEY_256, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CCM);
         case Cipher::CAMELLIA_256_EAX:
@@ -547,7 +551,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_192_GCM:
             return CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_GCM);
         case Cipher::CAMELLIA_192_XTS:
-            return CIPHER(KEY_384, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_384, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_XTS);
         case Cipher::CAMELLIA_192_CCM:
             return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CCM);
         case Cipher::CAMELLIA_192_EAX:
@@ -570,7 +575,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_GCM);
         case Cipher::CAMELLIA_128_XTS:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_XTS);
         case Cipher::CAMELLIA_128_CCM:
             return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CCM);
         case Cipher::CAMELLIA_128_EAX:
@@ -606,7 +612,8 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_GCM:
             return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_GCM);
         case Cipher::SEED_XTS:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_XTS);
+	throw UnsupportedCipherException();
+//            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_XTS);
         case Cipher::SEED_CCM:
             return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CCM);
         case Cipher::SEED_EAX:
