@@ -122,8 +122,8 @@ template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename ALGO
 void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, ALGO>::encrypt(const byte key[KEY_SIZE],  const byte * plain_text, byte_len plain_text_len
                                                               , byte * cipher_text, byte_len & cipher_text_len)
 {
-    auto iv = std::shared_ptr<byte>(new byte[IV_96], std::default_delete<byte[]>());
-    random_bytes.generateRandomBytes(iv.get(), IV_96);
+    auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
+    random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
     if (plain_text_len % BLOCK_SIZE != 0)
         throw PaddingException();
@@ -133,33 +133,33 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, ALGO>::encrypt
         throw WolfCryptException("Encrypt set key failure");
 
 
-    auto tag = std::shared_ptr<byte>(new byte[TAG_128], std::default_delete<byte[]>());
+    auto tag = std::shared_ptr<byte>(new byte[TAG_SIZE], std::default_delete<byte[]>());
     if (0 != enc(&algo, cipher_text, plain_text, plain_text_len, iv.get()
-                 , IV_96, tag.get(), TAG_128, nullptr, 0))
+                 , IV_SIZE, tag.get(), TAG_SIZE, nullptr, 0))
         throw WolfCryptException("Encrypt failure");
 
     cipher_text_len = plain_text_len;
-    memcpy(cipher_text + cipher_text_len, iv.get(), IV_96);
-    cipher_text_len += IV_96;
-    memcpy(cipher_text + cipher_text_len, tag.get(), TAG_128);
-    cipher_text_len += TAG_128;
+    memcpy(cipher_text + cipher_text_len, tag.get(), TAG_SIZE);
+    cipher_text_len += TAG_SIZE;
+    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
+    cipher_text_len += IV_SIZE;
 }
 
 template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE, typename ALGO>
 void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, ALGO>::decrypt(const byte key[KEY_SIZE], const byte * cipher_text, byte_len cipher_text_len
                                                               , byte * recovered_text, byte_len & recovered_text_len)
 {
-    auto tag = std::shared_ptr<byte>(new byte[TAG_128], std::default_delete<byte[]>());
-    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_128, TAG_128);
-    auto iv = std::shared_ptr<byte>(new byte[IV_96], std::default_delete<byte[]>());
-    memcpy(iv.get(), cipher_text + cipher_text_len - IV_96 - TAG_128, IV_96);
+    auto tag = std::shared_ptr<byte>(new byte[TAG_SIZE], std::default_delete<byte[]>());
+    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, TAG_SIZE);
+    auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
+    memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
 
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE))
         throw WolfCryptException("Encrypt set key failure");
 
-    if (0 != dec(&algo, recovered_text, cipher_text, cipher_text_len - IV_96 - TAG_128, iv.get()
-                 , IV_96, tag.get(), TAG_128, nullptr, 0))
+    if (0 != dec(&algo, recovered_text, cipher_text, cipher_text_len - IV_SIZE - TAG_SIZE, iv.get()
+                 , IV_SIZE, tag.get(), TAG_SIZE, nullptr, 0))
         throw WolfCryptException("Encrypt failure");
 
     recovered_text_len = cipher_text_len;
