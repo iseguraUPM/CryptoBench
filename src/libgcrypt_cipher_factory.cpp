@@ -132,6 +132,7 @@ void LibgcryptCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const 
 {
     using super = LibgcryptCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>;
 
+
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
 
@@ -170,10 +171,10 @@ void LibgcryptCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const 
 
     gcry_cipher_close(handle);
 
-    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
-    cipher_text_len += IV_SIZE;
     memcpy(cipher_text + cipher_text_len, tag.get(), TAG_SIZE);
     cipher_text_len += TAG_SIZE;
+    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
+    cipher_text_len += IV_SIZE;
 }
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE>
@@ -198,12 +199,12 @@ void LibgcryptCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const 
     super::handleGcryError(err);
 
     auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
-    memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE - TAG_SIZE, IV_SIZE);
+    memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
     err = gcry_cipher_setiv(handle, iv.get(), IV_SIZE);
     super::handleGcryError(err);
 
     auto tag = std::shared_ptr<byte>(new byte[TAG_SIZE], std::default_delete<byte[]>());
-    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE, TAG_SIZE);
+    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, TAG_SIZE);
 
     uint64_t params[3];
     params[0] = recovered_text_len;
@@ -423,7 +424,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
 	throw UnsupportedCipherException();
 //            return CIPHER(KEY_512, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_256_CCM:
-            return CIPHER_CCM(KEY_256, BLK_128, IV_88, TAG_64, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_256, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CCM);
         case Cipher::AES_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_256_OCB:
