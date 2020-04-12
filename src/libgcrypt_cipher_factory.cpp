@@ -207,7 +207,7 @@ void LibgcryptCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const 
     memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, TAG_SIZE);
 
     uint64_t params[3];
-    params[0] = recovered_text_len;
+    params[0] = cipher_text_len - IV_SIZE - TAG_SIZE;
     params[1] = 0;
     params[2] = TAG_SIZE;
 
