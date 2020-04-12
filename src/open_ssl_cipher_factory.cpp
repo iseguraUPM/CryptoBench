@@ -289,8 +289,6 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const b
     auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, IV_SIZE);
 
-    EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_TAG, TAG_SIZE, nullptr);
-
     EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_IVLEN, IV_SIZE, nullptr);
 
     if (1 != EVP_DecryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
