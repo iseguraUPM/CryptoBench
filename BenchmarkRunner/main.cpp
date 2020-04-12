@@ -21,6 +21,7 @@
 #include <CryptoBench/libgcrypt_cipher_factory.hpp>
 #include <CryptoBench/botan_cipher_factory.hpp>
 #include <CryptoBench/wolfcrypt_cipher_factory.hpp>
+#include <unordered_set>
 
 using byte_ptr = std::shared_ptr<byte>;
 
@@ -255,6 +256,7 @@ unsigned long long hammingDistance(const byte *p, const byte *q, size_t n)
     byte_len counter = 0;
     for (size_t i = 0; i < n; ++i)
     {
+        //counter += (q[i] != p[i]);
         byte diff = p[i] ^q[i];
 
         while (diff > 0x00)
@@ -277,11 +279,10 @@ avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanc
 
     // The format for the output is output_KEY_INPUT
     byte_len output_size = avalanche_data.input_size * 2;
+    byte_len out_len_aux = output_size;
     auto output_0_ptr = byte_ptr(new byte[output_size], std::default_delete<byte[]>());
-    {
-        byte_len out_len = output_size;
-        cipherptr->encrypt(key, input_0, avalanche_data.input_size, output_0_ptr.get(), out_len);
-    }
+    cipherptr->encrypt(key, input_0, avalanche_data.input_size, output_0_ptr.get(), out_len_aux);
+
 
     std::vector<std::future<byte_len>> hamming_results;
     for (int i = 0; i < avalanche_data.alt_inputs.size(); i++)
@@ -309,9 +310,29 @@ avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanc
     {
         auto conf = "key_0_pt_" + std::to_string(++i);
         byte_len hamming_dist = future.get();
-        double avalanche = (double) hamming_dist / (double) output_size / 8.f;
+        double avalanche = (double) hamming_dist / (double) out_len_aux / 8.f;
         recordAvalancheResult(result, avalanche_file, hamming_dist, avalanche, conf.c_str());
     }
+}
+
+// source: https://stackoverflow.com/questions/28287138/c-randomly-sample-k-numbers-from-range-0n-1-n-k-without-replacement
+std::unordered_set<int> pickSet(int N, int k, std::mt19937& gen)
+{
+    std::unordered_set<int> elems;
+    for (int r = N - k; r < N; ++r) {
+        int v = std::uniform_int_distribution<>(1, r)(gen);
+
+        // there are two cases.
+        // v is not in candidates ==> add it
+        // v is in candidates ==> well, r is definitely not, because
+        // this is the first iteration in the loop that we could've
+        // picked something that big.
+
+        if (!elems.insert(v).second) {
+            elems.insert(r);
+        }
+    }
+    return elems;
 }
 
 void initializeAvalancheData(const byte *input_text, const byte_len input_size, const int block_len
@@ -320,8 +341,8 @@ void initializeAvalancheData(const byte *input_text, const byte_len input_size, 
     avalanche_data.input_0 = input_text;
     avalanche_data.input_size = input_size;
     avalanche_data.alt_inputs.clear();
-    avalanche_data.alt_inputs.reserve(4);
-    for (int i = 0; i < 4; i++)
+    avalanche_data.alt_inputs.reserve(7);
+    for (int i = 0; i < 7; i++)
     {
         avalanche_data.alt_inputs.emplace_back(new byte[input_size], std::default_delete<byte[]>());
         memcpy(avalanche_data.alt_inputs.at(i).get(), input_text, input_size);
@@ -333,16 +354,38 @@ void initializeAvalancheData(const byte *input_text, const byte_len input_size, 
     // First input has last byte modification
     avalanche_data.alt_inputs.at(1).get()[input_size - 1]++;
 
-    // First input has first byte of every block modification
-    for (byte_len i = 0; i < input_size; i += block_len)
+    std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
+    auto sample = pickSet(input_size, 0.25f * input_size, rng);
+    // First input has 25% modification
+    for (auto i : sample)
     {
         avalanche_data.alt_inputs.at(2).get()[i]++;
     }
 
-    // First input has last byte of every block modification
-    for (byte_len i = block_len - 1; i < input_size; i += block_len)
+    sample = pickSet(input_size, 0.50f * input_size, rng);
+    // First input has 50% modification
+    for (auto i : sample)
     {
         avalanche_data.alt_inputs.at(3).get()[i]++;
+    }
+
+    sample = pickSet(input_size, 0.75f * input_size, rng);
+    // First input has 75% modification
+    for (auto i : sample)
+    {
+        avalanche_data.alt_inputs.at(4).get()[i]++;
+    }
+
+    // First input has first 25% modification
+    for (byte_len i = 0; i < 0.25 * input_size; i++)
+    {
+        avalanche_data.alt_inputs.at(5).get()[i]++;
+    }
+
+    // First input has last 25% modification
+    for (byte_len i = input_size - 0.25 * input_size; i < input_size; i++)
+    {
+        avalanche_data.alt_inputs.at(6).get()[i]++;
     }
 }
 
@@ -474,8 +517,8 @@ void runBenchmarkWSize(int rounds, byte_len bytes, const OutputSet &output_set)
     OpenSSLCipherFactory open_ssl_cipher_factory;
     runFullBenchmark(rounds, bytes, "openssl", open_ssl_cipher_factory, output_set);
 
-    //LibsodiumCipherFactory libsodium_cipher_factory;
-    //runFullBenchmark(bytes, "libsodium", libsodium_cipher_factory, results_file, error_log, avalanche_file);
+    LibsodiumCipherFactory libsodium_cipher_factory;
+    runFullBenchmark(rounds, bytes, "libsodium", libsodium_cipher_factory, output_set);
 
     LibgcryptCipherFactory libgcrypt_cipher_factory;
     runFullBenchmark(rounds, bytes, "gcrypt", libgcrypt_cipher_factory, output_set);
@@ -492,6 +535,7 @@ void runBenchmarkWSize(int rounds, byte_len bytes, const OutputSet &output_set)
 
 int main(int argc, char **arv)
 {
+    srandom(std::chrono::system_clock::now().time_since_epoch().count());
     //generateInputTextFile("fox.txt", 100000);
     //std::ifstream input_file("fox.txt", std::ios::binary);
 
@@ -516,7 +560,7 @@ int main(int argc, char **arv)
     //input_text = "The quick fox jumps over the lazy dog";
 
     // From 2^10 to 2^25
-    /*int sizes[] = {
+    int sizes[] = {
             1024,
             2048,
             4096,
@@ -538,9 +582,9 @@ int main(int argc, char **arv)
             268435456,
             536870912,
             1073741824
-    };*/
+    };
 
-    int sizes[] = { 2048 };
+    //int sizes[] = { 2048 };
 
     std::cout << "Starting...\n";
 
@@ -548,7 +592,7 @@ int main(int argc, char **arv)
 
     for (byte_len b : sizes)
     {
-        runBenchmarkWSize(2, b, output_set);
+        runBenchmarkWSize(5, b, output_set);
     }
 
     std::cout << "Done!\n";
