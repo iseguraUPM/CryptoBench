@@ -342,7 +342,7 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_XTS:
             throw UnsupportedCipherException();
         case Cipher::AES_256_CCM:
-            return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::AES>);
+            return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, 7, 12, CryptoPP::CCM<CryptoPP::AES>);
         case Cipher::AES_256_EAX:
             return CRYPTOPP_CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::AES>);
         case Cipher::AES_256_OCB:
