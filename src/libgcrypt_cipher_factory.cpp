@@ -132,9 +132,6 @@ void LibgcryptCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const 
 {
     using super = LibgcryptCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>;
 
-    if (plain_text_len % BLOCK_SIZE != 0)
-        throw PaddingException();
-
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
 
@@ -232,9 +229,6 @@ void LibgcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const
                                                       , byte *cipher_text, byte_len &cipher_text_len)
 {
     using super = LibgcryptCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>;
-
-    if (plain_text_len % BLOCK_SIZE != 0)
-        throw PaddingException();
 
     gcry_cipher_hd_t handle;
     gcry_error_t err = 0;
@@ -451,7 +445,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_XTS:
             return CIPHER(KEY_384, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_192_CCM:
-            return CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CCM);
         case Cipher::AES_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_192_OCB:
@@ -474,7 +468,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_XTS:
             return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_XTS);
         case Cipher::AES_128_CCM:
-            return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CCM);
         case Cipher::AES_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_128_OCB:
@@ -532,7 +526,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_256_XTS:
             return CIPHER(KEY_512, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_XTS);
         case Cipher::CAMELLIA_256_CCM:
-            return CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_256, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CCM);
         case Cipher::CAMELLIA_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::CAMELLIA_256_OCB:
@@ -555,7 +549,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_192_XTS:
             return CIPHER(KEY_384, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_XTS);
         case Cipher::CAMELLIA_192_CCM:
-            return CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CCM);
         case Cipher::CAMELLIA_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::CAMELLIA_192_OCB:
@@ -578,7 +572,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_XTS:
             return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_XTS);
         case Cipher::CAMELLIA_128_CCM:
-            return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CCM);
         case Cipher::CAMELLIA_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::CAMELLIA_128_OCB:
@@ -614,7 +608,7 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::SEED_XTS:
             return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_XTS);
         case Cipher::SEED_CCM:
-            return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CCM);
+            return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CCM);
         case Cipher::SEED_EAX:
             throw UnsupportedCipherException();
         case Cipher::SEED_OCB:
@@ -633,15 +627,15 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_CTR:
             return CIPHER_NO_PAD(KEY_448, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_GCM:
-            return CIPHER_AUTH(KEY_448, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_XTS:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_CCM:
-            return CIPHER_AUTH(KEY_448, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_EAX:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_OCB:
-            return CIPHER_AUTH(KEY_448, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OCB);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_SIV:
             throw UnsupportedCipherException();
 
@@ -656,15 +650,15 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_256_CTR:
             return CIPHER_NO_PAD(KEY_256, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_256_GCM:
-            return CIPHER_AUTH(KEY_256, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_XTS:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_CCM:
-            return CIPHER_AUTH(KEY_256, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_OCB:
-            return CIPHER_AUTH(KEY_256, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OCB);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_256_SIV:
             throw UnsupportedCipherException();
 
@@ -679,15 +673,15 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_192_CTR:
             return CIPHER_NO_PAD(KEY_192, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_192_GCM:
-            return CIPHER_AUTH(KEY_192, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_XTS:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_CCM:
-            return CIPHER_AUTH(KEY_192, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_OCB:
-            return CIPHER_AUTH(KEY_192, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OCB);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_192_SIV:
             throw UnsupportedCipherException();
 
@@ -702,15 +696,15 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_128_CTR:
             return CIPHER_NO_PAD(KEY_128, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CTR);
         case Cipher::BLOWFISH_128_GCM:
-            return CIPHER_AUTH(KEY_128, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_GCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_XTS:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_CCM:
-            return CIPHER_AUTH(KEY_128, BLK_64, IV_64, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CCM);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_OCB:
-            return CIPHER_AUTH(KEY_128, BLK_64, IV_96, TAG_128, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_OCB);
+            throw UnsupportedCipherException();
         case Cipher::BLOWFISH_128_SIV:
             throw UnsupportedCipherException();
     }
