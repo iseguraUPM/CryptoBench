@@ -285,7 +285,7 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_XTS:
             return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "AES-128/XTS");
         case Cipher::AES_128_CCM:
-            return BOTAN_CIPHER(KEY_128,BLK_128,IV_96, "AES-128/CCM");
+            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "AES-128/CCM");
         case Cipher::AES_128_EAX:
             throw UnsupportedCipherException();
             //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "AES-128/EAX");
