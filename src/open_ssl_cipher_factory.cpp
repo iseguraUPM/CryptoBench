@@ -29,10 +29,8 @@
 #define IV_128 16
 #define IV_96 12
 #define IV_64 8
-#define IV_56 7
 
 #define TAG_128 16
-#define TAG_96 12
 
 template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE>
 class OpenSSLCipher : public SymmetricCipher
@@ -327,7 +325,17 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::encrypt(const byte key[KEY_SI
     auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), BLOCK_SIZE);
 
-    if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
+    if (1 != EVP_EncryptInit_ex(ctx.get(), cipher_mode, nullptr, nullptr, nullptr))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    if (1 != EVP_CIPHER_CTX_set_key_length(ctx.get(), KEY_SIZE))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
@@ -357,7 +365,17 @@ void OpenSSLCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::decrypt(const byte key[KEY_SI
     auto iv = std::shared_ptr<byte>(new byte[BLOCK_SIZE], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - BLOCK_SIZE, BLOCK_SIZE);
 
-    if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, key, iv.get()))
+    if (1 != EVP_DecryptInit_ex(ctx.get(), cipher_mode, nullptr, nullptr, nullptr))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    if (1 != EVP_CIPHER_CTX_set_key_length(ctx.get(), KEY_SIZE))
+    {
+        throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx.get(), nullptr, nullptr, key, iv.get()))
     {
         throw OpenSSLException(std::string(ERR_error_string(ERR_get_error(), nullptr)));
     }
