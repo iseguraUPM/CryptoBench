@@ -529,7 +529,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_XTS:
             throw UnsupportedCipherException();
         case Cipher::ARIA_128_CCM:
-            return CIPHER_CCM(KEY_128, BLK_128, IV_128, IV_128, EVP_aria_128_ccm());
+            return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, EVP_aria_128_ccm());
         case Cipher::ARIA_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::ARIA_128_OCB:
