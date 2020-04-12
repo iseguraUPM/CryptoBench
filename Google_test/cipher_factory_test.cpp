@@ -34,6 +34,8 @@ protected:
         input = (byte *) "The quick brown fox jumps over the lazy dog";
         input_len = std::strlen(reinterpret_cast<const char *>(input));
         RandomBytes random_bytes;
+        random_bytes.generateRandomBytes(key512, 64);
+        random_bytes.generateRandomBytes(key448, 56);
         random_bytes.generateRandomBytes(key256, 32);
         random_bytes.generateRandomBytes(key384, 48);
         random_bytes.generateRandomBytes(key192, 24);
