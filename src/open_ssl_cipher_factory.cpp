@@ -409,7 +409,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_XTS:
             return CIPHER(KEY_512, BLK_128, IV_128, EVP_aes_256_xts()); // XTS mode expects key doubled
         case Cipher::AES_256_CCM:
-            return CIPHER_CCM(KEY_256, BLK_128, IV_56, TAG_96, EVP_aes_256_ccm());
+            return CIPHER_CCM(KEY_256, BLK_128, IV_96, TAG_128, EVP_aes_256_ccm());
         case Cipher::AES_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_256_OCB:
@@ -433,7 +433,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_XTS:
             throw UnsupportedCipherException();
         case Cipher::AES_192_CCM:
-            return CIPHER_CCM(KEY_192, BLK_128, IV_56, TAG_96, EVP_aes_192_ccm());
+            return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_128, EVP_aes_192_ccm());
         case Cipher::AES_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_192_OCB:
@@ -458,7 +458,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_XTS:
             return CIPHER(KEY_256, BLK_128, IV_128, EVP_aes_128_xts()); // XTS mode expects key doubled
         case Cipher::AES_128_CCM:
-            return CIPHER_CCM(KEY_128, BLK_128, IV_56, TAG_96, EVP_aes_128_ccm());
+            return CIPHER_CCM(KEY_128, BLK_128, IV_96, TAG_128, EVP_aes_128_ccm());
         case Cipher::AES_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_128_OCB:
@@ -483,7 +483,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_256_XTS:
             throw UnsupportedCipherException();
         case Cipher::ARIA_256_CCM:
-            return CIPHER_CCM(KEY_256, BLK_128, IV_56, TAG_96, EVP_aria_256_ccm());
+            return CIPHER_CCM(KEY_256, BLK_128, IV_96, TAG_128, EVP_aria_256_ccm());
         case Cipher::ARIA_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::ARIA_256_OCB:
@@ -506,7 +506,7 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_192_XTS:
             throw UnsupportedCipherException();
         case Cipher::ARIA_192_CCM:
-            return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_96, EVP_aria_192_ccm());
+            return CIPHER_CCM(KEY_192, BLK_128, IV_96, TAG_128, EVP_aria_192_ccm());
         case Cipher::ARIA_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::ARIA_192_OCB:
@@ -648,7 +648,55 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::BLOWFISH_SIV:
             throw UnsupportedCipherException();
 
-        default:
-            return nullptr;
+        case Cipher::BLOWFISH_256_ECB:
+            return CIPHER(KEY_256, BLK_64, IV_64, EVP_bf_ecb());
+        case Cipher::BLOWFISH_256_CBC:
+            return CIPHER(KEY_256, BLK_64, IV_64, EVP_bf_cbc());
+        case Cipher::BLOWFISH_256_CFB:
+            return CIPHER(KEY_256, BLK_64, IV_64, EVP_bf_cfb());
+        case Cipher::BLOWFISH_256_OFB:
+            return CIPHER(KEY_256, BLK_64, IV_64, EVP_bf_ofb());
+        case Cipher::BLOWFISH_256_CTR:
+        case Cipher::BLOWFISH_256_GCM:
+        case Cipher::BLOWFISH_256_XTS:
+        case Cipher::BLOWFISH_256_CCM:
+        case Cipher::BLOWFISH_256_EAX:
+        case Cipher::BLOWFISH_256_OCB:
+        case Cipher::BLOWFISH_256_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_192_ECB:
+            return CIPHER(KEY_192, BLK_64, IV_64, EVP_bf_ecb());
+        case Cipher::BLOWFISH_192_CBC:
+            return CIPHER(KEY_192, BLK_64, IV_64, EVP_bf_cbc());
+        case Cipher::BLOWFISH_192_CFB:
+            return CIPHER(KEY_192, BLK_64, IV_64, EVP_bf_cfb());
+        case Cipher::BLOWFISH_192_OFB:
+            return CIPHER(KEY_192, BLK_64, IV_64, EVP_bf_ofb());
+        case Cipher::BLOWFISH_192_CTR:
+        case Cipher::BLOWFISH_192_GCM:
+        case Cipher::BLOWFISH_192_XTS:
+        case Cipher::BLOWFISH_192_CCM:
+        case Cipher::BLOWFISH_192_EAX:
+        case Cipher::BLOWFISH_192_OCB:
+        case Cipher::BLOWFISH_192_SIV:
+            throw UnsupportedCipherException();
+
+        case Cipher::BLOWFISH_128_ECB:
+            return CIPHER(KEY_128, BLK_64, IV_64, EVP_bf_ecb());
+        case Cipher::BLOWFISH_128_CBC:
+            return CIPHER(KEY_128, BLK_64, IV_64, EVP_bf_cbc());
+        case Cipher::BLOWFISH_128_CFB:
+            return CIPHER(KEY_128, BLK_64, IV_64, EVP_bf_cfb());
+        case Cipher::BLOWFISH_128_OFB:
+            return CIPHER(KEY_128, BLK_64, IV_64, EVP_bf_ofb());
+        case Cipher::BLOWFISH_128_CTR:
+        case Cipher::BLOWFISH_128_GCM:
+        case Cipher::BLOWFISH_128_XTS:
+        case Cipher::BLOWFISH_128_CCM:
+        case Cipher::BLOWFISH_128_EAX:
+        case Cipher::BLOWFISH_128_OCB:
+        case Cipher::BLOWFISH_128_SIV:
+            throw UnsupportedCipherException();
     }
 }
