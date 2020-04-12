@@ -125,9 +125,6 @@ void WolfcryptAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, ALGO>::encrypt
     auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
     random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
-    if (plain_text_len % BLOCK_SIZE != 0)
-        throw PaddingException();
-
     ALGO algo;
     if (0 != set_key(&algo, key, KEY_SIZE))
         throw WolfCryptException("Encrypt set key failure");
