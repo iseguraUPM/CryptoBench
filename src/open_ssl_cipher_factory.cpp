@@ -104,7 +104,7 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const by
 {
     using super = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>;
 
-    auto req_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE) + BLOCK_SIZE + TAG_128;
+    auto req_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE) + BLOCK_SIZE + TAG_SIZE;
     if (cipher_text_len < req_len)
     {
         throw OpenSSLException("Invalid cipher text length. Must be at least: " + std::to_string(req_len));
@@ -155,10 +155,10 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const by
     }
 
     cipher_text_len = out_len1 + out_len2;
-    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
-    cipher_text_len += IV_SIZE;
     memcpy(cipher_text + cipher_text_len, tag.get(), TAG_SIZE);
     cipher_text_len += TAG_SIZE;
+    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
+    cipher_text_len += IV_SIZE;
 
 }
 
@@ -177,10 +177,10 @@ void OpenSSLCCMCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const by
     }
 
     auto tag = std::shared_ptr<byte>(new byte[TAG_SIZE], std::default_delete<byte[]>());
-    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE, TAG_SIZE);
+    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, TAG_SIZE);
 
     auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
-    memcpy(iv.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, IV_SIZE);
+    memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
 
 
     if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_SET_IVLEN, IV_SIZE, nullptr))
@@ -263,10 +263,10 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const b
     }
 
     cipher_text_len = out_len1 + out_len2;
-    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
-    cipher_text_len += IV_SIZE;
     memcpy(cipher_text + cipher_text_len, tag.get(), TAG_SIZE);
     cipher_text_len += TAG_SIZE;
+    memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
+    cipher_text_len += IV_SIZE;
 
 }
 
@@ -284,10 +284,10 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const b
     }
 
     auto tag = std::shared_ptr<byte>(new byte[TAG_SIZE], std::default_delete<byte[]>());
-    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE, TAG_SIZE);
+    memcpy(tag.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, TAG_SIZE);
 
     auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
-    memcpy(iv.get(), cipher_text + cipher_text_len - TAG_SIZE - IV_SIZE, IV_SIZE);
+    memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
 
     EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_IVLEN, IV_SIZE, nullptr);
 
