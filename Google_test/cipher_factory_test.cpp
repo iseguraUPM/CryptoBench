@@ -41,9 +41,19 @@ protected:
     }
 
     void TearDown() override
-    {}
+    {
+    }
+
+    static void TearDownTestSuite()
+    {
+        std::cout << "Cipher tested: " << s_cipher_count << std::endl;
+    }
+
+    static int s_cipher_count;
 
 };
+
+int CipherPerformanceFixture::s_cipher_count = 0;
 
 TEST_P(CipherPerformanceFixture, EncryptDecrypt)
 {
@@ -144,6 +154,7 @@ TEST_P(CipherPerformanceFixture, EncryptDecrypt)
 
     delete[] output;
     delete[] recovered;
+    s_cipher_count++;
 }
 
 std::vector<CipherTestParam> openSSLParams()
