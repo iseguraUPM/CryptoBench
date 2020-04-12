@@ -218,12 +218,6 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const b
 {
     using super = OpenSSLCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>;
 
-    auto req_len = plain_text_len + BLOCK_SIZE - (plain_text_len % BLOCK_SIZE) + BLOCK_SIZE + TAG_SIZE;
-    if (cipher_text_len < req_len)
-    {
-        throw OpenSSLException("Invalid cipher text length. Must be at least: " + std::to_string(req_len));
-    }
-
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
 
     auto &cipher_mode = super::cipher_mode;
@@ -288,6 +282,8 @@ void OpenSSLAuthCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const b
 
     auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
     memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
+
+
 
     EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_AEAD_SET_IVLEN, IV_SIZE, nullptr);
 
@@ -417,7 +413,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_256_OCB:
-            return CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, EVP_aes_256_ocb());
+            throw UnsupportedCipherException();
+            //return CIPHER_AUTH(KEY_256, BLK_128, IV_96, TAG_128, EVP_aes_256_ocb());
         case Cipher::AES_256_SIV:
             throw UnsupportedCipherException();
 
@@ -440,7 +437,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_192_OCB:
-            return CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128,EVP_aes_192_ocb());
+            throw UnsupportedCipherException();
+            //return CIPHER_AUTH(KEY_192, BLK_128, IV_96, TAG_128,EVP_aes_192_ocb());
         case Cipher::AES_192_SIV:
             throw UnsupportedCipherException();
 
@@ -464,7 +462,8 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_EAX:
             throw UnsupportedCipherException();
         case Cipher::AES_128_OCB:
-            return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, EVP_aes_128_ocb());
+            throw UnsupportedCipherException();
+            //return CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, EVP_aes_128_ocb());
         case Cipher::AES_128_SIV:
             throw UnsupportedCipherException();
 
