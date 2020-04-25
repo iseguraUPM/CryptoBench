@@ -1,15 +1,19 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(cryptopp)
 
-add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe
-        -DNO_OS_DEPENDENCE
-        -DCRYPTOPP_DISABLE_SSE2
-        -DCRYPTOPP_DISABLE_SSE4
-        -DDCRYPTOPP_DISABLE_SHANI
-        -DCRYPTOPP_DISABLE_AESNI
-        -DCRYPTOPP_DISABLE_SSSE3
-        -DCRYPTOPP_DISABLE_ASM
-        -DCRYPTOPP_DISABLE_ALTIVEC)
+if (CRYPTOPP_NO_OPTS)
+    add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe
+            -DNO_OS_DEPENDENCE
+            -DCRYPTOPP_DISABLE_SSE2
+            -DCRYPTOPP_DISABLE_SSE4
+            -DDCRYPTOPP_DISABLE_SHANI
+            -DCRYPTOPP_DISABLE_AESNI
+            -DCRYPTOPP_DISABLE_SSSE3
+            -DCRYPTOPP_DISABLE_ASM
+            -DCRYPTOPP_DISABLE_ALTIVEC)
+else()
+    add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe)
+endif()
 
 set(cryptopp_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/cryptopp)
 set(cryptopp_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/cryptopp)

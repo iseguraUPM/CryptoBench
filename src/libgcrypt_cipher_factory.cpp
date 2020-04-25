@@ -395,6 +395,7 @@ void LibgcryptCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::handleGcryError(gcry_error_
 
 LibgcryptCipherFactory::LibgcryptCipherFactory()
 {
+#ifdef GCRYPT_NO_OPTS
     if (!libgcrypt_initialized.exchange(true))
     {
         for (const char * hwf : HARDWARE_OPTS)
@@ -402,6 +403,7 @@ LibgcryptCipherFactory::LibgcryptCipherFactory()
             gcry_control(GCRYCTL_DISABLE_HWF, hwf, NULL);
         }
     }
+#endif
 }
 
 CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
