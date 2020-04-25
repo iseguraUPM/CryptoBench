@@ -80,6 +80,8 @@ struct OutputSet
 };
 
 
+const byte *getKeyBySize(const KeyChain &key_chain, CipherPtr &cipher_ptr);
+
 std::string timeStringNowFormat(const char *format)
 {
     auto now = std::chrono::system_clock::now();
@@ -390,8 +392,7 @@ void initializeAvalancheData(const byte *input_text, const byte_len input_size, 
 }
 
 void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const byte *input_text
-                        , byte_len input_size, const KeyChain &key_chain, AvalancheData &avalanche_data
-                        , const OutputSet &output_set)
+                        , byte_len input_size, const KeyChain &key_chain, const OutputSet &output_set)
 {
     auto desc = getCipherDescription(cipher);
     CipherPtr cipher_ptr;
@@ -413,7 +414,32 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
     BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_size
                                                     , lib_name, std::get<0>(desc), std::get<2>(desc));
 
+    const byte *key = getKeyBySize(key_chain, cipher_ptr);
+    if (key == nullptr)
+    {
+        recordError(lib_name, desc, input_size,
+                "No key generated for " + std::to_string(cipher_ptr->getKeyLen()) + " size", output_set.error_log);
+        return;
+    }
+
+
+    try
+    {
+        encryptDecryptBenchmark(key, input_text, input_size, cipher_ptr, result_record);
+        recordResult(result_record, output_set.perf_result);
+    } catch (GenericCipherException &ex)
+    {
+        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+    } catch (std::exception &ex)
+    {
+        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+    }
+}
+
+const byte *getKeyBySize(const KeyChain &key_chain, CipherPtr &cipher_ptr)
+{
     const byte *key = nullptr;
+
     if (cipher_ptr->getKeyLen() == 256 / 8)
     {
         key = key_chain.key256;
@@ -435,38 +461,9 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
     } else if (cipher_ptr->getKeyLen() == 64 / 8)
     {
         key = key_chain.key64;
-    } else
-    {
-        recordError(lib_name, desc, input_size,
-                "No key generated for " + std::to_string(cipher_ptr->getKeyLen()) + " size", output_set.error_log);
-        return;
     }
 
-    initializeAvalancheData(input_text, input_size, cipher_ptr->getBlockLen(), avalanche_data);
-
-    try
-    {
-        encryptDecryptBenchmark(key, input_text, input_size, cipher_ptr, result_record);
-        recordResult(result_record, output_set.perf_result);
-    } catch (GenericCipherException &ex)
-    {
-        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
-    } catch (std::exception &ex)
-    {
-        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
-    }
-
-
-    try
-    {
-        avalancheBenchmark(cipher_ptr, key, avalanche_data, output_set.avl_result, result_record);
-    } catch (GenericCipherException &ex)
-    {
-        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
-    } catch (std::exception &ex)
-    {
-        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
-    }
+    return key;
 }
 
 void createInputFile(byte *input_text, const byte_len bytes)
@@ -480,7 +477,7 @@ void createInputFile(byte *input_text, const byte_len bytes)
 }
 
 void
-initializeInputData(const byte_len input_size, byte *input_text, AvalancheData &avalanche_data, KeyChain &key_chain)
+initializeInputData(const byte_len input_size, byte *input_text, KeyChain &key_chain)
 {
     createInputFile(input_text, input_size);
 
@@ -493,6 +490,37 @@ initializeInputData(const byte_len input_size, byte *input_text, AvalancheData &
     generateRandomBytes(key_chain.key64, 8);
 }
 
+void runAvalancheBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const byte *input_text
+                           , byte_len input_size, const KeyChain &key_chain, const OutputSet &output_set)
+{
+    auto desc = getCipherDescription(cipher);
+    CipherPtr cipher_ptr = factory.getCipher(cipher);
+
+    BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_size
+                                                    , lib_name, std::get<0>(desc), std::get<2>(desc));
+
+    const byte *key = getKeyBySize(key_chain, cipher_ptr);
+    if (key == nullptr)
+    {
+        recordError(lib_name, desc, input_size,
+                "No key generated for " + std::to_string(cipher_ptr->getKeyLen()) + " size", output_set.error_log);
+        return;
+    }
+
+    AvalancheData avalanche_data{};
+    initializeAvalancheData(input_text, input_size, cipher_ptr->getBlockLen(), avalanche_data);
+    try
+    {
+        avalancheBenchmark(cipher_ptr, key, avalanche_data, output_set.avl_result, result_record);
+    } catch (GenericCipherException &ex)
+    {
+        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+    } catch (std::exception &ex)
+    {
+        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+    }
+}
+
 void runFullBenchmark(const int rounds, const byte_len input_size, const char *lib_name, CipherFactory &factory
                       , const OutputSet &output_set)
 {
@@ -501,13 +529,16 @@ void runFullBenchmark(const int rounds, const byte_len input_size, const char *l
     auto input_text = byte_ptr(new byte[input_size], std::default_delete<byte[]>());
     for (int i = 0; i < rounds; i++)
     {
-        AvalancheData avalanche_data{};
         KeyChain key_chain{};
-        initializeInputData(input_size, input_text.get(), avalanche_data, key_chain);
+        initializeInputData(input_size, input_text.get(), key_chain);
         for (Cipher cipher : CIPHER_LIST)
         {
-            runSingleBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain, avalanche_data
+            runSingleBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain
                                , output_set);
+            if (i == 0 && std::strcmp(lib_name, "botan") == 0)
+            {
+                runAvalancheBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain, output_set);
+            }
         }
     }
 }
@@ -561,6 +592,13 @@ int main(int argc, char **arv)
 
     // From 2^10 to 2^25
     int sizes[] = {
+            8,
+            16,
+            32,
+            64,
+            128,
+            256,
+            512,
             1024,
             2048,
             4096,
@@ -569,22 +607,10 @@ int main(int argc, char **arv)
             32768,
             65536,
             131072,
-            262144,
-            524288,
-            1048576,
-            2097152,
-            4194304,
-            8388608,
-            16777216,
-            33554432,
-            67108864,
-            134217728,
-            268435456,
-            536870912,
-            1073741824
+            262144
     };
 
-    //int sizes[] = { 2048 };
+    //int sizes[] = { 8192 };
 
     std::cout << "Starting...\n";
 
