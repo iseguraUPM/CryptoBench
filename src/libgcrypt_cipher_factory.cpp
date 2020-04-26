@@ -411,9 +411,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
     switch (cipher)
     {
         case Cipher::AES_256_ECB:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_ECB);
         case Cipher::AES_256_CBC:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_256_CFB:
             return CIPHER_NO_PAD(KEY_256, BLK_128, IV_128, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CFB);
         case Cipher::AES_256_OFB:
@@ -435,9 +437,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::AES_192_ECB:
-            return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_ECB);
         case Cipher::AES_192_CBC:
-            return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_192_CFB:
             return CIPHER_NO_PAD(KEY_192, BLK_128, IV_128, GCRY_CIPHER_AES192, GCRY_CIPHER_MODE_CFB);
         case Cipher::AES_192_OFB:
@@ -459,9 +463,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::AES_128_ECB:
-            return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_ECB);
         case Cipher::AES_128_CBC:
-            return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CBC);
         case Cipher::AES_128_CFB:
             return CIPHER_NO_PAD(KEY_128, BLK_128, IV_128, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_CFB);
         case Cipher::AES_128_OFB:
@@ -518,9 +524,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::CAMELLIA_256_ECB:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_ECB);
         case Cipher::CAMELLIA_256_CBC:
-            return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CBC);
         case Cipher::CAMELLIA_256_CFB:
             return CIPHER_NO_PAD(KEY_256, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA256, GCRY_CIPHER_MODE_CFB);
         case Cipher::CAMELLIA_256_OFB:
@@ -542,9 +550,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::CAMELLIA_192_ECB:
-            return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_ECB);
         case Cipher::CAMELLIA_192_CBC:
-            return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CBC);
         case Cipher::CAMELLIA_192_CFB:
             return CIPHER_NO_PAD(KEY_192, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA192, GCRY_CIPHER_MODE_CFB);
         case Cipher::CAMELLIA_192_OFB:
@@ -566,9 +576,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::CAMELLIA_128_ECB:
-            return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_ECB);
         case Cipher::CAMELLIA_128_CBC:
-            return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CBC);
         case Cipher::CAMELLIA_128_CFB:
             return CIPHER_NO_PAD(KEY_128, BLK_128, IV_128, GCRY_CIPHER_CAMELLIA128, GCRY_CIPHER_MODE_CFB);
         case Cipher::CAMELLIA_128_OFB:
@@ -603,9 +615,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::SEED_ECB:
-            return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_ECB);
         case Cipher::SEED_CBC:
-            return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CBC);
         case Cipher::SEED_CFB:
             return CIPHER_NO_PAD(KEY_128, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_CFB);
         case Cipher::SEED_OFB:
@@ -627,9 +641,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_ECB:
-            return CIPHER(KEY_448, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_448, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
         case Cipher::BLOWFISH_CBC:
-            return CIPHER(KEY_448, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_448, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_CFB:
             return CIPHER_NO_PAD(KEY_448, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_OFB:
@@ -650,9 +666,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_256_ECB:
-            return CIPHER(KEY_256, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
         case Cipher::BLOWFISH_256_CBC:
-            return CIPHER(KEY_256, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_256_CFB:
             return CIPHER_NO_PAD(KEY_256, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_256_OFB:
@@ -673,9 +691,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_192_ECB:
-            return CIPHER(KEY_192, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
         case Cipher::BLOWFISH_192_CBC:
-            return CIPHER(KEY_192, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_192_CFB:
             return CIPHER_NO_PAD(KEY_192, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_192_OFB:
@@ -696,9 +716,11 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
             throw UnsupportedCipherException();
 
         case Cipher::BLOWFISH_128_ECB:
-            return CIPHER(KEY_128, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_ECB);
         case Cipher::BLOWFISH_128_CBC:
-            return CIPHER(KEY_128, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CBC);
         case Cipher::BLOWFISH_128_CFB:
             return CIPHER_NO_PAD(KEY_128, BLK_64, IV_64, GCRY_CIPHER_BLOWFISH, GCRY_CIPHER_MODE_CFB);
         case Cipher::BLOWFISH_128_OFB:

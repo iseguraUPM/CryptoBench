@@ -27,7 +27,7 @@ std::vector<CipherTestParam> wolfcryptParams();
 
 struct LibraryChecksum
 {
-    LibraryChecksum(std::string library, unsigned int checksum) : library(std::move(library)), checksum(checksum) {}
+    LibraryChecksum(std::string library, unsigned long checksum) : library(std::move(library)), checksum(checksum) {}
 
     std::string library;
     unsigned long checksum;
@@ -46,7 +46,8 @@ protected:
 
     static void SetUpTestSuite()
     {
-        s_input = (byte *) "The quick brown fox jumps over the lazy dog";
+        //s_input = (byte *) "The quick brown fox jumps over the lazy dog";
+        s_input = (byte *) "1";
         s_input_len = std::strlen(reinterpret_cast<const char *>(s_input));
         s_global_key = new byte[128];
         generateRandomBytes(s_global_key, 128);
@@ -118,7 +119,7 @@ void CipherConsistencyFixture::computeAllChecksums()
 
 void CipherConsistencyFixture::computeFactoryChecksums(std::string library, std::vector<CipherTestParam> params)
 {
-    byte_len cipher_text_len = 128;
+    byte_len cipher_text_len = 1024;
     auto cipher_text = std::shared_ptr<byte>(new byte[cipher_text_len], std::default_delete<byte[]>());
     memset(cipher_text.get(), 0x00, cipher_text_len);
 
@@ -130,7 +131,7 @@ void CipherConsistencyFixture::computeFactoryChecksums(std::string library, std:
             if (cipher_ptr != nullptr)
             {
                 computeCipherText(cipher_text.get(), cipher_text_len, cipher_ptr);
-                unsigned int chksum = computeChecksum(cipher_text.get(), cipher_text_len);
+                unsigned long chksum = computeChecksum(cipher_text.get(), cipher_text_len);
                 s_checksum_map.emplace(p.cipher, LibraryChecksum(library, chksum));
             }
         }
@@ -141,7 +142,7 @@ void CipherConsistencyFixture::computeFactoryChecksums(std::string library, std:
                       << " couldn't compute checksum: " << ex.what() << "\n";
         }
 
-        cipher_text_len = 128;
+        cipher_text_len = 1024;
         memset(cipher_text.get(), 0x00, cipher_text_len);
     }
 }
@@ -149,18 +150,7 @@ void CipherConsistencyFixture::computeFactoryChecksums(std::string library, std:
 void CipherConsistencyFixture::computeCipherText(byte *cipher_text, byte_len &cipher_text_len
                                                  , std::shared_ptr<SymmetricCipher> &cipher_ptr)
 {
-    try{
-        cipher_ptr->encrypt(s_global_key, s_input, s_input_len, cipher_text, cipher_text_len);
-    } catch (PaddingException &ex)
-    {
-        byte_len padded_input_text_len = s_input_len + cipher_ptr->getBlockLen() - s_input_len % cipher_ptr->getBlockLen();
-        auto padded_input_text = std::shared_ptr<byte>(new byte[padded_input_text_len], std::default_delete<byte[]>());
-        memcpy(padded_input_text.get(), s_input, s_input_len);
-        memset(padded_input_text.get() + s_input_len, padded_input_text_len - s_input_len,
-                padded_input_text_len - s_input_len);
-
-        cipher_ptr->encrypt(s_global_key, padded_input_text.get(), padded_input_text_len, cipher_text, cipher_text_len);
-    }
+    cipher_ptr->encrypt(s_global_key, s_input, s_input_len, cipher_text, cipher_text_len);
 }
 
 unsigned long CipherConsistencyFixture::computeChecksum(const unsigned char *arr, byte_len m)

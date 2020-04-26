@@ -49,7 +49,7 @@ protected:
     byte key448[56];
     byte key512[64];
 
-    const byte * input;
+    byte * input;
     byte_len input_len;
 
 public:

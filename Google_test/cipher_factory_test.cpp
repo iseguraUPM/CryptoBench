@@ -31,9 +31,12 @@ protected:
 
     void SetUp() override
     {
-        input = (byte *) "The quick brown fox jumps over the lazy dog";
+        //input = (byte *) "The quick brown fox jumps over the lazy dog";
+        input = (byte *) "1";
+
         input_len = std::strlen(reinterpret_cast<const char *>(input));
         RandomBytes random_bytes;
+
         random_bytes.generateRandomBytes(key512, 64);
         random_bytes.generateRandomBytes(key448, 56);
         random_bytes.generateRandomBytes(key256, 32);
@@ -105,24 +108,12 @@ TEST_P(CipherPerformanceFixture, EncryptDecrypt)
     }
 
 
-    byte_len output_len = input_len * 2;
+    byte_len output_len = 1024;
     byte * output = new byte[output_len];
 
-    try {
-        startChrono();
-        cipher_ptr->encrypt(key, input, input_len, output, output_len);
-        stopChrono();
-    } catch (PaddingException &ex)
-    {
-        byte_len padded_input_text_len = input_len + cipher_ptr->getBlockLen() - input_len % cipher_ptr->getBlockLen();
-        auto padded_input_text = std::shared_ptr<byte>(new byte[padded_input_text_len], std::default_delete<byte[]>());
-        memcpy(padded_input_text.get(), input, input_len);
-        memset(padded_input_text.get() + input_len, padded_input_text_len - input_len, padded_input_text_len - input_len);
-
-        startChrono();
-        cipher_ptr->encrypt(key, padded_input_text.get(), padded_input_text_len, output, output_len);
-        stopChrono();
-    }
+    startChrono();
+    cipher_ptr->encrypt(key, input, input_len, output, output_len);
+    stopChrono();
 
 
     std::cout << "\nEncrypt delta: " << getElapsedChrono().count() << "\n";
@@ -140,8 +131,8 @@ TEST_P(CipherPerformanceFixture, EncryptDecrypt)
 
     std::cout << "\nCipher text len: " << output_len << "\n";
 
-    byte * recovered = new byte[input_len];
-    byte_len recovered_len = input_len;
+    byte_len recovered_len = 1024;
+    byte * recovered = new byte[recovered_len];
     startChrono();
     cipher_ptr->decrypt(key, output, output_len, recovered, recovered_len);
     stopChrono();

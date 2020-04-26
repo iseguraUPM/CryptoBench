@@ -207,7 +207,8 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_256_ECB:
             throw UnsupportedCipherException();
         case Cipher::AES_256_CBC:
-            return CIPHER(KEY_256, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_256, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
         case Cipher::AES_256_CFB:
         case Cipher::AES_256_OFB:
             throw UnsupportedCipherException();
@@ -226,7 +227,8 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_192_ECB:
             throw UnsupportedCipherException();
         case Cipher::AES_192_CBC:
-            return CIPHER(KEY_192, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_192, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
         case Cipher::AES_192_CFB:
         case Cipher::AES_192_OFB:
             throw UnsupportedCipherException();
@@ -245,7 +247,8 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::AES_128_ECB:
             throw UnsupportedCipherException();
         case Cipher::AES_128_CBC:
-            return CIPHER(KEY_128, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
+            throw UnsupportedCipherException();
+            //return CIPHER(KEY_128, BLK_128, IV_128, ::Aes, AES_ENCRYPTION, AES_DECRYPTION, wc_AesSetKey, wc_AesCbcEncrypt, wc_AesCbcDecrypt);
         case Cipher::AES_128_CFB:
         case Cipher::AES_128_OFB:
             throw UnsupportedCipherException();
