@@ -27,8 +27,8 @@ using byte_ptr = std::shared_ptr<byte>;
 
 struct BenchmarkResult
 {
-    unsigned long encrypt_time_micro{};
-    unsigned long decrypt_time_micro{};
+    unsigned long encrypt_time_nano{};
+    unsigned long decrypt_time_nano{};
     int key_bits{};
     int block_bits{};
     byte_len input_size{};
@@ -44,8 +44,8 @@ struct BenchmarkResult
             : key_bits(key_len), block_bits(block_len), input_size(input_size), cipher_lib(lib),
               cipher_alg(std::move(cipher)), block_mode(std::move(mode))
     {
-        encrypt_time_micro = 0;
-        decrypt_time_micro = 0;
+        encrypt_time_nano = 0;
+        decrypt_time_nano = 0;
     }
 };
 
@@ -115,17 +115,17 @@ void encryptDecryptBenchmark(const byte *key, const byte *input_text, const byte
     cipher->encrypt(key, input_text, input_size, cipher_text.get(), cipher_text_len);
     steady_clock::time_point t2 = steady_clock::now();
 
-    result.encrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    result.encrypt_time_nano = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
     result.ciphertext_size = cipher_text_len;
 
-    byte_len recovered_text_len = input_size + cipher->getBlockLen();
+    byte_len recovered_text_len = input_size + cipher->getBlockLen()*4;
     auto recovered_text = byte_ptr(new byte[recovered_text_len], std::default_delete<byte[]>());
 
     t1 = steady_clock::now();
     cipher->decrypt(key, cipher_text.get(), cipher_text_len, recovered_text.get(), recovered_text_len);
     t2 = steady_clock::now();
 
-    result.decrypt_time_micro = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+    result.decrypt_time_nano = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 }
 
 void recordResult(BenchmarkResult &result, std::ostream &file_stream)
@@ -138,8 +138,8 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
                 << result.block_bits << ","
                 << result.input_size << ","
                 << result.ciphertext_size << ","
-                << result.encrypt_time_micro << ","
-                << result.decrypt_time_micro << "\n";
+                << result.encrypt_time_nano << ","
+                << result.decrypt_time_nano << "\n";
 
     file_stream << result_line.str();
 #ifdef CRYPTOBENCH_DEBUG
