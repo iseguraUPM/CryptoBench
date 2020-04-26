@@ -12,7 +12,7 @@ if (CRYPTOPP_NO_OPTS)
             -DCRYPTOPP_DISABLE_ASM
             -DCRYPTOPP_DISABLE_ALTIVEC)
 else()
-    add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe -march=native -DDCRYPTOPP_DISABLE_SHANI)
+    add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe -march=native -DCRYPTOPP_DISABLE_SHANI)
 endif()
 
 set(cryptopp_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/cryptopp)
