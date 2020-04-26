@@ -108,7 +108,7 @@ void encryptDecryptBenchmark(const byte *key, const byte *input_text, const byte
 {
     using namespace std::chrono;
 
-    byte_len cipher_text_len = input_size * 2;
+    byte_len cipher_text_len = input_size + cipher->getBlockLen() * 4;
     auto cipher_text = byte_ptr(new byte[cipher_text_len], std::default_delete<byte[]>());
 
     steady_clock::time_point t1 = steady_clock::now();
@@ -280,7 +280,7 @@ avalancheBenchmark(CipherPtr &cipherptr, const byte *key, AvalancheData &avalanc
 
 
     // The format for the output is output_KEY_INPUT
-    byte_len output_size = avalanche_data.input_size * 2;
+    byte_len output_size = avalanche_data.input_size + cipherptr->getBlockLen()*4;
     byte_len out_len_aux = output_size;
     auto output_0_ptr = byte_ptr(new byte[output_size], std::default_delete<byte[]>());
     cipherptr->encrypt(key, input_0, avalanche_data.input_size, output_0_ptr.get(), out_len_aux);
@@ -411,6 +411,7 @@ void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory
         return;
     }
 
+    if(std::get<2>(desc) == STR_XTS && input_size < cipher_ptr->getBlockLen()) return;
     BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_size
                                                     , lib_name, std::get<0>(desc), std::get<2>(desc));
 
@@ -494,8 +495,23 @@ void runAvalancheBenchmark(const std::string lib_name, Cipher cipher, CipherFact
                            , byte_len input_size, const KeyChain &key_chain, const OutputSet &output_set)
 {
     auto desc = getCipherDescription(cipher);
-    CipherPtr cipher_ptr = factory.getCipher(cipher);
+    CipherPtr cipher_ptr;
+    try
+    {
+        cipher_ptr = factory.getCipher(cipher);
+    } catch (UnsupportedCipherException &ex)
+    {
+        // Cipher not supported
+        return;
+    }
 
+    if (cipher_ptr == nullptr)
+    {
+        recordError(lib_name, desc, input_size, "cipher not implemented", output_set.error_log);
+        return;
+    }
+
+    if(std::get<2>(desc) == STR_XTS && input_size < cipher_ptr->getBlockLen()) return;
     BenchmarkResult result_record = BenchmarkResult(std::get<1>(desc), cipher_ptr->getBlockLen() * 8, input_size
                                                     , lib_name, std::get<0>(desc), std::get<2>(desc));
 
@@ -592,14 +608,17 @@ int main(int argc, char **arv)
 
     // From 2^10 to 2^25
     int sizes[] = {
+            1,
+            2,
+            4,
             8,
             16,
             32,
             64,
             128,
             256,
-            512,
-            1024,
+            512//,
+            /*1024,
             2048,
             4096,
             8192,
@@ -607,7 +626,7 @@ int main(int argc, char **arv)
             32768,
             65536,
             131072,
-            262144
+            262144*/
     };
 
     //int sizes[] = { 8192 };
