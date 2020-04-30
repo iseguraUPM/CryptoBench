@@ -1,1 +1,0 @@
-dependencies: gettext texinfo transfig libtool
