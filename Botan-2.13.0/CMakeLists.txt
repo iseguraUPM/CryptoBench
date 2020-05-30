@@ -8,7 +8,7 @@ set(BOTAN_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/botan)
 
 set(BOTAN_CONF_ARGS)
 if(BOTAN_NO_OPTS)
-    set(WOLFSSL_CONF_ARGS ${BOTAN_CONF_ARGS} --disable-sse2 --disable-ssse3 --disable-sse4.1 --disable-sse4.2 --disable-avx2 --disable-bmi2 --disable-rdrand --disable-rdseed --disable-aes-ni --disable-sha-ni --disable-altivec --disable-neon --disable-armv8crypto)
+    set(BOTAN_CONF_ARGS ${BOTAN_CONF_ARGS} --disable-sse2 --disable-ssse3 --disable-sse4.1 --disable-sse4.2 --disable-avx2 --disable-bmi2 --disable-rdrand --disable-rdseed --disable-aes-ni --disable-sha-ni --disable-altivec --disable-neon --disable-armv8crypto)
 endif()
 
 
