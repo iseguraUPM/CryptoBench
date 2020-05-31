@@ -3,6 +3,7 @@ project(cryptopp)
 
 if (CRYPTOPP_CROSS_ARM)
     add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe
+            -DNO_OS_DEPENDENCE
             -DCRYPTOPP_DISABLE_SSE2
             -DCRYPTOPP_DISABLE_SSE4
             -DDCRYPTOPP_DISABLE_SHANI
