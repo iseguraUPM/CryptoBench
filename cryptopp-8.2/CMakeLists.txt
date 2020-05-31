@@ -1,16 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(cryptopp)
 
-if (CRYPTOPP_CROSS_ARM)
-    add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe
-            -DNO_OS_DEPENDENCE
-            -DCRYPTOPP_DISABLE_SSE2
-            -DCRYPTOPP_DISABLE_SSE4
-            -DDCRYPTOPP_DISABLE_SHANI
-            -DCRYPTOPP_DISABLE_AESNI
-            -DCRYPTOPP_DISABLE_SSSE3
-            -DCRYPTOPP_DISABLE_ALTIVEC)
-elseif (CRYPTOPP_NO_OPTS)
+if (CRYPTOPP_NO_OPTS)
     add_definitions(-DNDEBUG -g2 -O3 -fPIC -pthread -pipe
             -DNO_OS_DEPENDENCE
             -DCRYPTOPP_DISABLE_SSE2
