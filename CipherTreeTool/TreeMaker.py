@@ -49,8 +49,10 @@ class Tree:
             return 'none'
         else:
             node = self.data
+            if node.type == 'security':
+                return "SEC - LESS OR EQ. THAN {:d} OR GREATER THAN {:d}".format(node.sec, node.sec)
             if node.type == 'size':
-                return "LESS OR EQ. THAN {:d} OR GREATER THAN {:d}".format(node.size, node.size)
+                return "SIZE - LESS OR EQ. THAN {:d} OR GREATER THAN {:d}".format(node.size, node.size)
             elif node.type == 'cipher':
                 return "best: {}-{}-{} from {}".format(node.alg, node.key_len, node.mode, node.lib)
 
@@ -58,31 +60,38 @@ def getDummyData(file):
     tree_data = pd.read_csv(file)
     return tree_data
 
-def buildBalancedTreeStructure(tree, data, start, end):
-    if start > end:
+def buildBalancedTreeStructure(tree, df, field, create_node, start, end):
+    if start > end and field == 'SEC_LEVEL':
+        return buildBalancedTreeStructure(tree, df, 'FILE_BYTES', createSizeNode, 0, df['FILE_BYTES'].unique().shape[0] - 1)
+    elif start > end:
         return 0
 
     middle = int((start + end) / 2)
-    node = Node()
-    node.type = "size"
-    node.size = data['SIZE'].iloc[middle]
-    tree.data = node
+    tree.data = create_node(df.sort_values(by=field)[field].unique()[middle])
     tree.right = Tree()
     tree.left = Tree()
 
-    tree.children += buildBalancedTreeStructure(tree.left, data, start, middle - 1)
-    tree.children += buildBalancedTreeStructure(tree.right, data, middle + 1, end)
+    tree.children += buildBalancedTreeStructure(tree.left, df, field, create_node, start, middle - 1)
+    tree.children += buildBalancedTreeStructure(tree.right, df, field, create_node, middle + 1, end)
     return tree.children + 1
 
 def treePut(root, data):
     if root == None:
         return
-    if root.data != None and root.data.type == "size":
+    if root.data != None and root.data.type == "security":
         node = root.data
-        if node.size >= data['SIZE']:
+        if node.sec >= data['SEC_LEVEL']:
             treePut(root.left, data)
             return
-        if node.size < data['SIZE']:
+        if node.sec < data['SEC_LEVEL']:
+            treePut(root.right, data)
+            return
+    if root.data != None and root.data.type == "size":
+        node = root.data
+        if node.size >= data['FILE_BYTES']:
+            treePut(root.left, data)
+            return
+        if node.size < data['FILE_BYTES']:
             treePut(root.right , data)
             return
     if root.data != None and root.data.type == "cipher":
@@ -94,7 +103,7 @@ def treePut(root, data):
     node.lib = data['LIB']
     node.alg = data['ALG']
     node.key_len = data['KEY_LEN']
-    node.mode = data['MODE']
+    node.mode = data['BLOCK_MODE']
     root.data = node
 
 def populateTree(root, tree_data):
@@ -105,12 +114,13 @@ def treeToCPP(tree, index, strarr):
         return
 
     if index >= len(strarr):
-        strarr.append([str(Node())] * len(strarr))
+        strarr.extend([str(Node())] * len(strarr))
 
-    if tree.data == None:
-        tree.data = Node()
+    _data = tree.data
+    if _data == None:
+        _data = Node()
 
-    strarr[index] = str(tree.data)
+    strarr[index] = str(_data)
     treeToCPP(tree.left, 2 * index + 1, strarr)
     treeToCPP(tree.right, 2 * index + 2, strarr)
 
@@ -131,21 +141,25 @@ def generateCode(template, output, tree):
     fout.write(data)
     fout.close()
 
+def createSecNode(level):
+    node = Node()
+    node.type = "security"
+    node.sec = level
+    return node
+
+def createSizeNode(size):
+    node = Node()
+    node.type = "size"
+    node.size = size
+    return node
+
 def main():
     tree_df = getDummyData(sys.argv[1])
 
-    tree_df = tree_df.sort_values(by='SIZE')
-
-    if tree_df['SIZE'].unique().shape[0] != tree_df.shape[0]:
-        print("ERROR: data presents overlaps")
-        exit()
-
     root = Tree()
-    buildBalancedTreeStructure(root, tree_df, 0, tree_df.shape[0] - 1)
+    buildBalancedTreeStructure(root, tree_df, 'SEC_LEVEL', createSecNode, 0, tree_df['SEC_LEVEL'].unique().shape[0] - 1)
     populateTree(root, tree_df)
     generateCode(sys.argv[2], sys.argv[3], root)
-
-    #print(root)
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,7 @@
 
 const int TREE_SIZE = %%tree_size%%;
 
-struct
+static struct
 {
     std::string type;
     int size;
