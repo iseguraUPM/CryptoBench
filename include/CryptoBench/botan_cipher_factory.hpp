@@ -5,9 +5,7 @@
 #ifndef CRYPTOBENCH_BOTAN_CIPHER_FACTORY_HPP
 #define CRYPTOBENCH_BOTAN_CIPHER_FACTORY_HPP
 
-#include <botan/cipher_mode.h>
 #include "cipher_factory.hpp"
-#include "random_bytes.hpp"
 #include "cipher_exception.hpp"
 
 class BotanCipherFactory : public CipherFactory

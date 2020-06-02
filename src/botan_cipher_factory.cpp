@@ -1,10 +1,11 @@
 //
 // Created by Juan Pablo Melgarejo on 3/30/20.
 //
-
-#include <CryptoBench/cipher_exception.hpp>
 #include "CryptoBench/botan_cipher_factory.hpp"
 
+#include <botan/cipher_mode.h>
+
+#include "CryptoBench/random_bytes.hpp"
 
 #define KEY_128 16
 #define KEY_192 24
@@ -32,7 +33,7 @@ template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE>
 class BotanCipher : public SymmetricCipher
 {
 public:
-    const char * cipherDescription;
+    const char * cipherInfo;
 
     explicit BotanCipher(const char* cipherInfo);
 
@@ -52,9 +53,8 @@ protected:
 };
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE>
-BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::BotanCipher(const char *cipherDescription)
+BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::BotanCipher(const char *cipherInfo) : cipherInfo(cipherInfo)
 {
-    this->cipherDescription = cipherDescription;
     random_bytes = RandomBytes();
 }
 
@@ -80,7 +80,7 @@ void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::decrypt(const byte key[KEY_SIZE
         memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
         cipher_text_len -= IV_SIZE;
 
-        std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create(cipherDescription, Botan::DECRYPTION);
+        std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create(cipherInfo, Botan::DECRYPTION);
         dec->set_key(key, KEY_SIZE);
         dec->start(iv.get(), IV_SIZE);
 
@@ -90,7 +90,7 @@ void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::decrypt(const byte key[KEY_SIZE
 
         memcpy(recovered_text, ct.data(), ct.size());
         recovered_text_len = ct.size();
-    }catch(Botan::Exception ex){
+    }catch(Botan::Exception &ex){
         throw BotanException(ex.what());
     }
 }
@@ -103,7 +103,7 @@ void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::encrypt(const byte key[KEY_SIZE
         auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
         random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
-        std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create(cipherDescription, Botan::ENCRYPTION);
+        std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create(cipherInfo, Botan::ENCRYPTION);
         enc->set_key(key, KEY_SIZE);
         enc->start(iv.get(), IV_SIZE);
 
@@ -116,7 +116,7 @@ void BotanCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE>::encrypt(const byte key[KEY_SIZE
 
         memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
         cipher_text_len += IV_SIZE;
-    }catch(Botan::Exception ex){
+    }catch(Botan::Exception &ex){
         throw BotanException(ex.what());
     }
 }
@@ -127,7 +127,7 @@ template <int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE>
 class BotanCipherAuth : public SymmetricCipher
 {
 public:
-    const char * cipherDescription;
+    const char * cipherInfo;
 
     explicit BotanCipherAuth(const char* cipherInfo);
 
@@ -147,9 +147,8 @@ protected:
 };
 
 template<int KEY_SIZE, int BLOCK_SIZE, int IV_SIZE, int TAG_SIZE>
-BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::BotanCipherAuth(const char *cipherDescription)
+BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::BotanCipherAuth(const char *cipherInfo) : cipherInfo(cipherInfo)
 {
-    this->cipherDescription = cipherDescription;
     random_bytes = RandomBytes();
 }
 
@@ -175,7 +174,7 @@ void BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const byt
         memcpy(iv.get(), cipher_text + cipher_text_len - IV_SIZE, IV_SIZE);
         cipher_text_len -= IV_SIZE;
 
-        std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create(cipherDescription, Botan::DECRYPTION);
+        std::unique_ptr<Botan::Cipher_Mode> dec = Botan::Cipher_Mode::create(cipherInfo, Botan::DECRYPTION);
         dec->set_key(key, KEY_SIZE);
         dec->start(iv.get(), IV_SIZE);
 
@@ -185,7 +184,7 @@ void BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::decrypt(const byt
 
         memcpy(recovered_text, ct.data(), ct.size());
         recovered_text_len = ct.size();
-    }catch(Botan::Exception ex){
+    }catch(Botan::Exception &ex){
         throw BotanException(ex.what());
     }
 }
@@ -198,7 +197,7 @@ void BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const byt
         auto iv = std::shared_ptr<byte>(new byte[IV_SIZE], std::default_delete<byte[]>());
         random_bytes.generateRandomBytes(iv.get(), IV_SIZE);
 
-        std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create(cipherDescription, Botan::ENCRYPTION);
+        std::unique_ptr<Botan::Cipher_Mode> enc = Botan::Cipher_Mode::create(cipherInfo, Botan::ENCRYPTION);
         enc->set_key(key, KEY_SIZE);
         enc->start(iv.get(), IV_SIZE);
 
@@ -211,7 +210,7 @@ void BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const byt
 
         memcpy(cipher_text + cipher_text_len, iv.get(), IV_SIZE);
         cipher_text_len += IV_SIZE;
-    }catch(Botan::Exception ex){
+    }catch(Botan::Exception &ex){
         throw BotanException(ex.what());
     }
 }
