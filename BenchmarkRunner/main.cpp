@@ -590,12 +590,12 @@ int main(int argc, char **arv)
 
     std::ofstream results_file;
     results_file.open("benchmark_" + current_time + ".csv");
-    results_file << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T\n";
+    results_file << "LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T\n";
 
     std::ofstream avalanche_file;
     avalanche_file.open("avalanche_" + current_time + ".csv");
     avalanche_file
-            << "LIB,ALGORITHM,KEY_BITS,BLOCK_MODE,BLOCK_BITS,FILE_BYTES,AVALANCHE_CONF,HAMMING_DIST,AVALANCHE_EFFECT\n";
+            << "LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,AVALANCHE_CONF,HAMMING_DIST,AVALANCHE_EFFECT\n";
 
 #ifdef CRYPTOBENCH_DEBUG
     std::stringstream error_log;
