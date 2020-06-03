@@ -7,7 +7,6 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-.idea/**/other.xml
 
 # Generated files
 .idea/**/contentModel.xml
@@ -42,6 +41,7 @@
 .idea/.gitignore
 .idea/deployment.xml
 .idea/vcs.xml
+.idea/other.xml
 
 # CMake
 cmake-build-*/
