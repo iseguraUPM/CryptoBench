@@ -1,17 +1,7 @@
 import pandas as pd
 import math
 
-print("Processing...")
-
-filename = "benchmark_2020-04-26.csv"
-rounds_filename = "block_cipher_rounds.csv"
-sec_coefficient_range = 5
-
-benchmark_df = pd.read_csv(filename)
-rounds_df = pd.read_csv(rounds_filename)
-
-
-def add_sec_level(df, rounds_df):
+def add_sec_level(df, rounds_df, sec_coefficient_range):
     df = pd.merge(df, rounds_df, on=['ALG', 'KEY_LEN', 'BLOCK_LEN'], how='left')
 
     # Calculate the security coefficient
@@ -24,12 +14,11 @@ def add_sec_level(df, rounds_df):
 
     # Copy to another dataframe to get unique order and normalize by that order. We then merge it back.
     sec_levels = pd.DataFrame(data=df['SECURITY_NORM'].drop_duplicates().sort_values().reset_index())
-    sec_levels['SECURITY_LEVEL'] = sec_levels.apply(lambda row: 1+round(row.name * (sec_coefficient_range-1)/sec_levels.shape[0]), axis=1)
-    sec_levels = sec_levels[['SECURITY_LEVEL', 'SECURITY_NORM']]
-    print(sec_levels)
+    sec_levels['SEC_LEVEL'] = sec_levels.apply(lambda row: int(1+round(row.name * (sec_coefficient_range-1)/sec_levels.shape[0])), axis=1)
+    sec_levels = sec_levels[['SEC_LEVEL', 'SECURITY_NORM']]
     df = pd.merge(df, sec_levels, on=['SECURITY_NORM'], how='left')
 
-    df = df[['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'ENCRYPT_T', 'DECRYPT_T', 'SECURITY_LEVEL']]
+    df = df[['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'ENCRYPT_T', 'DECRYPT_T', 'SEC_LEVEL']]
 
     return df
 
@@ -47,17 +36,31 @@ def get_winners(df, grouping_cols):
     df["PERFORMANCE_COEFFICIENT"] = df.apply(lambda row: row["ENCRYPT_PACE"]+row["DECRYPT_PACE"], axis=1)
 
     # Remove LIB from the grouping columns for selecting library with highest performance coefficient (lowest pace rate)
-    df = df.loc[df.groupby(cols_without_lib)["PERFORMANCE_COEFFICIENT"].idxmin()]
+    df = df.loc[df.groupby(["FILE_BYTES", "SEC_LEVEL"])["PERFORMANCE_COEFFICIENT"].idxmin()]
 
     # Get the lower bound intervals
-    df = df.loc[df.groupby(cols_without_filesize)["FILE_BYTES"].idxmin()]
+    #df = df.loc[df.groupby(cols_without_filesize)["FILE_BYTES"].idxmin()]
 
     # Save sorted for easier viz
-    df.sort_values(by=cols_without_lib).to_csv("grouped_intervals.csv", columns=grouping_cols)
+    #df.sort_values(by=cols_without_lib).to_csv("grouped_intervals.csv", columns=grouping_cols)
+    df = df.sort_values(by=cols_without_lib)[grouping_cols]
 
+    return df
 
-benchmark_df = add_sec_level(benchmark_df, rounds_df)
-get_winners(benchmark_df, ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'SECURITY_LEVEL'])
+def fill_security_levels(df):
+    sec_levels = df['SEC_LEVEL'].unique()
+    max_size = df['FILE_BYTES'].max()
 
+    for sec_level in sec_levels:
+        file_bytes = 1
+        while file_bytes < max_size + 1:
+            if df[(df['SEC_LEVEL'] == sec_level) & (df['FILE_BYTES'] == file_bytes)].shape[0] == 0:
+                df = df.append(((df[(df['SEC_LEVEL'] == sec_level) & (df['FILE_BYTES'] == file_bytes/2)]).replace({'FILE_BYTES': file_bytes/2}, file_bytes)), ignore_index=True)
+            file_bytes = file_bytes * 2
+    return df
 
-print("Done!")
+def generate_dataset(benchmark_df, rounds_df, max_security_level):
+    benchmark_df = add_sec_level(benchmark_df, rounds_df, max_security_level)
+    benchmark_df = get_winners(benchmark_df, ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'SEC_LEVEL'])
+    benchmark_df = fill_security_levels(benchmark_df)
+    return benchmark_df
