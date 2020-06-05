@@ -11,26 +11,27 @@ benchmark_df = pd.read_csv(filename)
 rounds_df = pd.read_csv(rounds_filename)
 
 
-def add_sec_level():
-    global benchmark_df
-    benchmark_df = pd.merge(benchmark_df, rounds_df, on=['ALG', 'KEY_LEN', 'BLOCK_LEN'], how='left')
+def add_sec_level(df, rounds_df):
+    df = pd.merge(df, rounds_df, on=['ALG', 'KEY_LEN', 'BLOCK_LEN'], how='left')
 
     # Calculate the security coefficient
-    benchmark_df['SECURITY_COEFFICIENT'] = benchmark_df.apply(lambda row: (math.log2(row['KEY_LEN']) + math.log2(row['BLOCK_LEN'])) * row['ROUNDS'], axis=1)
-    min_sec_coeff = benchmark_df['SECURITY_COEFFICIENT'].min()
-    max_sec_coeff = benchmark_df['SECURITY_COEFFICIENT'].max()
+    df['SECURITY_COEFFICIENT'] = df.apply(lambda row: (math.log2(row['KEY_LEN']) + math.log2(row['BLOCK_LEN'])) * row['ROUNDS'], axis=1)
+    min_sec_coeff = df['SECURITY_COEFFICIENT'].min()
+    max_sec_coeff = df['SECURITY_COEFFICIENT'].max()
 
     # Normalize the security coefficient
-    benchmark_df['SECURITY_NORM'] = benchmark_df.apply(lambda row: (row['SECURITY_COEFFICIENT'] - min_sec_coeff) / (max_sec_coeff-min_sec_coeff), axis=1)
+    df['SECURITY_NORM'] = df.apply(lambda row: (row['SECURITY_COEFFICIENT'] - min_sec_coeff) / (max_sec_coeff-min_sec_coeff), axis=1)
 
     # Copy to another dataframe to get unique order and normalize by that order. We then merge it back.
-    sec_levels = pd.DataFrame(data=benchmark_df['SECURITY_NORM'].drop_duplicates().sort_values().reset_index())
+    sec_levels = pd.DataFrame(data=df['SECURITY_NORM'].drop_duplicates().sort_values().reset_index())
     sec_levels['SECURITY_LEVEL'] = sec_levels.apply(lambda row: 1+round(row.name * (sec_coefficient_range-1)/sec_levels.shape[0]), axis=1)
     sec_levels = sec_levels[['SECURITY_LEVEL', 'SECURITY_NORM']]
     print(sec_levels)
-    benchmark_df = pd.merge(benchmark_df, sec_levels, on=['SECURITY_NORM'], how='left')
+    df = pd.merge(df, sec_levels, on=['SECURITY_NORM'], how='left')
 
-    benchmark_df = benchmark_df[['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'ENCRYPT_T', 'DECRYPT_T', 'SECURITY_LEVEL']]
+    df = df[['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'ENCRYPT_T', 'DECRYPT_T', 'SECURITY_LEVEL']]
+
+    return df
 
 
 def get_winners(df, grouping_cols):
@@ -55,7 +56,8 @@ def get_winners(df, grouping_cols):
     df.sort_values(by=cols_without_lib).to_csv("grouped_intervals.csv", columns=grouping_cols)
 
 
-add_sec_level()
+benchmark_df = add_sec_level(benchmark_df, rounds_df)
 get_winners(benchmark_df, ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'SECURITY_LEVEL'])
+
 
 print("Done!")
