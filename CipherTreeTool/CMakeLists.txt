@@ -9,7 +9,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gen/)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/gen/cipher_decision_tree.c
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/TreeMaker.py ${CMAKE_CURRENT_SOURCE_DIR}/benchmark.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template ${CMAKE_CURRENT_BINARY_DIR}/gen/cipher_decision_tree.c)
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/decision_tree_generator.py ${CMAKE_CURRENT_SOURCE_DIR}/benchmark.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template ${CMAKE_CURRENT_BINARY_DIR}/gen/cipher_decision_tree.c)
 
 set_source_files_properties(${OBJS}
         PROPERTIES
