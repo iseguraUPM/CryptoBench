@@ -4,7 +4,7 @@ from queue import Queue
 
 from pre_generator import generate_dataset
 
-MAX_SEC_LEVEL = 10
+MAX_SEC_LEVEL = 5
 
 class Node:
     def __init__(self):
