@@ -7,6 +7,8 @@ const int TREE_SIZE = %%tree_size%%;
 
 static struct
 {
+    int left;
+    int right;
     std::string type;
     int size;
     int sec;
@@ -20,7 +22,7 @@ static struct
 
 static void printRecursive(int leaf_idx, int level)
 {
-    if (leaf_idx >= TREE_SIZE)
+    if (leaf_idx < 0 || leaf_idx >= TREE_SIZE)
         return;
 
     std::stringstream ss;
@@ -45,8 +47,8 @@ static void printRecursive(int leaf_idx, int level)
 
     std::cout << ss.str();
 
-    printRecursive(2 * leaf_idx + 1, level + 1);
-    printRecursive(2 * leaf_idx + 2, level + 1);
+    printRecursive(node.left, level + 1);
+    printRecursive(node.right, level + 1);
 }
 
 void printTree()
@@ -57,7 +59,7 @@ void printTree()
 int findCipher(int file_size, int sec_level, struct CipherInfo &cipher)
 {
     int leaf_idx = 0;
-    while (leaf_idx < TREE_SIZE)
+    while (leaf_idx >= 0 && leaf_idx < TREE_SIZE)
     {
         if (decision_tree[leaf_idx].type == "none")
             return 0;
@@ -65,16 +67,16 @@ int findCipher(int file_size, int sec_level, struct CipherInfo &cipher)
         if (decision_tree[leaf_idx].type == "size")
         {
             if (decision_tree[leaf_idx].size >= file_size)
-                leaf_idx = 2 * leaf_idx + 1;
+                leaf_idx = decision_tree[leaf_idx].left;
             else
-                leaf_idx = 2 * leaf_idx + 2;
+                leaf_idx = decision_tree[leaf_idx].right;
         }
         else if (decision_tree[leaf_idx].type == "security")
         {
             if (decision_tree[leaf_idx].sec >= sec_level)
-                leaf_idx = 2 * leaf_idx + 1;
+                leaf_idx = decision_tree[leaf_idx].left;
             else
-                leaf_idx = 2 * leaf_idx + 2;
+                leaf_idx = decision_tree[leaf_idx].right;
         }
         else if (decision_tree[leaf_idx].type == "cipher")
         {
@@ -82,6 +84,7 @@ int findCipher(int file_size, int sec_level, struct CipherInfo &cipher)
             cipher.alg = decision_tree[leaf_idx].alg;
             cipher.key_bits = decision_tree[leaf_idx].key_len;
             cipher.mode = decision_tree[leaf_idx].mode;
+            return 1;
         }
         else {
             return 0;

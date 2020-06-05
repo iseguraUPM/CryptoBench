@@ -4,6 +4,8 @@ from queue import Queue
 
 class Node:
     def __init__(self):
+        self.left = -1
+        self.right = -1
         self.type = None
         self.size = 0
         self.sec = 0
@@ -18,7 +20,9 @@ class Node:
             _type = "none"
 
         arr = []
-        arr.append("{\"" + _type + "\"")
+        arr.append("{" + str(self.left))
+        arr.append(str(self.right))
+        arr.append("\"" + _type + "\"")
         arr.append(str(self.size))
         arr.append(str(self.sec))
         arr.append("\"" + self.lib + "\"")
@@ -56,9 +60,17 @@ class Tree:
             elif node.type == 'cipher':
                 return "best: {}-{}-{} from {}".format(node.alg, node.key_len, node.mode, node.lib)
 
-def getDummyData(file):
-    tree_data = pd.read_csv(file)
-    return tree_data
+def createSecNode(level):
+    node = Node()
+    node.type = "security"
+    node.sec = level
+    return node
+
+def createSizeNode(size):
+    node = Node()
+    node.type = "size"
+    node.size = size
+    return node
 
 def buildBalancedTreeStructure(tree, df, field, create_node, start, end):
     if start > end and field == 'SEC_LEVEL':
@@ -74,6 +86,14 @@ def buildBalancedTreeStructure(tree, df, field, create_node, start, end):
     tree.children += buildBalancedTreeStructure(tree.left, df, field, create_node, start, middle - 1)
     tree.children += buildBalancedTreeStructure(tree.right, df, field, create_node, middle + 1, end)
     return tree.children + 1
+
+def buildTree(tree, df):
+    max_sec = df[df['SEC_LEVEL'] == df['SEC_LEVEL'].max()].index
+    df_trunc = df.drop(max_sec, errors='raise')
+    max_size = df_trunc[df_trunc['FILE_BYTES'] == df_trunc['FILE_BYTES'].max()].index
+    df_trunc = df_trunc.drop(max_size, errors='raise')
+    buildBalancedTreeStructure(tree, df_trunc, 'SEC_LEVEL', createSecNode, 0, df_trunc['SEC_LEVEL'].unique().shape[0] - 1)
+
 
 def treePut(root, data):
     if root == None:
@@ -109,30 +129,32 @@ def treePut(root, data):
 def populateTree(root, tree_data):
     tree_data.apply(lambda row: treePut(root, row), axis=1)
     
-def treeToCPP(tree, index, strarr):
+def treeToCPP(tree, strarr):
     if tree == None:
-        return
-
-    if index >= len(strarr):
-        strarr.extend([str(Node())] * len(strarr))
+        return -1
 
     _data = tree.data
     if _data == None:
         _data = Node()
 
-    strarr[index] = str(_data)
-    treeToCPP(tree.left, 2 * index + 1, strarr)
-    treeToCPP(tree.right, 2 * index + 2, strarr)
-
-    return strarr
+    index = len(strarr)
+    strarr.append(_data)
+    left = treeToCPP(tree.left, strarr)
+    if left > 0:
+        _data.left = left
+    right = treeToCPP(tree.right, strarr)
+    if right > 0:
+        _data.right = right
+    return index
 
 def generateCode(template, output, tree):
     fin = open(template, "rt")
     data = fin.read()
     fin.close()
 
-    strarr = [str(Node())] * 16
-    treeToCPP(tree, 0, strarr)
+    strarr = []
+    treeToCPP(tree, strarr)
+    strarr = [str(x) for x in strarr]
     str_tree_data = "\n\t, ".join(strarr)
     data = data.replace("%%tree_size%%", str(len(strarr)))
     data = data.replace("%%tree_data%%", str_tree_data)
@@ -141,25 +163,18 @@ def generateCode(template, output, tree):
     fout.write(data)
     fout.close()
 
-def createSecNode(level):
-    node = Node()
-    node.type = "security"
-    node.sec = level
-    return node
-
-def createSizeNode(size):
-    node = Node()
-    node.type = "size"
-    node.size = size
-    return node
+def getDummyData(file):
+    tree_data = pd.read_csv(file)
+    return tree_data
 
 def main():
     tree_df = getDummyData(sys.argv[1])
 
     root = Tree()
-    buildBalancedTreeStructure(root, tree_df, 'SEC_LEVEL', createSecNode, 0, tree_df['SEC_LEVEL'].unique().shape[0] - 1)
+    buildTree(root, tree_df)
     populateTree(root, tree_df)
     generateCode(sys.argv[2], sys.argv[3], root)
+    print(root)
 
 if __name__ == "__main__":
     main()
