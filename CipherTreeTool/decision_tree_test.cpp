@@ -9,6 +9,12 @@
 
 int main(int argc, char** argv)
 {
+#ifdef HENCRYPT_SYS_MEMORY
+    std::cout << HENCRYPT_SYS_MEMORY << std::endl;
+#endif
+#ifdef HENCRYPT_SYS_ARCH
+    std::cout << HENCRYPT_SYS_ARCH << std::endl;
+#endif
     //printTree();
     CipherInfo info;
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::steady_clock::now();

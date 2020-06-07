@@ -7,9 +7,15 @@ endif()
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/res/)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gen/)
 
+set(BENCHMARK_DATA ${CMAKE_CURRENT_SOURCE_DIR}/benchmark_${CMAKE_HOST_SYSTEM_PROCESSOR}.csv)
+
+if (NOT EXISTS ${BENCHMARK_DATA})
+    MESSAGE(FATAL_ERROR "Missing cryptography statistics for ${CMAKE_HOST_SYSTEM_PROCESSOR} (file ${BENCHMARK_DATA} not found)")
+endif()
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/gen/cipher_decision_tree.c
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/decision_tree_generator.py ${CMAKE_CURRENT_SOURCE_DIR}/benchmark.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template ${CMAKE_CURRENT_BINARY_DIR}/gen/cipher_decision_tree.c)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template ${BENCHMARK_DATA}
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/decision_tree_generator.py ${CMAKE_CURRENT_SOURCE_DIR}/benchmark_x86_64.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/cipher_decision_tree.c.template ${CMAKE_CURRENT_BINARY_DIR}/gen/cipher_decision_tree.c)
 
 set_source_files_properties(${OBJS}
         PROPERTIES
