@@ -164,7 +164,7 @@ def generateCode(template, output, tree):
     strarr = []
     treeToCPP(tree, strarr)
     strarr = [str(x) for x in strarr]
-    str_tree_data = "\n\t, ".join(strarr)
+    str_tree_data = "\n\t\t, ".join(strarr)
     data = data.replace("%%tree_size%%", str(len(strarr)))
     data = data.replace("%%tree_data%%", str_tree_data)
 

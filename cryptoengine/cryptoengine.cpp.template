@@ -27,7 +27,7 @@ namespace cryptoengine
         int key_len;
         std::string mode;
     } decision_tree[] = {
-            %%tree_data%%
+        %%tree_data%%
     };
 
     static void printRecursive(int leaf_idx, int level)
