@@ -3,13 +3,18 @@
 #include <iostream>
 #include <iomanip>
 
+#define TYPE_NONE 0
+#define TYPE_SIZE 1
+#define TYPE_SEC 2
+#define TYPE_CIPHER 3
+
 const int TREE_SIZE = %%tree_size%%;
 
 static struct
 {
     int left;
     int right;
-    std::string type;
+    int type;
     int size;
     int sec;
     std::string lib;
@@ -29,15 +34,15 @@ static void printRecursive(int leaf_idx, int level)
     ss << std::string(level, '\t');
 
     auto node = decision_tree[leaf_idx];
-    if (node.type == "size")
+    if (node.type == TYPE_SIZE)
     {
         ss << "SIZE: LESS OR EQ. THAN " << node.size << " OR GREATER THAN " << node.size << "\n";
     }
-    else if (node.type == "security")
+    else if (node.type == TYPE_SEC)
     {
         ss << "SEC: LESS OR EQ. THAN " << node.sec << " OR GREATER THAN " << node.sec << "\n";
     }
-    else if (node.type == "cipher")
+    else if (node.type == TYPE_CIPHER)
     {
         ss << node.lib << " " << node.alg << "-" << node.key_len << "-" << node.mode << "\n";
     }
@@ -61,24 +66,24 @@ int findCipher(int file_size, int sec_level, struct CipherInfo &cipher)
     int leaf_idx = 0;
     while (leaf_idx >= 0 && leaf_idx < TREE_SIZE)
     {
-        if (decision_tree[leaf_idx].type == "none")
+        if (decision_tree[leaf_idx].type == TYPE_NONE)
             return 0;
 
-        if (decision_tree[leaf_idx].type == "size")
+        if (decision_tree[leaf_idx].type == TYPE_SIZE)
         {
             if (decision_tree[leaf_idx].size >= file_size)
                 leaf_idx = decision_tree[leaf_idx].left;
             else
                 leaf_idx = decision_tree[leaf_idx].right;
         }
-        else if (decision_tree[leaf_idx].type == "security")
+        else if (decision_tree[leaf_idx].type == TYPE_SEC)
         {
             if (decision_tree[leaf_idx].sec >= sec_level)
                 leaf_idx = decision_tree[leaf_idx].left;
             else
                 leaf_idx = decision_tree[leaf_idx].right;
         }
-        else if (decision_tree[leaf_idx].type == "cipher")
+        else if (decision_tree[leaf_idx].type == TYPE_CIPHER)
         {
             cipher.lib = decision_tree[leaf_idx].lib;
             cipher.alg = decision_tree[leaf_idx].alg;

@@ -4,6 +4,11 @@ from queue import Queue
 
 from pre_generator import generate_dataset
 
+TYPE_NONE = 0
+TYPE_SIZE = 1
+TYPE_SEC = 2
+TYPE_CIPHER = 3
+
 MAX_SEC_LEVEL = 5
 
 class Node:
@@ -21,12 +26,12 @@ class Node:
     def __str__(self):
         _type = self.type
         if _type == None:
-            _type = "none"
+            _type = TYPE_NONE
 
         arr = []
         arr.append("{" + str(self.left))
         arr.append(str(self.right))
-        arr.append("\"" + _type + "\"")
+        arr.append(str(_type))
         arr.append(str(self.size))
         arr.append(str(self.sec))
         arr.append("\"" + self.lib + "\"")
@@ -57,22 +62,22 @@ class Tree:
             return 'none'
         else:
             node = self.data
-            if node.type == 'security':
+            if node.type == TYPE_SEC:
                 return "SEC - LESS OR EQ. THAN {:d} OR GREATER THAN {:d}".format(node.sec, node.sec)
-            if node.type == 'size':
+            if node.type == TYPE_SIZE:
                 return "SIZE - LESS OR EQ. THAN {:d} OR GREATER THAN {:d}".format(node.size, node.size)
-            elif node.type == 'cipher':
+            elif node.type == TYPE_CIPHER:
                 return "best: {}-{}-{} from {}".format(node.alg, node.key_len, node.mode, node.lib)
 
 def createSecNode(level):
     node = Node()
-    node.type = "security"
+    node.type = TYPE_SEC
     node.sec = level
     return node
 
 def createSizeNode(size):
     node = Node()
-    node.type = "size"
+    node.type = TYPE_SIZE
     node.size = size
     return node
 
@@ -102,7 +107,7 @@ def buildTree(tree, df):
 def treePut(root, data):
     if root == None:
         return
-    if root.data != None and root.data.type == "security":
+    if root.data != None and root.data.type == TYPE_SEC:
         node = root.data
         if node.sec >= data['SEC_LEVEL']:
             treePut(root.left, data)
@@ -110,7 +115,7 @@ def treePut(root, data):
         if node.sec < data['SEC_LEVEL']:
             treePut(root.right, data)
             return
-    if root.data != None and root.data.type == "size":
+    if root.data != None and root.data.type == TYPE_SIZE:
         node = root.data
         if node.size >= data['FILE_BYTES']:
             treePut(root.left, data)
@@ -118,12 +123,12 @@ def treePut(root, data):
         if node.size < data['FILE_BYTES']:
             treePut(root.right , data)
             return
-    if root.data != None and root.data.type == "cipher":
+    if root.data != None and root.data.type == TYPE_CIPHER:
         print("ERROR: data overlap at {}".format(data))
         exit()
 
     node = Node()
-    node.type = "cipher"
+    node.type = TYPE_CIPHER
     node.lib = data['LIB']
     node.alg = data['ALG']
     node.key_len = data['KEY_LEN']
