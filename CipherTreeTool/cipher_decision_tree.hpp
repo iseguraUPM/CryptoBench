@@ -1,5 +1,5 @@
-#ifndef CRYPTOBENCH_CIPHER_DECISION_TREE_H
-#define CRYPTOBENCH_CIPHER_DECISION_TREE_H
+#ifndef CRYPTOBENCH_CIPHER_DECISION_TREE_HPP
+#define CRYPTOBENCH_CIPHER_DECISION_TREE_HPP
 
 #include <string>
 
@@ -25,4 +25,4 @@ void printTree();
  */
 int findCipher(int file_size, int sec_level, struct CipherInfo &cipher);
 
-#endif /* CRYPTOBENCH_CIPHER_DECISION_TREE_H */
+#endif /*CRYPTOBENCH_CIPHER_DECISION_TREE_HPP*/

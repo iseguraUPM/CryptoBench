@@ -5,7 +5,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "cipher_decision_tree.h"
+#include "cipher_decision_tree.hpp"
 
 int main(int argc, char** argv)
 {

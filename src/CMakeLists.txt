@@ -1,4 +1,4 @@
-set(LINK_LIBS ssl crypto pthread dl cryptopp nacl gcrypt gpg-error botan wolfssl)
+set(LINK_LIBS ssl crypto pthread dl cryptopp nacl gcrypt gpg-error botan wolfssl cryptoengine)
 
 add_library(${TARGET_NAME} library.cpp ../include/CryptoBench/symmetric_cipher.hpp ../include/CryptoBench/secure_string.hpp open_ssl_cipher_factory.cpp ../include/CryptoBench/open_ssl_cipher_factory.hpp ../include/CryptoBench/cipher_factory.hpp ../include/CryptoBench/random_bytes.hpp libsodium_cipher_factory.cpp ../include/CryptoBench/libsodium_cipher_factory.hpp cryptopp_cipher_factory.cpp ../include/CryptoBench/cryptopp_cipher_factory.hpp libgcrypt_cipher_factory.cpp ../include/CryptoBench/libgcrypt_cipher_factory.hpp ../include/CryptoBench/cipher_exception.hpp cipher_exception.cpp botan_cipher_factory.cpp ../include/CryptoBench/botan_cipher_factory.hpp ../include/CryptoBench/wolfcrypt_cipher_factory.hpp wolfcrypt_cipher_factory.cpp)
 target_link_libraries(${TARGET_NAME} ${LINK_LIBS})
