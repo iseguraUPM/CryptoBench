@@ -16,8 +16,8 @@ if (NOT EXISTS ${BENCHMARK_DATA})
 endif()
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/gen/cryptoengine.cpp
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cryptoengine.cpp.template ${BENCHMARK_DATA}
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/decision_tree_generator.py ${CMAKE_CURRENT_SOURCE_DIR}/benchmark_x86_64.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/cryptoengine.cpp.template ${CMAKE_CURRENT_BINARY_DIR}/gen/cryptoengine.cpp)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cryptoengine.cpp.template ${BENCHMARK_DATA} ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_modes_w.csv
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/decision_tree_generator.py ${CMAKE_CURRENT_SOURCE_DIR}/benchmark_x86_64.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_rounds.csv ${CMAKE_CURRENT_SOURCE_DIR}/block_cipher_modes_w.csv ${CMAKE_CURRENT_SOURCE_DIR}/cryptoengine.cpp.template ${CMAKE_CURRENT_BINARY_DIR}/gen/cryptoengine.cpp)
 
 set(cryptoengine_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/cryptoengine)
 

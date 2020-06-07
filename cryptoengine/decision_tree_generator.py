@@ -175,14 +175,14 @@ def generateCode(template, output, tree):
 def main():
     benchmark_df = pd.read_csv(sys.argv[1])
     rounds_df = pd.read_csv(sys.argv[2])
+    modes_df = pd.read_csv(sys.argv[3])
 
-    tree_df = generate_dataset(benchmark_df, rounds_df, MAX_SEC_LEVEL)
+    tree_df = generate_dataset(benchmark_df, rounds_df, modes_df, MAX_SEC_LEVEL)
 
     root = Tree()
     buildTree(root, tree_df)
     populateTree(root, tree_df)
-    tree_df.to_csv("tree.csv")
-    generateCode(sys.argv[3], sys.argv[4], root)
+    generateCode(sys.argv[4], sys.argv[5], root)
 
 if __name__ == "__main__":
     main()

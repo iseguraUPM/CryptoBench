@@ -1,11 +1,21 @@
 import pandas as pd
 import math
 
-def add_sec_level(df, rounds_df, sec_coefficient_range):
-    df = pd.merge(df, rounds_df, on=['ALG', 'KEY_LEN', 'BLOCK_LEN'], how='left')
+def add_sec_level(df, rounds_df, modes_df, sec_coefficient_range):
+
+    
+
+    rounds_df['tmp'] = 1
+    modes_df['tmp'] = 1
+    block_modes_df = pd.merge(rounds_df, modes_df, on=['tmp'])
+    block_modes_df = block_modes_df.drop('tmp', axis=1)
+
+    df = pd.merge(df, block_modes_df, on=['ALG', 'KEY_LEN', 'BLOCK_LEN', 'BLOCK_MODE'], how='left')
 
     # Calculate the security coefficient
-    df['SECURITY_COEFFICIENT'] = df.apply(lambda row: (math.log2(row['KEY_LEN']) + math.log2(row['BLOCK_LEN'])) * row['ROUNDS'], axis=1)
+    df['SECURITY_COEFFICIENT'] = df.apply(lambda row: (math.log2(row['KEY_LEN']) + math.log2(row['BLOCK_LEN'])) * row['ROUNDS'] * row['SEC_WEIGHT'], axis=1)
+    df = df[df['SECURITY_COEFFICIENT'] != 0]
+
     min_sec_coeff = df['SECURITY_COEFFICIENT'].min()
     max_sec_coeff = df['SECURITY_COEFFICIENT'].max()
 
@@ -19,6 +29,12 @@ def add_sec_level(df, rounds_df, sec_coefficient_range):
     df = pd.merge(df, sec_levels, on=['SECURITY_NORM'], how='left')
 
     df = df[['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'ENCRYPT_T', 'DECRYPT_T', 'SEC_LEVEL']]
+
+    base_df = df.copy()
+    for level in df['SEC_LEVEL'].unique():
+        other_levels = base_df.copy()
+        other_levels.loc[other_levels['SEC_LEVEL'] > level, 'SEC_LEVEL'] = level
+        df = df.append(other_levels)
 
     return df
 
@@ -59,8 +75,9 @@ def fill_security_levels(df):
             file_bytes = file_bytes * 2
     return df
 
-def generate_dataset(benchmark_df, rounds_df, max_security_level):
-    benchmark_df = add_sec_level(benchmark_df, rounds_df, max_security_level)
+def generate_dataset(benchmark_df, rounds_df, modes_df, max_security_level):
+    benchmark_df = add_sec_level(benchmark_df, rounds_df, modes_df, max_security_level)
+    benchmark_df.to_csv('block_modes_df.csv')
     benchmark_df = get_winners(benchmark_df, ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'SEC_LEVEL'])
     benchmark_df = fill_security_levels(benchmark_df)
     return benchmark_df
