@@ -13,7 +13,7 @@ def add_sec_level(df, rounds_df, modes_df, sec_coefficient_range):
     df = pd.merge(df, block_modes_df, on=['ALG', 'KEY_LEN', 'BLOCK_LEN', 'BLOCK_MODE'], how='left')
 
     # Calculate the security coefficient
-    df['SECURITY_COEFFICIENT'] = df.apply(lambda row: (math.log2(row['KEY_LEN']) + math.log2(row['BLOCK_LEN'])) * row['ROUNDS'] * row['SEC_WEIGHT'], axis=1)
+    df['SECURITY_COEFFICIENT'] = df.apply(lambda row: (math.log2(row['KEY_LEN']) + math.log2(row['BLOCK_LEN'])) * math.log(row['ROUNDS']) * row['SEC_WEIGHT'], axis=1)
     df = df[df['SECURITY_COEFFICIENT'] != 0]
 
     min_sec_coeff = df['SECURITY_COEFFICIENT'].min()
