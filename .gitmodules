@@ -1,5 +1,5 @@
 [submodule "Google_test/lib"]
-	path = Google_test/lib
+	path = lib/Google_test/lib
 	url = https://github.com/google/googletest.git
 [submodule "OpenSSL-CMake"]
 	path = lib/OpenSSL-CMake

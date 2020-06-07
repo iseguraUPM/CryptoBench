@@ -6,8 +6,8 @@
 
 #include <gtest/gtest.h>
 #include <CryptoBench/random_bytes.hpp>
-#include <include/CryptoBench/botan_cipher_factory.hpp>
-#include <include/CryptoBench/cipher_factory.hpp>
+#include <CryptoBench/botan_cipher_factory.hpp>
+#include <CryptoBench/cipher_factory.hpp>
 
 #include <botan/rng.h>
 #include <botan/auto_rng.h>

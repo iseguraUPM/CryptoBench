@@ -6,10 +6,10 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/default.h>
 #include <cryptopp/aria.h>
-#include <include/CryptoBench/cipher_factory.hpp>
-#include <include/CryptoBench/cryptopp_cipher_factory.hpp>
+#include <CryptoBench/cipher_factory.hpp>
+#include <CryptoBench/cryptopp_cipher_factory.hpp>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 class CryptoppFixture : public ::testing::Test
 {

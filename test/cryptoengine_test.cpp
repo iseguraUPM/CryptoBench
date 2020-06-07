@@ -2,7 +2,7 @@
 // Created by ISU on 07/06/2020.
 //
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <chrono>
 #include <iostream>

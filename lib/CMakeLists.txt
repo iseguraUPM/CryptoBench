@@ -21,3 +21,5 @@ add_subdirectory(Botan-2.13.0)
 
 #set(WOLFSSL_NO_OPTS ON)
 add_subdirectory(wolfSSL-4.3.0)
+
+add_subdirectory(Google_test)

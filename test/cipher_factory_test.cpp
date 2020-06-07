@@ -2,7 +2,7 @@
 // Created by ISU on 09/02/2020.
 //
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "cipher_factory_test.hpp"
 

@@ -2,7 +2,7 @@
 // Created by ISU on 04/02/2020.
 //
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 int main(int argc, char **argv)
 {

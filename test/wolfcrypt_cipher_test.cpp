@@ -6,7 +6,7 @@
 // Created by ISU on 06/02/2020.
 //
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/wc_encrypt.h>

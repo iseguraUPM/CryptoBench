@@ -6,7 +6,7 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 class OpenSSLFixture : public ::testing::Test
 {
