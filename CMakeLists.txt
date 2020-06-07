@@ -42,7 +42,7 @@ add_subdirectory(wolfSSL-4.3.0)
 
 add_subdirectory(Google_test)
 
-add_subdirectory(CipherTreeTool)
+add_subdirectory(cryptoengine)
 
 add_subdirectory(BenchmarkRunner)
 
