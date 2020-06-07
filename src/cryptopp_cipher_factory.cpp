@@ -560,30 +560,6 @@ CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
         case Cipher::ARIA_128_SIV:
             throw UnsupportedCipherException();
 
-        case Cipher::SM4_ECB:
-            return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::ECB_Mode<CryptoPP::SM4>);
-        case Cipher::SM4_CBC:
-            return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::CBC_Mode<CryptoPP::SM4>);
-        case Cipher::SM4_CFB:
-            return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::CFB_Mode<CryptoPP::SM4>);
-        case Cipher::SM4_OFB:
-            return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::OFB_Mode<CryptoPP::SM4>);
-        case Cipher::SM4_CTR:
-            return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::CTR_Mode<CryptoPP::SM4>);
-        case Cipher::SM4_GCM:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::GCM<CryptoPP::SM4>);
-        case Cipher::SM4_XTS:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_CCM:
-            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::CCM<CryptoPP::SM4>);
-        case Cipher::SM4_EAX:
-            throw UnsupportedCipherException();
-//            return CRYPTOPP_CIPHER_AUTH(KEY_128, BLK_128, IV_96, TAG_128, CryptoPP::EAX<CryptoPP::SM4>);
-        case Cipher::SM4_OCB:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_SIV:
-            throw UnsupportedCipherException();
-
         case Cipher::SEED_ECB:
             return CRYPTOPP_CIPHER(KEY_128, BLK_128, IV_128, CryptoPP::ECB_Mode<CryptoPP::SEED>);
         case Cipher::SEED_CBC:

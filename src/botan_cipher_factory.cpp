@@ -437,31 +437,6 @@ CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_SIV:
             return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "Camellia-128/SIV");
 
-        case Cipher::SM4_ECB:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_CBC:
-            return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "SM4/CBC");
-        case Cipher::SM4_CFB:
-            return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "SM4/CFB");
-        case Cipher::SM4_OFB:
-            return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "SM4/OFB");
-        case Cipher::SM4_CTR:
-            return BOTAN_CIPHER(KEY_128,BLK_128,IV_128, "SM4/CTR");
-        case Cipher::SM4_GCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SM4/GCM");
-        case Cipher::SM4_XTS:
-            return BOTAN_CIPHER(KEY_256,BLK_128,IV_128, "SM4/XTS");
-        case Cipher::SM4_CCM:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SM4/CCM");
-        case Cipher::SM4_EAX:
-            throw UnsupportedCipherException();
-            //return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_128, TAG_128, "SM4/EAX");
-        case Cipher::SM4_OCB:
-            return BOTAN_CIPHER_AUTH(KEY_128,BLK_128,IV_96, TAG_128, "SM4/OCB");
-        case Cipher::SM4_SIV:
-            return BOTAN_CIPHER_AUTH(KEY_256,BLK_128,IV_128, TAG_128, "SM4/SIV");
-
-
         case Cipher::SEED_ECB:
             throw UnsupportedCipherException();
         case Cipher::SEED_CBC:

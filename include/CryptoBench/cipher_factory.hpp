@@ -13,7 +13,6 @@
 
 #define STR_AES "AES"
 #define STR_ARIA "ARIA"
-#define STR_SM4 "SM4"
 #define STR_SEED "SEED"
 #define STR_BLOWFISH "BLOWFISH"
 #define STR_CAMELLIA "CAMELLIA"
@@ -142,18 +141,6 @@ enum class Cipher
     CAMELLIA_128_EAX,
     CAMELLIA_128_OCB,
     CAMELLIA_128_SIV,
-
-    SM4_ECB,
-    SM4_CBC,
-    SM4_CFB,
-    SM4_OFB,
-    SM4_CTR,
-    SM4_GCM,
-    SM4_XTS,
-    SM4_CCM,
-    SM4_EAX,
-    SM4_OCB,
-    SM4_SIV,
 
     SEED_ECB,
     SEED_CBC,
@@ -323,18 +310,6 @@ const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
                               Cipher::CAMELLIA_128_EAX,
                               Cipher::CAMELLIA_128_OCB,
                               Cipher::CAMELLIA_128_SIV,
-
-                              Cipher::SM4_ECB,
-                              Cipher::SM4_CBC,
-                              Cipher::SM4_CFB,
-                              Cipher::SM4_OFB,
-                              Cipher::SM4_CTR,
-                              Cipher::SM4_GCM,
-                              Cipher::SM4_XTS,
-                              Cipher::SM4_CCM,
-                              Cipher::SM4_EAX,
-                              Cipher::SM4_OCB,
-                              Cipher::SM4_SIV,
 
                               Cipher::SEED_ECB,
                               Cipher::SEED_CBC,
@@ -608,29 +583,6 @@ inline CipherDescription getCipherDescription(Cipher cipher)
             return std::make_tuple(STR_CAMELLIA, 128, STR_OCB);
         case Cipher::CAMELLIA_128_SIV:
             return std::make_tuple(STR_CAMELLIA, 128, STR_SIV);
-
-        case Cipher::SM4_ECB:
-            return std::make_tuple(STR_SM4, 128, STR_ECB);
-        case Cipher::SM4_CBC:
-            return std::make_tuple(STR_SM4, 128, STR_CBC);
-        case Cipher::SM4_CFB:
-            return std::make_tuple(STR_SM4, 128, STR_CFB);
-        case Cipher::SM4_OFB:
-            return std::make_tuple(STR_SM4, 128, STR_OFB);
-        case Cipher::SM4_CTR:
-            return std::make_tuple(STR_SM4, 128, STR_CTR);
-        case Cipher::SM4_GCM:
-            return std::make_tuple(STR_SM4, 128, STR_GCM);
-        case Cipher::SM4_XTS:
-            return std::make_tuple(STR_SM4, 128, STR_XTS);
-        case Cipher::SM4_CCM:
-            return std::make_tuple(STR_SM4, 128, STR_CCM);
-        case Cipher::SM4_EAX:
-            return std::make_tuple(STR_SM4, 128, STR_EAX);
-        case Cipher::SM4_OCB:
-            return std::make_tuple(STR_SM4, 128, STR_OCB);
-        case Cipher::SM4_SIV:
-            return std::make_tuple(STR_SM4, 128, STR_SIV);
 
         case Cipher::SEED_ECB:
             return std::make_tuple(STR_SEED, 128, STR_ECB);

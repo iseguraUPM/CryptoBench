@@ -336,18 +336,6 @@ CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_OCB:
         case Cipher::CAMELLIA_128_SIV:
 
-        case Cipher::SM4_ECB:
-        case Cipher::SM4_CBC:
-        case Cipher::SM4_CFB:
-        case Cipher::SM4_OFB:
-        case Cipher::SM4_CTR:
-        case Cipher::SM4_GCM:
-        case Cipher::SM4_XTS:
-        case Cipher::SM4_CCM:
-        case Cipher::SM4_EAX:
-        case Cipher::SM4_OCB:
-        case Cipher::SM4_SIV:
-
         case Cipher::SEED_ECB:
         case Cipher::SEED_CBC:
         case Cipher::SEED_CFB:

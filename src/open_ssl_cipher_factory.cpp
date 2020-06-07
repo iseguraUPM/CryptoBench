@@ -595,31 +595,6 @@ CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_SIV:
             throw UnsupportedCipherException();
 
-
-        case Cipher::SM4_ECB:
-            return CIPHER(KEY_128, BLK_128, IV_128, EVP_sm4_ecb());
-        case Cipher::SM4_CBC:
-            return CIPHER(KEY_128, BLK_128, IV_128, EVP_sm4_cbc());
-        case Cipher::SM4_CFB:
-            return CIPHER(KEY_128, BLK_128, IV_128, EVP_sm4_cfb());
-        case Cipher::SM4_OFB:
-            return CIPHER(KEY_128, BLK_128, IV_128, EVP_sm4_ofb());
-        case Cipher::SM4_CTR:
-            return CIPHER(KEY_128, BLK_128, IV_128, EVP_sm4_ctr());
-        case Cipher::SM4_GCM:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_XTS:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_CCM:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_EAX:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_OCB:
-            throw UnsupportedCipherException();
-        case Cipher::SM4_SIV:
-            throw UnsupportedCipherException();
-
-
         case Cipher::SEED_ECB:
             return CIPHER(KEY_128, BLK_128, IV_128, EVP_seed_ecb());
         case Cipher::SEED_CBC:

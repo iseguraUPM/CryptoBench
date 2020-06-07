@@ -601,19 +601,6 @@ CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
         case Cipher::CAMELLIA_128_SIV:
             throw UnsupportedCipherException();
 
-        case Cipher::SM4_ECB:
-        case Cipher::SM4_CBC:
-        case Cipher::SM4_CFB:
-        case Cipher::SM4_OFB:
-        case Cipher::SM4_CTR:
-        case Cipher::SM4_GCM:
-        case Cipher::SM4_XTS:
-        case Cipher::SM4_CCM:
-        case Cipher::SM4_EAX:
-        case Cipher::SM4_OCB:
-        case Cipher::SM4_SIV:
-            throw UnsupportedCipherException();
-
         case Cipher::SEED_ECB:
             throw UnsupportedCipherException();
             //return CIPHER(KEY_128, BLK_128, IV_128, GCRY_CIPHER_SEED, GCRY_CIPHER_MODE_ECB);
