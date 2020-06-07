@@ -2,23 +2,23 @@
 	path = Google_test/lib
 	url = https://github.com/google/googletest.git
 [submodule "OpenSSL-CMake"]
-	path = OpenSSL-CMake
+	path = lib/OpenSSL-CMake
 	url = https://github.com/iseguraUPM/openssl-cmake.git
 [submodule "wolfSSL-4.3.0/lib"]
-	path = wolfSSL-4.3.0/lib
+	path = lib/wolfSSL-4.3.0/lib
 	url = https://github.com/wolfSSL/wolfssl.git
 [submodule "cryptopp-8.2/lib/cryptopp"]
-	path = cryptopp-8.2/lib/cryptopp
+	path = lib/cryptopp-8.2/lib/cryptopp
 	url = https://github.com/weidai11/cryptopp.git
 [submodule "libsodium-1.0.18/lib"]
-	path = libsodium-1.0.18/lib
+	path = lib/libsodium-1.0.18/lib
 	url = https://github.com/jedisct1/libsodium.git
 [submodule "libgcrypt-1.8.5/lib"]
-	path = libgcrypt-1.8.5/lib
+	path = lib/libgcrypt-1.8.5/lib
 	url = https://github.com/gpg/libgcrypt.git
 [submodule "libgpg-error-1.37/lib"]
-	path = libgpg-error-1.37/lib
+	path = lib/libgpg-error-1.37/lib
 	url = https://github.com/gpg/libgpg-error.git
 [submodule "Botan-2.13.0/lib"]
-	path = Botan-2.13.0/lib
+	path = lib/Botan-2.13.0/lib
 	url = https://github.com/randombit/botan.git
