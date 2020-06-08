@@ -2,17 +2,14 @@
 // Created by ISU on 09/02/2020.
 //
 
-#include <fstream>
 #include <chrono>
 #include <utility>
 #include <iostream>
 #include <vector>
-#include <random>
-#include <climits>
-#include <algorithm>
 #include <sstream>
 #include <iomanip>
 #include <future>
+#include <unordered_set>
 
 #include <CryptoBench/open_ssl_cipher_factory.hpp>
 #include <CryptoBench/libsodium_cipher_factory.hpp>
@@ -21,14 +18,20 @@
 #include <CryptoBench/libgcrypt_cipher_factory.hpp>
 #include <CryptoBench/botan_cipher_factory.hpp>
 #include <CryptoBench/wolfcrypt_cipher_factory.hpp>
-#include <unordered_set>
+
+#include "byte_tools.hpp"
 
 using byte_ptr = std::shared_ptr<byte>;
+
+#define INPUT_FILENAME "input.bin"
+#define OUTPUT_FILENAME "output.bin"
 
 struct BenchmarkResult
 {
     unsigned long encrypt_time_nano{};
     unsigned long decrypt_time_nano{};
+    unsigned long  encrypt_io_time_nano{};
+    unsigned long  decrypt_io_time_nano{};
     int key_bits{};
     int block_bits{};
     byte_len input_size{};
@@ -45,8 +48,11 @@ struct BenchmarkResult
               cipher_alg(std::move(cipher)), block_mode(std::move(mode))
     {
         encrypt_time_nano = 0;
+        encrypt_io_time_nano = 0;
         decrypt_time_nano = 0;
+        decrypt_io_time_nano = 0;
     }
+
 };
 
 struct KeyChain
@@ -103,20 +109,64 @@ void recordError(const std::string lib_name, const CipherDescription &desc, byte
               << "\n";
 }
 
-void encryptDecryptBenchmark(const byte *key, const byte *input_text, const byte_len input_size, CipherPtr &cipher
+void encryptDecryptBenchmark(const byte *key, byte *input_text, const byte_len input_size, CipherPtr &cipher
                              , BenchmarkResult &result)
 {
     using namespace std::chrono;
+    steady_clock::time_point t1, t2;
+
+    {
+        std::ifstream input_file;
+        input_file.open(INPUT_FILENAME);
+
+        t1 = steady_clock::now();
+        readInputFile(input_file, input_text, input_size);
+        t2 = steady_clock::now();
+
+        input_file.sync();
+        input_file.close();
+    }
+
+    result.encrypt_io_time_nano += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
     byte_len cipher_text_len = input_size + cipher->getBlockLen() * 4;
     auto cipher_text = byte_ptr(new byte[cipher_text_len], std::default_delete<byte[]>());
 
-    steady_clock::time_point t1 = steady_clock::now();
+    t1 = steady_clock::now();
     cipher->encrypt(key, input_text, input_size, cipher_text.get(), cipher_text_len);
-    steady_clock::time_point t2 = steady_clock::now();
+    t2 = steady_clock::now();
 
     result.encrypt_time_nano = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+
+    {
+        std::ofstream output_file;
+        output_file.open(OUTPUT_FILENAME);
+
+        t1 = steady_clock::now();
+        writeOutputFile(output_file, cipher_text.get(), cipher_text_len);
+        t2 = steady_clock::now();
+
+        output_file.flush();
+        output_file.close();
+    }
+
+    result.encrypt_io_time_nano += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+
     result.ciphertext_size = cipher_text_len;
+
+    {
+        std::ifstream input_file;
+        input_file.open(OUTPUT_FILENAME);
+
+        t1 = steady_clock::now();
+        readInputFile(input_file, cipher_text.get(), cipher_text_len);
+        t2 = steady_clock::now();
+
+        input_file.sync();
+        input_file.close();
+    }
+
+    result.decrypt_io_time_nano += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
     byte_len recovered_text_len = input_size + cipher->getBlockLen()*4;
     auto recovered_text = byte_ptr(new byte[recovered_text_len], std::default_delete<byte[]>());
@@ -126,6 +176,20 @@ void encryptDecryptBenchmark(const byte *key, const byte *input_text, const byte
     t2 = steady_clock::now();
 
     result.decrypt_time_nano = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+
+    {
+        std::ofstream output_file;
+        output_file.open(OUTPUT_FILENAME);
+
+        t1 = steady_clock::now();
+        writeOutputFile(output_file, recovered_text.get(), recovered_text_len);
+        t2 = steady_clock::now();
+
+        output_file.flush();
+        output_file.close();
+    }
+
+    result.decrypt_io_time_nano += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 }
 
 void recordResult(BenchmarkResult &result, std::ostream &file_stream)
@@ -139,7 +203,9 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
                 << result.input_size << ","
                 << result.ciphertext_size << ","
                 << result.encrypt_time_nano << ","
-                << result.decrypt_time_nano << "\n";
+                << result.decrypt_time_nano << ","
+                << result.encrypt_io_time_nano << ","
+                << result.decrypt_io_time_nano << "\n";
 
     file_stream << result_line.str();
 #ifdef CRYPTOBENCH_DEBUG
@@ -162,88 +228,6 @@ void recordAvalancheResult(BenchmarkResult &result, std::ostream &file_stream, b
                 << avalanche_index << "\n";
 
     file_stream << result_line.str();
-}
-
-byte_len min(byte_len x, byte_len y)
-{
-    return x > y ? y : x;
-}
-
-void generateInputBinaryFile(const std::string &filename, byte_len target_size)
-{
-    std::independent_bits_engine<std::default_random_engine, CHAR_BIT, byte> rbe;
-    std::ofstream binaryFile(filename, std::ios::binary);
-    byte_len file_size = 0;
-
-    const int buffer_size = 1024;
-    unsigned char buffer[buffer_size];
-    while (file_size < target_size)
-    {
-        std::generate(std::begin(buffer), std::end(buffer), std::ref(rbe));
-        std::size_t to_write = min(buffer_size, target_size - file_size);
-        binaryFile.write((char *) &buffer[0], to_write);
-        file_size += to_write;
-    }
-}
-
-void generateRandomBytes(byte *arr, int len) noexcept(false)
-{
-    if (len <= 0)
-        throw std::runtime_error("Random bytes length must be greater than 0");
-    for (int i = 0; i < len; i++)
-    {
-        arr[i] = random() % 0xFF;
-    }
-}
-
-void generateInputTextFile(const std::string &filename, int line_count)
-{
-    const std::string foxStr = "The Quick Brown Fox Jumps Over The Lazy Dog";
-
-    std::ofstream textFile;
-    textFile.open(filename);
-
-    std::random_device engine;
-    unsigned char x = engine();
-
-    for (int i = 0; i < line_count; i++)
-    {
-        textFile << i << ". " << foxStr << "\n";
-    }
-
-    textFile.close();
-}
-
-int readInputFile(std::ifstream &t, byte *input_text, byte_len input_size)
-{
-    t.seekg(0, std::ios::end);
-    byte_len len = t.tellg();
-    len = min(len, input_size);
-    t.seekg(0, std::ios::beg);
-    char buffer[1024];
-    byte_len read_bytes = 0;
-    while (read_bytes < len && t.read(buffer, 1024))
-    {
-        byte_len gcount = t.gcount();
-        memcpy(input_text + read_bytes, buffer, min(gcount, len - read_bytes));
-        read_bytes += gcount;
-    }
-    if (!t)
-    {
-        std::runtime_error("Error reading " + std::to_string(input_size) + "B file");
-    }
-
-    return len;
-}
-
-int readInputFile(std::ifstream &t, std::string &input_text)
-{
-    t.seekg(0, std::ios::end);
-    int len = t.tellg();
-    input_text.reserve(len);
-    t.seekg(0, std::ios::beg);
-    input_text.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    return len;
 }
 
 /**
@@ -391,7 +375,7 @@ void initializeAvalancheData(const byte *input_text, const byte_len input_size, 
     }
 }
 
-void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const byte *input_text
+void runSingleBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, byte *input_text
                         , byte_len input_size, const KeyChain &key_chain, const OutputSet &output_set)
 {
     auto desc = getCipherDescription(cipher);
@@ -467,20 +451,10 @@ const byte *getKeyBySize(const KeyChain &key_chain, CipherPtr &cipher_ptr)
     return key;
 }
 
-void createInputFile(byte *input_text, const byte_len bytes)
-{
-    std::ifstream input_file;
-
-    generateInputBinaryFile("input.bin", bytes);
-    input_file.open("input.bin", std::ios::binary);
-    readInputFile(input_file, input_text, bytes);
-    input_file.close();
-}
-
 void
-initializeInputData(const byte_len input_size, byte *input_text, KeyChain &key_chain)
+initializeInputData(const byte_len input_size, KeyChain &key_chain)
 {
-    createInputFile(input_text, input_size);
+    generateInputBinaryFile(INPUT_FILENAME, input_size);
 
     generateRandomBytes(key_chain.key512, 64);
     generateRandomBytes(key_chain.key448, 56);
@@ -546,15 +520,11 @@ void runFullBenchmark(const int rounds, const byte_len input_size, const char *l
     for (int i = 0; i < rounds; i++)
     {
         KeyChain key_chain{};
-        initializeInputData(input_size, input_text.get(), key_chain);
+        initializeInputData(input_size,key_chain);
         for (Cipher cipher : CIPHER_LIST)
         {
             runSingleBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain
                                , output_set);
-            if (i == 0 && std::strcmp(lib_name, "botan") == 0)
-            {
-                runAvalancheBenchmark(lib_name, cipher, factory, input_text.get(), input_size, key_chain, output_set);
-            }
         }
     }
 }
@@ -590,7 +560,7 @@ int main(int argc, char **arv)
 
     std::ofstream results_file;
     results_file.open("benchmark_" + current_time + ".csv");
-    results_file << "LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T\n";
+    results_file << "LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T\n";
 
     std::ofstream avalanche_file;
     avalanche_file.open("avalanche_" + current_time + ".csv");
@@ -620,13 +590,13 @@ int main(int argc, char **arv)
             512,
             1024,
             2048,
-            4096,
-            8192,
+            4096
+            /*8192,
             16384,
             32768,
             65536,
             131072,
-            262144
+            262144*/
     };
 
     //int sizes[] = { 8192 };
