@@ -6,7 +6,7 @@ device=${device##*/}
 rotational=$(cat /sys/block/$device/queue/rotational)
 
 if [ $rotational = "1" ] ; then
-	echo -e "HDD\c"
+	printf "HDD"
 else
-	echo -e "SSD\c"
+	printf "SSD"
 fi
