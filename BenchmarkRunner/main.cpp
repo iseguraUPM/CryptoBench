@@ -75,13 +75,12 @@ struct AvalancheData
 
 struct OutputSet
 {
-    OutputSet(std::ostream &perf, std::ostream &avl, std::ostream &err) : perf_result(perf), avl_result(avl),
+    OutputSet(std::ostream &perf, std::ostream &err) : perf_result(perf),
                                                                           error_log(err)
     {
     }
 
     std::ostream &perf_result;
-    std::ostream &avl_result;
     std::ostream &error_log;
 };
 
@@ -195,7 +194,8 @@ void encryptDecryptBenchmark(const byte *key, byte *input_text, const byte_len i
 void recordResult(BenchmarkResult &result, std::ostream &file_stream)
 {
     std::stringstream result_line;
-    result_line << result.cipher_lib << ","
+    result_line << HENCRYPT_SYS_DEVICE << ","
+                << result.cipher_lib << ","
                 << result.cipher_alg << ","
                 << result.key_bits << ","
                 << result.block_mode << ","
@@ -465,6 +465,7 @@ initializeInputData(const byte_len input_size, KeyChain &key_chain)
     generateRandomBytes(key_chain.key64, 8);
 }
 
+/*
 void runAvalancheBenchmark(const std::string lib_name, Cipher cipher, CipherFactory &factory, const byte *input_text
                            , byte_len input_size, const KeyChain &key_chain, const OutputSet &output_set)
 {
@@ -510,6 +511,7 @@ void runAvalancheBenchmark(const std::string lib_name, Cipher cipher, CipherFact
         recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
     }
 }
+*/
 
 void runFullBenchmark(const int rounds, const byte_len input_size, const char *lib_name, CipherFactory &factory
                       , const OutputSet &output_set)
@@ -553,19 +555,12 @@ void runBenchmarkWSize(int rounds, byte_len bytes, const OutputSet &output_set)
 int main(int argc, char **arv)
 {
     srandom(std::chrono::system_clock::now().time_since_epoch().count());
-    //generateInputTextFile("fox.txt", 100000);
-    //std::ifstream input_file("fox.txt", std::ios::binary);
 
     auto current_time = timeStringNowFormat("%Y-%m-%d-%H-%M-%S");
 
     std::ofstream results_file;
     results_file.open("benchmark_" + current_time + ".csv");
-    results_file << "LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T\n";
-
-    std::ofstream avalanche_file;
-    avalanche_file.open("avalanche_" + current_time + ".csv");
-    avalanche_file
-            << "LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,AVALANCHE_CONF,HAMMING_DIST,AVALANCHE_EFFECT\n";
+    results_file << "DEVICE,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T\n";
 
 #ifdef CRYPTOBENCH_DEBUG
     std::stringstream error_log;
@@ -573,8 +568,6 @@ int main(int argc, char **arv)
     std::ofstream error_log;
     error_log.open("err_benchmark_" + current_time + ".log");
 #endif
-    //security::secure_string input_text;
-    //input_text = "The quick fox jumps over the lazy dog";
 
     // From 2^10 to 2^25
     int sizes[] = {
@@ -599,11 +592,9 @@ int main(int argc, char **arv)
             262144
     };
 
-    //int sizes[] = { 8192 };
-
     std::cout << "Starting...\n";
 
-    OutputSet output_set(results_file, avalanche_file, error_log);
+    OutputSet output_set(results_file, error_log);
 
     for (byte_len b : sizes)
     {
@@ -613,7 +604,6 @@ int main(int argc, char **arv)
     std::cout << "Done!\n";
 
     results_file.close();
-    avalanche_file.close();
 
 #ifdef CRYPTOBENCH_DEBUG
     std::cerr << "____________DEBUG ERROR LOG DUMP____________\n"
