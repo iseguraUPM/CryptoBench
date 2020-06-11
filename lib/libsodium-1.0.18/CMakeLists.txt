@@ -4,6 +4,10 @@ include(ExternalProject)
 set(NACL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/libsodium)
 set(NACL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
+if (LIBSODIUM_NO_OPTS)
+    add_definitions(-DLIBSODIUM_DISABLE)
+endif()
+
 ExternalProject_Add(libsodium
         SOURCE_DIR ${NACL_SRC}/src/libsodium
         CONFIGURE_COMMAND rm -f ${NACL_SRC}/config.status && ${NACL_SRC}/configure --prefix=${NACL_PREFIX}

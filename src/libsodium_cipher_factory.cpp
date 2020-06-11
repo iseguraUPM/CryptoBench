@@ -76,9 +76,13 @@ private:
 
 CipherPtr LibsodiumCipherFactory::getCipher(Cipher cipher)
 {
+#ifndef LIBSODIUM_DISABLE
     if (cipher != Cipher::AES_256_GCM) {
         throw UnsupportedCipherException();
     }
 
     return CipherPtr(new AesGCMCipher());
+#else
+    throw UnsupportedCipherException();
+#endif
 }
