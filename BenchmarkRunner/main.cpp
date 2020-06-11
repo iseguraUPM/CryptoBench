@@ -195,6 +195,7 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
 {
     std::stringstream result_line;
     result_line << HENCRYPT_SYS_DEVICE << ","
+                << HENCRYPT_SYS_ARCH << ","
                 << result.cipher_lib << ","
                 << result.cipher_alg << ","
                 << result.key_bits << ","
@@ -560,7 +561,7 @@ int main(int argc, char **arv)
 
     std::ofstream results_file;
     results_file.open("benchmark_" + current_time + ".csv");
-    results_file << "DEVICE,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T\n";
+    results_file << "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T\n";
 
 #ifdef CRYPTOBENCH_DEBUG
     std::stringstream error_log;
