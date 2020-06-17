@@ -20,8 +20,8 @@ if [ "$#" -ne 1 ]; then
 fi
 
 program=$1
-output_file="benchmark_$(date +%Y-%M-%d-%H-%m-%S).csv"
-error_file="err_benchmark_$(date +%Y-%M-%d-%H-%m-%S).log"
+output_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S).csv"
+error_file="err_benchmark_$(date +%Y-%m-%d-%H-%M-%S).log"
 
 echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$output_file"
 
