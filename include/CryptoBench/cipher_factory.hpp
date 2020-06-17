@@ -701,6 +701,20 @@ inline CipherDescription getCipherDescription(Cipher cipher)
     }
 }
 
+inline Cipher toCipher(std::string alg, int key_len, std::string block_mode)
+{
+    for (Cipher cipher : CIPHER_LIST)
+    {
+        auto desc = getCipherDescription(cipher);
+        if (std::get<0>(desc) == alg && std::get<1>(desc) == key_len && std::get<2>(desc) == block_mode)
+        {
+            return cipher;
+        }
+    }
+
+    throw std::runtime_error("Unknown cipher: " + alg + "-" + std::to_string(key_len) + "-" + block_mode);
+}
+
 inline std::string cipherDescriptionToString(CipherDescription desc)
 {
     std::string key_len_str = std::to_string(std::get<1>(desc));
