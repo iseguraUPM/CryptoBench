@@ -5,6 +5,11 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
+currentMillis() {
+    local ms=$(date +%s%3N)
+    echo $((ms))
+}
+
 dropCaches() {
   sync; echo 3 > /proc/sys/vm/drop_caches
 }
@@ -20,6 +25,7 @@ error_file="err_benchmark_$(date +%Y-%M-%d-%H-%m-%S).log"
 
 echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$output_file"
 
+now=$(currentMillis)
 echo "Running benchmark..."
 dropCaches 
 $program botan-AES-128-CBC 1_bytes.bin key.bin "$output_file" "$error_file" 
@@ -12238,4 +12244,5 @@ $program wolfcrypt-AES-256-GCM 131072_bytes.bin key.bin "$output_file" "$error_f
 dropCaches 
 $program wolfcrypt-AES-256-GCM 262144_bytes.bin key.bin "$output_file" "$error_file"
 dropCaches
-echo "Done!"
+then=$(currentMillis)
+echo "Done! Elapsed: $(($then-$now)) ms"
