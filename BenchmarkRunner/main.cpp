@@ -664,7 +664,7 @@ void runSpecificBenchmark(std::string cipher_str, std::string input_filename, st
     {
         factory = &libsodium_cipher_factory;
     }
-    else if (lib_name == "libgcrypt")
+    else if (lib_name == "gcrypt")
     {
         factory = &libgcrypt_cipher_factory;
     }
