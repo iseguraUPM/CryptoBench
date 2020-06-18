@@ -26,7 +26,7 @@ private:
 class LibgcryptException : public GenericCipherException
 {
 public:
-    explicit inline LibgcryptException(const std::basic_string<char> &msg) : GenericCipherException("Libgcrypt error: ", msg.c_str()) {}
+    explicit inline LibgcryptException(const std::basic_string<char> msg) : GenericCipherException("Libgcrypt error: ", msg.c_str()) {}
 };
 
 

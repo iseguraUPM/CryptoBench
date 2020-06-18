@@ -21,7 +21,7 @@ class BotanException : public GenericCipherException
 {
 public:
 
-    explicit inline BotanException(const std::basic_string<char> &msg) : GenericCipherException("Botan error: ", msg.c_str()) {}
+    explicit inline BotanException(const std::basic_string<char> msg) : GenericCipherException("Botan error: ", msg.c_str()) {}
 };
 
 #endif //CRYPTOBENCH_BOTAN_CIPHER_FACTORY_HPP

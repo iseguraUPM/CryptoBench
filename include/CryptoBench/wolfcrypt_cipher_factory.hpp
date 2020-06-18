@@ -17,7 +17,7 @@ class WolfCryptException : public GenericCipherException
 {
 public:
 
-    explicit inline WolfCryptException(const std::basic_string<char> &msg) : GenericCipherException("WolfCrypt error: ", msg.c_str()) {}
+    explicit inline WolfCryptException(const std::basic_string<char> msg) : GenericCipherException("WolfCrypt error: ", msg.c_str()) {}
 };
 
 #endif //CRYPTOBENCH_WOLFCRYPTO_CIPHER_FACTORY_HPP

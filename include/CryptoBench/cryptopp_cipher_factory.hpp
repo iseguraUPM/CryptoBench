@@ -31,7 +31,7 @@ class CryptoppException : public GenericCipherException
 {
 public:
 
-    explicit inline CryptoppException(const std::basic_string<char> &msg) : GenericCipherException("Cryptopp error: ", msg.c_str()) {}
+    explicit inline CryptoppException(const std::basic_string<char> msg) : GenericCipherException("Cryptopp error: ", msg.c_str()) {}
 };
 
 #endif //CRYPTOBENCH_CRYPTOPP_CIPHER_FACTORY_HPP
