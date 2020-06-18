@@ -24,7 +24,8 @@ enc_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S)_enc.csv"
 dec_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S)_dec.csv"
 error_file="err_benchmark_$(date +%Y-%m-%d-%H-%M-%S).log"
 
-echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$result_file"
+echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$enc_result_file"
+echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$dec_result_file"
 
 now=$(currentMillis)
 echo "Running benchmark..."
