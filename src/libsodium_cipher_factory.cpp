@@ -36,6 +36,7 @@ public:
                 , plain_text, plain_text_len, nullptr, 0, nullptr, nonce.get(), key);
 
         memcpy(cipher_text + cipher_text_len, nonce.get(), crypto_aead_aes256gcm_NPUBBYTES);
+        cipher_text_len += crypto_aead_aes256gcm_NPUBBYTES;
     }
 
     inline void decrypt(const byte* key, const byte * cipher_text, byte_len cipher_text_len
@@ -48,7 +49,8 @@ public:
         }
 
         auto nonce = std::shared_ptr<byte>(new byte[crypto_aead_aes256gcm_NPUBBYTES], std::default_delete<byte[]>());
-        memcpy(nonce.get(), cipher_text + cipher_text_len, crypto_aead_aes256gcm_NPUBBYTES);
+        memcpy(nonce.get(), cipher_text + cipher_text_len - crypto_aead_aes256gcm_NPUBBYTES, crypto_aead_aes256gcm_NPUBBYTES);
+        cipher_text_len -= crypto_aead_aes256gcm_NPUBBYTES;
 
         int err = crypto_aead_aes256gcm_decrypt(recovered_text, &recovered_text_len
                 , nullptr, cipher_text, cipher_text_len, nullptr, 0, nonce.get(), key);
