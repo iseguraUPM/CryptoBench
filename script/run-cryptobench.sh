@@ -24461,8 +24461,5 @@ $program /D wolfcrypt-AES-256-GCM output.enc recovered.bin key.bin "$dec_result_
 dropCaches 
 $program /E wolfcrypt-AES-256-GCM 262144_bytes.bin output.enc key.bin "$enc_result_file" "$error_file"
 dropCaches
-
-ror_file"
-DropCaches
 then=$(currentMillis)
 echo "Done! Elapsed: $(($then-$now)) ms"
