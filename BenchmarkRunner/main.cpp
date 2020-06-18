@@ -120,7 +120,7 @@ void encryptBenchmark(const byte *key, CipherPtr &cipher, byte_ptr &input_buffer
 
     result.encrypt_io_time_nano += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    byte_len cipher_text_len;
+    byte_len cipher_text_len = plain_text_len + 1024;
     t1 = steady_clock::now();
     cipher->encrypt(key, input_buffer.get(), plain_text_len, output_buffer.get(), cipher_text_len);
     t2 = steady_clock::now();
@@ -167,7 +167,7 @@ void decryptBenchmark(const byte *key, CipherPtr &cipher, byte_ptr &input_buffer
 
     result.decrypt_io_time_nano += std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
 
-    byte_len recovered_text_len;
+    byte_len recovered_text_len = cipher_text_len;
     t1 = steady_clock::now();
     cipher->decrypt(key, input_buffer.get(), cipher_text_len, output_buffer.get(), recovered_text_len);
     t2 = steady_clock::now();
