@@ -19,9 +19,15 @@ if [ "$#" -ne 1 ]; then
   exit 1
 fi
 
+if ! [ -f combine-benchmarks.py ]; then
+    echo "Missing script: combine-benchmarks.py" >&2
+    exit 1
+fi
+
 program=$1
 enc_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S)_enc.csv"
 dec_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S)_dec.csv"
+final_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S).csv"
 error_file="err_benchmark_$(date +%Y-%m-%d-%H-%M-%S).log"
 
 echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$enc_result_file"
@@ -24465,3 +24471,7 @@ $program /D wolfcrypt-AES-256-GCM output.enc recovered.bin key.bin "$dec_result_
 dropCaches
 then=$(currentMillis)
 echo "Done! Elapsed: $(($then-$now)) ms"
+
+echo "Merging files..."
+python combine-benchmarks.py "$enc_result_file" "$dec_result_file" "$final_result_file"
+echo "Done!"
