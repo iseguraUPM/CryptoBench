@@ -86,11 +86,12 @@ std::string timeStringNowFormat(const char *format)
     return std::move(ss.str());
 }
 
-void recordError(const std::string lib_name, const CipherDescription &desc, byte_len input_size, const std::string msg
+void recordError(const std::string mode, const std::string lib_name, const CipherDescription &desc, byte_len input_size, const std::string msg
                  , std::ostream &error_log)
 {
     error_log << timeStringNowFormat("%Y-%m-%d %H:%M:%S ")
               << "[" << lib_name << "] "
+              << mode << " "
               << cipherDescriptionToString(desc)
               << " (" << std::to_string(input_size) << "B) : "
               << msg
@@ -219,7 +220,7 @@ void runSingleBenchmark(std::string mode, const std::string lib_name, Cipher cip
     auto desc = getCipherDescription(cipher);
     if (mode != ENCRYPT_MODE && mode != DECRYPT_MODE)
     {
-        recordError(lib_name, desc, input_size, "Unknown operation mode: " + mode, output_set.error_log);
+        recordError(mode, lib_name, desc, input_size, "Unknown operation mode: " + mode, output_set.error_log);
         return;
     }
 
@@ -235,7 +236,7 @@ void runSingleBenchmark(std::string mode, const std::string lib_name, Cipher cip
 
     if (cipher_ptr == nullptr)
     {
-        recordError(lib_name, desc, input_size, "cipher not implemented", output_set.error_log);
+        recordError(mode, lib_name, desc, input_size, "cipher not implemented", output_set.error_log);
         return;
     }
 
@@ -248,7 +249,7 @@ void runSingleBenchmark(std::string mode, const std::string lib_name, Cipher cip
     const byte *key = getKeyBySize(key_chain, cipher_ptr);
     if (key == nullptr)
     {
-        recordError(lib_name, desc, input_size,
+        recordError(mode, lib_name, desc, input_size,
                 "No key generated for " + std::to_string(cipher_ptr->getKeyLen()) + " size", output_set.error_log);
         return;
     }
@@ -267,10 +268,10 @@ void runSingleBenchmark(std::string mode, const std::string lib_name, Cipher cip
         recordResult(result_record, output_set.perf_result);
     } catch (GenericCipherException &ex)
     {
-        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+        recordError(mode, lib_name, desc, input_size, ex.what(), output_set.error_log);
     } catch (std::exception &ex)
     {
-        recordError(lib_name, desc, input_size, ex.what(), output_set.error_log);
+        recordError(mode, lib_name, desc, input_size, ex.what(), output_set.error_log);
     }
 }
 
@@ -372,7 +373,7 @@ void runSpecificBenchmark(std::string &mode, std::string &cipher_str, std::strin
     }
     else {
         auto desc = getCipherDescription(cipher);
-        recordError(lib_name, desc, input_size, "Unknown library: " + lib_name, error_file);
+        recordError(mode, lib_name, desc, input_size, "Unknown library: " + lib_name, error_file);
         return;
     }
 
