@@ -2,12 +2,13 @@ import pandas as pd
 import numpy as np
 import sys
 
-if len(sys.argv) != 3:
-    print("Incorrect arguments: program <enc_csv> <dec_csv>")
+if len(sys.argv) != 4:
+    print("Incorrect arguments: program <enc_csv> <dec_csv> <dest_csv>")
     sys.exit()
 
 enc_csv = sys.argv[1]
 dec_csv = sys.argv[2]
+dest_csv = sys.argv[3]
 
 df_enc = pd.read_csv(enc_csv)
 df_dec = pd.read_csv(dec_csv)
@@ -42,4 +43,4 @@ for index, row in df_enc.iterrows():
         print('DECRYPT: ', dec_attrs['DEVICE'].values[0], "_", dec_attrs['ARCH'].values[0], "_", dec_attrs['LIB'].values[0], "_", dec_attrs['ALG'].values[0], "_", dec_attrs['KEY_LEN'].values[0], "_", dec_attrs['BLOCK_MODE'].values[0], "_", dec_attrs['BLOCK_LEN'].values[0], "_", dec_attrs['FILE_BYTES'].values[0], "_", dec_attrs['CIPHERTEXT_BYTES'].values[0], sep='')
 
 df_enc = df_enc.astype({"DECRYPT_T": int, "DECRYPT_IO_T": int})
-df_enc.to_csv('benchmark_combined.csv', index=False)
+df_enc.to_csv(dest_csv, index=False)
