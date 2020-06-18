@@ -2,8 +2,15 @@ import pandas as pd
 import numpy as np
 import sys
 
-df_enc = pd.read_csv('benchmark_enc.csv')
-df_dec = pd.read_csv('benchmark_dec.csv')
+if len(sys.argv) != 3:
+    print("Incorrect arguments: program <enc_csv> <dec_csv>")
+    sys.exit()
+
+enc_csv = sys.argv[1]
+dec_csv = sys.argv[2]
+
+df_enc = pd.read_csv(enc_csv)
+df_dec = pd.read_csv(dec_csv)
 
 # Check that the lengths are equal
 if df_enc.shape[0] != df_dec.shape[0]:
