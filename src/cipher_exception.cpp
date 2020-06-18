@@ -5,6 +5,7 @@
 #include "CryptoBench/cipher_exception.hpp"
 
 #include <string>
+#include <cstring>
 
 GenericCipherException::GenericCipherException(const char *msg) : GenericCipherException(nullptr, msg)
 {}
@@ -12,7 +13,11 @@ GenericCipherException::GenericCipherException(const char *msg) : GenericCipherE
 GenericCipherException::GenericCipherException(const char *tag, const char *msg) : msg(msg)
 {
     if (tag != nullptr)
-        this->msg = std::string(tag).append(msg).c_str();
+    {
+        std::string combined =  std::string(tag).append(msg);
+        this->msg = strdup(combined.c_str());
+    }
+
 }
 
 const char *GenericCipherException::what() const noexcept
