@@ -21,6 +21,8 @@
 #define ENCRYPT_MODE "/E"
 #define DECRYPT_MODE "/D"
 
+static std::string HENCRYPT_SYS_DEVICE;
+
 using byte_ptr = std::shared_ptr<byte>;
 
 struct BenchmarkResult
@@ -408,7 +410,7 @@ std::string nextArg(char **argv)
 
 int main(int argc, char **argv)
 {
-    if (argc == 8) {
+    if (argc == 9) {
         std::string mode = nextArg(argv);
         std::string cipher = nextArg(argv);
         std::string input_file = nextArg(argv);
@@ -416,12 +418,13 @@ int main(int argc, char **argv)
         std::string key_file = nextArg(argv);
         std::string results_filename = nextArg(argv);
         std::string error_filename = nextArg(argv);
+        HENCRYPT_SYS_DEVICE = nextArg(argv);
         runSpecificBenchmark(mode, cipher, input_file, output_file, key_file, results_filename, error_filename);
         return 0;
     }
 
     std::cerr << "Invalid arguments" << std::endl;
-    std::cout << "Usage: " << argv[0] << " <mode> <cipher> <input file> <results file> <error log file>" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <mode> <cipher> <input file> <results file> <error log file> <storage device>" << std::endl;
     std::cout << "   mode: /E (encrypt) or /D (decrypt)" << std::endl;
     return 1;
 }
