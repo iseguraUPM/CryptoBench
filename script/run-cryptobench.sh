@@ -68,6 +68,7 @@ for i in $(seq 1 $repeat); do
       dropCaches
       "$program" "/D" "$cipher" "${prefix}output.enc" "${prefix}recovered.bin" "key.bin" "$dec_result_file" "$error_file" "$device"
       dropCaches
+      rm "${prefix}output.enc"
     done
   done < algorithm-list.txt
   then=$(currentMillis)
