@@ -77,7 +77,6 @@ def fill_security_levels(df):
 
 def generate_dataset(benchmark_df, rounds_df, modes_df, max_security_level):
     benchmark_df = add_sec_level(benchmark_df, rounds_df, modes_df, max_security_level)
-    benchmark_df.to_csv('block_modes_df.csv')
     benchmark_df = get_winners(benchmark_df, ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'FILE_BYTES', 'SEC_LEVEL'])
     benchmark_df = fill_security_levels(benchmark_df)
     return benchmark_df
