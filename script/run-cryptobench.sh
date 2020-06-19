@@ -66,7 +66,7 @@ for i in $(seq 1 $repeat); do
     for plaintext in "$plaintextdir"*bytes.bin; do
       "$program" "/E" "$cipher" "$plaintext" "${prefix}output.enc" "key.bin" "$enc_result_file" "$error_file" "$device"
       dropCaches
-      "$program" "/D" "$cipher" "${prefix}output.enc" "${prefix}recovered.bin" "key.bin" "$enc_result_file" "$error_file" "$device"
+      "$program" "/D" "$cipher" "${prefix}output.enc" "${prefix}recovered.bin" "key.bin" "$dec_result_file" "$error_file" "$device"
       dropCaches
     done
   done < algorithm-list.txt
