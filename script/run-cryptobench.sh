@@ -24,6 +24,16 @@ if ! [ -f combine-benchmarks.py ]; then
     exit 1
 fi
 
+if ! [ -f generate-random-binary.sh ]; then
+    echo "Missing script: generate-random-binary.sh" >&2
+    exit 1
+fi
+
+if ! [ -f algorithm-list.txt ]; then
+    echo "Missing algorithm list file: algorithm-list.txt" >&2
+    exit 1
+fi
+
 program=$1
 prefix=$2
 device=$3
