@@ -8,6 +8,6 @@ To download the submodules pull with:
 
 Libraries: Google-test, CryptoPP, OpenSSL, Libgcrypt, Libgpg-error, Libsodium, WolfSSL, Botan
 
-Dependencies: gettext texinfo transfig libtool ghostscript autotools
+Dependencies: gettext texinfo transfig libtool ghostscript autotools-dev
 
 CMake: https://cmake.org/files/v3.10/cmake-3.10.3.tar.gz
