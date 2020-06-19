@@ -1,7 +1,7 @@
 #!/bin/sh
 
 usage() {
-  echo "Usage: $0 <min bytes> <max bytes> <output file>" >&2
+  echo "Usage: $0 <min bytes> <max bytes> <prefix> <suffix>" >&2
 }
 
 isNumber() {
@@ -20,7 +20,7 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   exit 0
 fi
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 4 ]; then
   usage
   exit 1
 fi
@@ -49,7 +49,7 @@ fi
 count=0
 size=$(($1))
 while [ $((size)) -le $(($2)) ]; do
-  dd if=/dev/urandom of="${size}_${3}" bs=$size count=1 > /dev/null 2>&1
+  dd if=/dev/urandom of="${3}${size}_${4}" bs=$size count=1 > /dev/null 2>&1
   size=$((size*2))
   count=$((count+1))
 done
