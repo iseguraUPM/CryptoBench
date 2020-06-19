@@ -44,27 +44,31 @@ fi
 echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$enc_result_file"
 echo "DEVICE,ARCH,LIB,ALG,KEY_LEN,BLOCK_MODE,BLOCK_LEN,FILE_BYTES,CIPHERTEXT_BYTES,ENCRYPT_T,DECRYPT_T,ENCRYPT_IO_T,DECRYPT_IO_T" > "$dec_result_file"
 
-#dropCaches
+dropCaches
 
-now=$(currentMillis)
+now_global=$(currentMillis)
 echo "Running benchmark..."
 
 for i in $(seq 1 $repeat); do
   echo "Iteration: $i"
+  now=$(currentMillis)
   while IFS="" read -r cipher; do
     for plaintext in "$plaintextdir"*bytes.bin; do
-      echo "$program" "/E" "$cipher" "$plaintext" "${prefix}output.enc" "key.bin" "$enc_result_file" "$error_file" "$device"
-      #dropCaches
-      echo "$program" "/D" "$cipher" "${prefix}output.enc" "${prefix}recovered.bin" "key.bin" "$enc_result_file" "$error_file" "$device"
-      #dropCaches
+      "$program" "/E" "$cipher" "$plaintext" "${prefix}output.enc" "key.bin" "$enc_result_file" "$error_file" "$device"
+      dropCaches
+      "$program" "/D" "$cipher" "${prefix}output.enc" "${prefix}recovered.bin" "key.bin" "$enc_result_file" "$error_file" "$device"
+      dropCaches
     done
   done < algorithm-list.txt
-  echo ""
+  then=$(currentMillis)
+  echo "Finished iteration $i .. Elapsed: $(($then-$now)) ms"
+  
 done
 
-then=$(currentMillis)
-echo "Done! Elapsed: $(($then-$now)) ms"
+then_global=$(currentMillis)
+echo "Finished all iterations! Elapsed: $(($then_global-$now_global)) ms"
+
 
 echo "Merging files..."
-#python combine-benchmarks.py "$enc_result_file" "$dec_result_file" "$final_result_file"
+python combine-benchmarks.py "$enc_result_file" "$dec_result_file" "$final_result_file"
 echo "Done!"
