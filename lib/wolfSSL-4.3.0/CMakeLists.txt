@@ -12,7 +12,7 @@ endif()
 ExternalProject_Add(libwolfssl
         SOURCE_DIR ${WOLFSSL_SRC}
         PREFIX ${WOLFSSL_PREFIX}
-        CONFIGURE_COMMAND rm -f ${WOLFSSL_SRC}/config.status && ${WOLFSSL_SRC}/configure --prefix=${WOLFSSL_PREFIX} --enable-shared --enable-static ${WOLFSSL_CONF_ARGS}
+        CONFIGURE_COMMAND rm -f ${WOLFSSL_SRC}/config.status && ${WOLFSSL_SRC}/configure --with-pic --prefix=${WOLFSSL_PREFIX} --enable-shared --enable-static ${WOLFSSL_CONF_ARGS}
         BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         BUILD_BYPRODUCTS ${WOLFSSL_PREFIX}/lib/libwolfssl.a

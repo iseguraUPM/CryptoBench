@@ -10,7 +10,7 @@ endif()
 
 ExternalProject_Add(libsodium
         SOURCE_DIR ${NACL_SRC}/src/libsodium
-        CONFIGURE_COMMAND rm -f ${NACL_SRC}/config.status && ${NACL_SRC}/configure --prefix=${NACL_PREFIX}
+        CONFIGURE_COMMAND rm -f ${NACL_SRC}/config.status && ${NACL_SRC}/configure --disable-pie --disable-shared --prefix=${NACL_PREFIX}
         BUILD_COMMAND make
         INSTALL_COMMAND make install
         BUILD_BYPRODUCTS ${NACL_PREFIX}/lib/libsodium.a

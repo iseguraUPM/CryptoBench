@@ -12,7 +12,7 @@ endif()
 
 ExternalProject_Add(libgcrypt
         SOURCE_DIR ${GCRYPTL_SRC}/src
-        CONFIGURE_COMMAND rm -f ${GCRYPTL_SRC}/config.status && touch ${GCRYPTL_SRC}/doc/version.texi && touch ${GCRYPTL_SRC}/doc/version-remake.texi && ${GCRYPTL_SRC}/configure --prefix=${GCRYPT_PREFIX} --enable-static --enable-shared --libdir=${GCRYPT_PREFIX}/lib --with-gpg-error-prefix=${GPGERROR_PREFIX} --with-libgpg-error-prefix=${GPGERROR_PREFIX}/lib
+        CONFIGURE_COMMAND rm -f ${GCRYPTL_SRC}/config.status && touch ${GCRYPTL_SRC}/doc/version.texi && touch ${GCRYPTL_SRC}/doc/version-remake.texi && ${GCRYPTL_SRC}/configure --with-pic --prefix=${GCRYPT_PREFIX} --enable-static --enable-shared --libdir=${GCRYPT_PREFIX}/lib --with-gpg-error-prefix=${GPGERROR_PREFIX} --with-libgpg-error-prefix=${GPGERROR_PREFIX}/lib
         BUILD_COMMAND make && make install
         INSTALL_COMMAND make install
         BUILD_BYPRODUCTS ${GCRYPT_PREFIX}/lib/libgcrypt.a

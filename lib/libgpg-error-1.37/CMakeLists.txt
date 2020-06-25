@@ -6,7 +6,7 @@ set(GPGERROR_SRC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 ExternalProject_Add(libgpg-error
         SOURCE_DIR ${GPGERROR_SRC}/src
-        CONFIGURE_COMMAND rm -f ${GPGERROR_SRC}/config.status && ${GPGERROR_SRC}/configure --enable-maintainer-mode --prefix=${GPGERROR_PREFIX} --enable-static --enable-shared --libdir=${GPGERROR_PREFIX}/lib
+        CONFIGURE_COMMAND rm -f ${GPGERROR_SRC}/config.status && ${GPGERROR_SRC}/configure --with-pic --enable-maintainer-mode --prefix=${GPGERROR_PREFIX} --enable-static --enable-shared --libdir=${GPGERROR_PREFIX}/lib
         BUILD_COMMAND make && make install
         INSTALL_COMMAND make install
         BUILD_BYPRODUCTS ${GPGERROR_PREFIX}/lib/libgpg-error.a
