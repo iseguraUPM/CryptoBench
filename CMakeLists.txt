@@ -22,8 +22,6 @@ add_subdirectory(test)
 
 add_subdirectory(cryptoengine)
 
-add_subdirectory(cryptoengine-sat)
-
 add_subdirectory(BenchmarkRunner)
 
 add_subdirectory(src)
