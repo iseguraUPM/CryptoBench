@@ -22,3 +22,6 @@
 [submodule "Botan-2.13.0/lib"]
 	path = lib/Botan-2.13.0/lib
 	url = https://github.com/randombit/botan.git
+[submodule "lib/ortools"]
+	path = lib/or-tools/lib
+	url = https://github.com/google/or-tools.git
