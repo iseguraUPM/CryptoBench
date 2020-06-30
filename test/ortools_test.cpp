@@ -523,6 +523,26 @@ TEST_F(OrtoolsFixture, CpModelTest)
             {4996400000,1761000000,1388000000,384650000,188637500,98556250,63956250,36554687,14105468,7293359,4581054,3387207,1800244,1399487,1186437,1135589,1104528,1029209,1003173}
     };
 
+    std::vector<std::vector<int64>> pace_per_size(blocks.size());
+    for (int proc_id = 0; proc_id < processors.size(); proc_id++)
+    {
+        for (int block_id = 0; block_id < blocks.size(); block_id++)
+        {
+            pace_per_size[block_id].push_back(processors[proc_id][block_id]);
+        }
+    }
+
+    for (auto &columns : pace_per_size)
+    {
+        std::sort(columns.begin(), columns.end());
+    }
+
+    std::vector<int64> pace_medians;
+    for (auto &columns : pace_per_size)
+    {
+        pace_medians.push_back(columns[columns.size() / 2]);
+    }
+
     // TODO: performance of INF horizon
     int64 horizon = INT64_MAX - 1;
 
@@ -554,6 +574,9 @@ TEST_F(OrtoolsFixture, CpModelTest)
             all_tasks[proc_id][device_id] = std::vector<Task>(blocks.size());
             for (int block_id = 0; block_id < blocks.size(); block_id++)
             {
+                if (processors[proc_id][block_id] > pace_medians[block_id])
+                    continue;
+
                 std::stringstream ss;
                 ss << "_" << block_id << "_" << proc_id << "_" << device_id;
                 sat::BoolVar chosen = cp_model.NewBoolVar().WithName("chosen" + ss.str());
@@ -568,9 +591,9 @@ TEST_F(OrtoolsFixture, CpModelTest)
                 all_p_intervals.push_back(p_interval);
 
                 sat::IntVar io_time = cp_model.NewConstant(blocks[block_id] * devices[device_id]);
-                sat::IntVar io_start = cp_model.NewIntVar(domain).WithName("io_start" + ss.str());
+                //sat::IntVar io_start = cp_model.NewIntVar(domain).WithName("io_start" + ss.str());
                 sat::IntVar io_end = cp_model.NewIntVar(domain).WithName("io_end" + ss.str());
-                sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(io_start, io_time, io_end, chosen).WithName("io_interval" + ss.str());
+                sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(p_end, io_time, io_end, chosen).WithName("io_interval" + ss.str());
 
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
@@ -578,7 +601,7 @@ TEST_F(OrtoolsFixture, CpModelTest)
                 all_tasks[proc_id][device_id][block_id] = Task{p_interval, io_interval, blocks[block_id]};
 
                 /// Precedence constraint
-                cp_model.AddGreaterOrEqual(io_start, p_end).OnlyEnforceIf(chosen);
+                //cp_model.AddGreaterOrEqual(io_start, p_end).OnlyEnforceIf(chosen);
             }
         }
     }
@@ -602,9 +625,9 @@ TEST_F(OrtoolsFixture, CpModelTest)
     sat::CpSolverResponse response = sat::Solve(model_proto);
     std::cout << sat::CpSolverResponseStats(response) << std::endl;
 
-    if (response.status() == sat::CpSolverStatus::OPTIMAL)
+    if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
-        std::cout << "Optimal Schedule Length: " << sat::SolutionIntegerValue(response, obj_var) << "\n";
+        //std::cout << "Optimal Schedule Length: " << sat::SolutionIntegerValue(response, obj_var) << "\n";
         std::stringstream processor_tasks;
         for (int proc_id = 0; proc_id < processors.size(); proc_id++)
         {
