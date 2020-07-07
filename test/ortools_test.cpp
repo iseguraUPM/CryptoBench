@@ -188,12 +188,15 @@ TEST_F(OrtoolsFixture, OriginalSatTest)
 
 TEST_F(OrtoolsFixture, CpModelTest)
 {
-    const int64 FILE_SIZE = 128;
+    const int64 FILE_SIZE = 128000;
+    const int SEC_LEVEL = 3;
 
     using namespace operations_research;
 
     std::array<int, 19> blocks = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144};
     std::array<int, 3> devices = { 1, 40, 80 };
+
+    std::vector<int> sec_levels = {1,2,1,2,1,2,1,2,1,2,3,4,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,5,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,5,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,5,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,5,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,1,2,1,2,1,2,1,1,2,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,4,1,2,3,4,1,2,3,4,1,2,1,2,3,4,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,4,1,2,3,4,1,2,3,4,1,2,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,1,2,3,4,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,1,2,1,2,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,1,2,3,1,2,3,1,2,1,2,1,2,1,1,2,1,2,3,4,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,4,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,4,1,2,3,4,1,2,3,4,1,2,1,2,3,4,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,3,1,2,3,1,2,1,2,3,1,2,1,2,3,1,2,3};
 
     using Processor = std::vector<int64>;
     std::vector<Processor> processors = {
@@ -574,7 +577,10 @@ TEST_F(OrtoolsFixture, CpModelTest)
             all_tasks[proc_id][device_id] = std::vector<Task>(blocks.size());
             for (int block_id = 0; block_id < blocks.size(); block_id++)
             {
-                if (processors[proc_id][block_id] > pace_medians[block_id])
+                if (sec_levels[proc_id] < SEC_LEVEL)
+                    continue;
+
+                if (processors[proc_id][block_id] == 0 || processors[proc_id][block_id] > pace_medians[block_id])
                     continue;
 
                 std::stringstream ss;
@@ -627,22 +633,27 @@ TEST_F(OrtoolsFixture, CpModelTest)
 
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
-        //std::cout << "Optimal Schedule Length: " << sat::SolutionIntegerValue(response, obj_var) << "\n";
+        std::cout << "Optimal Schedule Length: " << sat::SolutionIntegerValue(response, obj_var) << "\n";
         std::stringstream processor_tasks;
         for (int proc_id = 0; proc_id < processors.size(); proc_id++)
         {
             for (int device_id = 0; device_id < devices.size(); device_id++)
             {
-                processor_tasks << "Processor " << proc_id << " by " << device_id << " : \n";
-
                 std::stringstream processor_times;
+                bool print = false;
                 for (int block_id = 0; block_id < blocks.size(); block_id++)
                 {
+                    if (sec_levels[proc_id] < SEC_LEVEL)
+                        continue;
+                    if (processors[proc_id][block_id] == 0 || processors[proc_id][block_id] > pace_medians[block_id])
+                        continue;
+
                     auto &task = all_tasks[proc_id][device_id][block_id];
                     if (!sat::SolutionBooleanValue(response, task.p_interval.PresenceBoolVar()))
                     {
                         continue;
                     }
+                    print = true;
 
                     processor_tasks << std::setw(-30) << "block " << task.block_len << " B | ";
 
@@ -657,7 +668,11 @@ TEST_F(OrtoolsFixture, CpModelTest)
 
                     processor_times <<  std::setw(-30) << times.str();
                 }
-                processor_tasks << "\n" << processor_times.str() << "\n";
+                if (print)
+                {
+                    processor_tasks << "Processor " << proc_id << " by " << device_id << " : \n";
+                    processor_tasks << "\n" << processor_times.str() << "\n";
+                }
             }
         }
 
