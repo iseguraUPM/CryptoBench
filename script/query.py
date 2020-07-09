@@ -10,7 +10,7 @@ modes_df = pd.read_csv('block_cipher_modes_w.csv')
 rounds_df = pd.read_csv('block_cipher_rounds.csv')
 
 # Add security level
-df = add_sec_level(df, modes_df, rounds_df, 4)
+df = add_sec_level(df, modes_df, rounds_df, 5)
 
 # Compute pace
 df['PACE'] = df['ENCRYPT_T'] / df['FILE_BYTES']
@@ -20,11 +20,11 @@ df['PACE'] = df['PACE'] + df['DECRYPT_T'] / df['FILE_BYTES']
 cols = ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'SEC_LEVEL', 'FILE_BYTES']
 df = df.groupby(cols, as_index=False).mean()
 
-# Percentile of pace per file size. Higher is worse
-df['RANK'] = df.groupby(['SEC_LEVEL', 'FILE_BYTES'])['PACE'].rank(method='min', ascending=True, pct=True)
+# Percentile of pace per file size. Higher is better
+df['RANK'] = df.sort_values(by='PACE').groupby(['SEC_LEVEL', 'FILE_BYTES'])['PACE'].rank(method='min', ascending=False, pct=True)
 
-# Filter 25% best in pace per file size
-df = df[df['RANK'] <= 0.25].reset_index()
+# Filter 10% best in pace per file size
+df = df[df['RANK'] >= 0.90].reset_index()
 
 # Recover new list of ciphers
 cols = ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'SEC_LEVEL']
