@@ -188,8 +188,8 @@ TEST_F(OrtoolsFixture, OriginalSatTest)
 
 TEST_F(OrtoolsFixture, CpModelTest)
 {
-    const int64 FILE_SIZE = 12000;
-    const int SEC_LEVEL = 4;
+    const int64 FILE_SIZE = 500000;
+    const int SEC_LEVEL = 1;
 
     using namespace operations_research;
 
@@ -450,9 +450,17 @@ TEST_F(OrtoolsFixture, CpModelTest)
     cp_model.AddMaxEquality(obj_var, all_io_ends);
     cp_model.Minimize(obj_var);
 
+
+    /// Add time limit constraint in order to find feasible solutions
+    sat::Model model;
+    sat::SatParameters parameters;
+    parameters.set_max_time_in_seconds(10.0);
+    model.Add(NewSatParameters(parameters));
+
+
     /// Solver
     sat::CpModelProto model_proto = cp_model.Build();
-    sat::CpSolverResponse response = sat::Solve(model_proto);
+    sat::CpSolverResponse response = sat::SolveCpModel(model_proto, &model);
     std::cout << sat::CpSolverResponseStats(response) << std::endl;
 
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
