@@ -1,6 +1,7 @@
 import sys
 import math
 import pandas as pd
+import numpy as np
 from queue import Queue
 
 from pre_generator import add_sec_level
@@ -11,6 +12,10 @@ rounds_df = pd.read_csv('block_cipher_rounds.csv')
 
 # Add security level
 df = add_sec_level(df, modes_df, rounds_df, 5)
+
+# Select file sizes to reduce search space
+df['LOG'] = np.log(df['FILE_BYTES']) / np.log(8)
+df = df[df['LOG'] == df['LOG'].astype(int)]
 
 # Compute pace
 df['PACE'] = df['ENCRYPT_T'] / df['FILE_BYTES']
