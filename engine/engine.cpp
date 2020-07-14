@@ -304,15 +304,11 @@ std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, in
     /// Solver
     sat::CpModelProto model_proto = cp_model.Build();
     sat::CpSolverResponse response = sat::SolveCpModel(model_proto, &model);
-    std::cout << sat::CpSolverResponseStats(response) << std::endl;
 
     std::vector<std::vector<std::string>> result;
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
-        std::cout << "Schedule Length: " << sat::SolutionIntegerValue(response, obj_var) << "\n";
-
         auto mean_sec_level = (double) sat::SolutionIntegerValue(response, overall_security) / sat::SolutionIntegerValue(response, choices);
-        std::cout << "Average sec. level: " << mean_sec_level << "\n";
 
         std::stringstream processor_tasks;
         for (int proc_id = 0; proc_id < processors.size(); proc_id++)
@@ -322,9 +318,6 @@ std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, in
 
             for (int device_id = 0; device_id < devices.size(); device_id++)
             {
-                std::stringstream chosen_blocks;
-                std::stringstream proc_times;
-                bool print = false;
                 for (int block_id = 0; block_id < blocks.size(); block_id++)
                 {
                     if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
@@ -335,7 +328,6 @@ std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, in
                     {
                         continue;
                     }
-                    print = true;
                     // start_p, bytes, encryption, device
                     std::vector<std::string> res_line(4);
                     res_line[0] = std::to_string(sat::SolutionIntegerValue(response, task.p_interval.StartVar()));
@@ -343,36 +335,13 @@ std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, in
                     res_line[2] = cipher_names[proc_id];
                     res_line[3] = device_names[device_id];
                     result.push_back(res_line);
-
-                    std::string blk_str = "block " + std::to_string(task.block_len) + " B ";
-                    chosen_blocks << std::setw(-60) << blk_str;
-
-                    std::stringstream times;
-                    times << "p: ["
-                          << sat::SolutionIntegerValue(response, task.p_interval.StartVar()) << ", "
-                          << sat::SolutionIntegerValue(response, task.p_interval.EndVar()) << "] ";
-
-                    times << "io: ["
-                          << sat::SolutionIntegerValue(response, task.io_interval.StartVar()) << ", "
-                          << sat::SolutionIntegerValue(response, task.io_interval.EndVar()) << "] ";
-
-                    proc_times <<  std::setw(-60) << times.str();
-                }
-                if (print)
-                {
-                    processor_tasks << "Processor " << cipher_names[proc_id] << " by " << device_names[device_id] << " : \n";
-                    processor_tasks << chosen_blocks.str() << "\n" << proc_times.str() << "\n\n";
                 }
             }
         }
-
-
-        std::cout << processor_tasks.str() << std::endl;
-
         std::sort(result.begin(), result.end(),
                 [](const std::vector<std::string>& a, const std::vector<std::string>& b) {
                     return a[0] < b[0];
-                });
+        });
 
         return result;
     }
