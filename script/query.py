@@ -14,7 +14,7 @@ rounds_df = pd.read_csv('block_cipher_rounds.csv')
 df = add_sec_level(df, modes_df, rounds_df, 5)
 
 # Select file sizes to reduce search space
-df['LOG'] = np.log(df['FILE_BYTES']) / np.log(8)
+df['LOG'] = np.log(df['FILE_BYTES']) / np.log(4)
 df = df[df['LOG'] == df['LOG'].astype(int)]
 
 # Compute pace
@@ -38,7 +38,7 @@ ciphers = df.groupby(cols).size().reset_index()
 with open('query.txt', 'w') as f:
     # Print list of file sizes in order
     f.write('Blocks: \n')
-    blocks = df['FILE_BYTES'].sort_values().unique()
+    blocks = df['FILE_BYTES'].sort_values(ascending=False).unique()
     f.write('{%s }\n' % ', '.join(map(str, blocks)))
     f.write("Length: %s\n\n" % str(len(blocks)))
 
