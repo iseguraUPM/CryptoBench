@@ -26,12 +26,16 @@ protected:
 
 TEST_F(EngineFixture, MinTime)
 {
-    std::vector<std::vector<std::string>> scheduling = eng.minimizeTime(26, 4);
+    std::vector<EncryptTask> scheduling = eng.minimizeTime(26, 4);
 
-    for ( const std::vector<std::string> &v : scheduling )
+    for ( const EncryptTask &t : scheduling )
     {
-        for ( std::string x : v ) std::cout << x << ' ';
-        std::cout << std::endl;
+        std::cout
+        << t.begin_at_ns << ' '
+        << t.block_len << ' '
+        << t.cipher_name << ' '
+        << t.device_name << ' '
+        << std::endl;
     }
 }
 

@@ -12,11 +12,18 @@
 #include <ortools/sat/cp_model.h>
 #include <ortools/sat/integer_expr.h>
 
+typedef struct {
+    int64 begin_at_ns;
+    int64 block_len;
+    std::string cipher_name;
+    std::string device_name;
+} EncryptTask;
+
 class Engine
 {
 public:
     Engine();
-    std::vector<std::vector<std::string>> minimizeTime(int64_t file_size, int sec_level);
+    std::vector<EncryptTask> minimizeTime(int64_t file_size, int sec_level);
     void maximizeSecurity(int64_t file_size, int64_t time_available);
 
 private:

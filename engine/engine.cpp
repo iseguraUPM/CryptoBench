@@ -198,7 +198,7 @@ Engine::Engine()
             };
 }
 
-std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, int sec_level)
+std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
 {
     using namespace operations_research;
 
@@ -305,7 +305,7 @@ std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, in
     sat::CpModelProto model_proto = cp_model.Build();
     sat::CpSolverResponse response = sat::SolveCpModel(model_proto, &model);
 
-    std::vector<std::vector<std::string>> result;
+    std::vector<EncryptTask> result;
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
         auto mean_sec_level = (double) sat::SolutionIntegerValue(response, overall_security) / sat::SolutionIntegerValue(response, choices);
@@ -329,18 +329,17 @@ std::vector<std::vector<std::string>> Engine::minimizeTime(int64_t file_size, in
                         continue;
                     }
                     // start_p, bytes, encryption, device
-                    std::vector<std::string> res_line(4);
-                    res_line[0] = std::to_string(sat::SolutionIntegerValue(response, task.p_interval.StartVar()));
-                    res_line[1] = std::to_string(task.block_len);
-                    res_line[2] = cipher_names[proc_id];
-                    res_line[3] = device_names[device_id];
-                    result.push_back(res_line);
+                    int64 begin = sat::SolutionIntegerValue(response, task.p_interval.StartVar());
+                    int64 block_len = task.block_len;
+                    std::string cipher_name = cipher_names[proc_id];
+                    std::string device_name = device_names[device_id];
+                    result.push_back({begin, block_len, cipher_name, device_name});
                 }
             }
         }
         std::sort(result.begin(), result.end(),
-                [](const std::vector<std::string>& a, const std::vector<std::string>& b) {
-                    return a[0] < b[0];
+                [](const EncryptTask& a, const EncryptTask& b) {
+                    return a.begin_at_ns < b.begin_at_ns;
         });
 
         return result;
