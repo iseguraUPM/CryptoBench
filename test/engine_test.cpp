@@ -41,5 +41,15 @@ TEST_F(EngineFixture, MinTime)
 
 TEST_F(EngineFixture, MaxSec)
 {
-    eng.maximizeSecurity(500000, 10000000000);
+    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(500000, 10000000000);
+
+    for ( const EncryptTask &t : scheduling )
+    {
+        std::cout
+                << t.begin_at_ns << ' '
+                << t.block_len << ' '
+                << t.cipher_name << ' '
+                << t.device_name << ' '
+                << std::endl;
+    }
 }

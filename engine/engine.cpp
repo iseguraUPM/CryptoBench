@@ -342,11 +342,11 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
                     return a.begin_at_ns < b.begin_at_ns;
         });
 
-        return result;
     }
+    return result;
 }
 
-void Engine::maximizeSecurity(int64_t file_size, int64_t time_available)
+std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t time_available)
 {
     using namespace operations_research;
 
@@ -459,14 +459,11 @@ void Engine::maximizeSecurity(int64_t file_size, int64_t time_available)
     /// Solver
     sat::CpModelProto model_proto = cp_model.Build();
     sat::CpSolverResponse response = sat::SolveCpModel(model_proto, &model);
-    std::cout << sat::CpSolverResponseStats(response) << std::endl;
 
+    std::vector<EncryptTask> result;
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
-        std::cout << "Schedule Length: " << sat::SolutionIntegerValue(response, makespan) << "\n";
-
         auto mean_sec_level = (double) sat::SolutionIntegerValue(response, overall_security) / sat::SolutionIntegerValue(response, choices);
-        std::cout << "Average sec. level: " << mean_sec_level << "\n";
 
         std::stringstream processor_tasks;
         for (int proc_id = 0; proc_id < processors.size(); proc_id++)
@@ -486,34 +483,22 @@ void Engine::maximizeSecurity(int64_t file_size, int64_t time_available)
                     {
                         continue;
                     }
-                    print = true;
 
-                    std::string blk_str = "block " + std::to_string(task.block_len) + " B ";
-                    chosen_blocks << std::setw(-60) << blk_str;
-
-                    std::stringstream times;
-                    times << "p: ["
-                          << sat::SolutionIntegerValue(response, task.p_interval.StartVar()) << ", "
-                          << sat::SolutionIntegerValue(response, task.p_interval.EndVar()) << "] ";
-
-                    times << "io: ["
-                          << sat::SolutionIntegerValue(response, task.io_interval.StartVar()) << ", "
-                          << sat::SolutionIntegerValue(response, task.io_interval.EndVar()) << "] ";
-
-                    proc_times <<  std::setw(-60) << times.str();
-                }
-                if (print)
-                {
-                    processor_tasks << "Processor " << cipher_names[proc_id] << " by " << device_names[device_id] << " : \n";
-                    processor_tasks << chosen_blocks.str() << "\n" << proc_times.str() << "\n\n";
+                    // start_p, bytes, encryption, device
+                    int64 begin = sat::SolutionIntegerValue(response, task.p_interval.StartVar());
+                    int64 block_len = task.block_len;
+                    std::string cipher_name = cipher_names[proc_id];
+                    std::string device_name = device_names[device_id];
+                    result.push_back({begin, block_len, cipher_name, device_name});
                 }
             }
         }
+        std::sort(result.begin(), result.end(),
+                [](const EncryptTask& a, const EncryptTask& b) {
+                    return a.begin_at_ns < b.begin_at_ns;
+                });
 
-
-        std::cout << processor_tasks.str() << std::endl;
-
-        return;
     }
+    return result;
 }
 

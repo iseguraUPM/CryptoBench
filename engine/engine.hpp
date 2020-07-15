@@ -24,7 +24,7 @@ class Engine
 public:
     Engine();
     std::vector<EncryptTask> minimizeTime(int64_t file_size, int sec_level);
-    void maximizeSecurity(int64_t file_size, int64_t time_available);
+    std::vector<EncryptTask> maximizeSecurity(int64_t file_size, int64_t time_available);
 
 private:
     std::vector<int64_t> blocks;
