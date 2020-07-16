@@ -4,18 +4,44 @@
 
 #include "CryptoBench/engine.hpp"
 
-Engine::Engine()
+Engine Engine::loadEngine(std::string system_profile_file_name, std::string cipher_seed_file_name)
 {
+    Engine instance;
 
-    devices = { 1, 40};
-    device_names = {"ssd", "hdd"};
+    loadSystemProfile(system_profile_file_name, instance);
+    loadCipherData(cipher_seed_file_name, instance);
 
-    std::ifstream f("/home/cc/CryptoBench/engine/cipher_paces.dat");
+    return instance;
+}
+
+void Engine::loadSystemProfile(const std::string &system_profile_file_name, Engine &instance)
+{
+    std::ifstream f(system_profile_file_name);
 
     if(!f)
     {
-        std::cerr << "Error opening cipher data.\n";
-        return;
+        throw std::runtime_error("Error opening system profile: " + system_profile_file_name);
+    }
+
+    std::string line;
+    while(std::getline(f,line)) {
+        std::istringstream iss_device(line);
+        std::string device;
+        int64 pace;
+        iss_device >> device;
+        instance.device_names.push_back(device);
+        iss_device >> pace;
+        instance.devices.push_back(pace);
+    }
+}
+
+void Engine::loadCipherData(const std::string &cipher_seed_file_name, Engine &instance)
+{
+    std::ifstream f(cipher_seed_file_name);
+
+    if(!f)
+    {
+        throw std::runtime_error("Error opening cipher seed: " + cipher_seed_file_name);
     }
 
     std::string line;
@@ -24,23 +50,27 @@ Engine::Engine()
     std::istringstream iss_block(line);
 
     while (iss_block >> word) {
-        blocks.push_back(word);
+        instance.blocks.push_back(word);
     }
 
-    while(std::getline(f,line)){
-        std::istringstream iss_cipher(line);
-        std::string cipher_tmp;
-        int64_t sec_tmp;
-        iss_cipher >> cipher_tmp;
-        cipher_names.push_back(cipher_tmp);
-        iss_cipher >> sec_tmp;
-        sec_levels.push_back(sec_tmp);
+    std::getline(f, line);
+    std::istringstream iss_scale(line);
+    iss_scale >> instance.int_scale;
 
-        std::vector<int64_t> processor_tmp;
+    while(std::getline(f,line)) {
+        std::istringstream iss_cipher(line);
+        std::string cipher;
+        int64 security_level;
+        iss_cipher >> cipher;
+        instance.cipher_names.push_back(cipher);
+        iss_cipher >> security_level;
+        instance.sec_levels.push_back(security_level);
+
+        std::vector<int64> cipher_paces;
         while (iss_cipher >> word) {
-            processor_tmp.push_back(word);
+            cipher_paces.push_back(word);
         }
-        processors.push_back(processor_tmp);
+        instance.processors.push_back(cipher_paces);
     }
 }
 
@@ -254,7 +284,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 
     sat::IntVar makespan = cp_model.NewIntVar(domain);
     cp_model.AddMaxEquality(makespan, all_io_ends);
-    cp_model.AddLessOrEqual(makespan, time_available_us * 1000000);
+    cp_model.AddLessOrEqual(makespan, time_available_us * int_scale);
 
     /// Objective
     cp_model.Minimize(block_sum);
@@ -312,4 +342,3 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
     }
     return result;
 }
-

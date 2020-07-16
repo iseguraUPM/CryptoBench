@@ -16,17 +16,24 @@ protected:
 
     void SetUp() override
     {
+        system_profile_file_name = "system_profile.dat";
+        cipher_seed_file_name = "cipher_seed.dat";
     }
+
     void TearDown() override
     {
     }
 
 protected:
-    Engine eng;
+
+    std::string system_profile_file_name;
+    std::string cipher_seed_file_name;
+
 };
 
 TEST_F(EngineFixture, MinTime)
 {
+    Engine eng = Engine::loadEngine(system_profile_file_name, cipher_seed_file_name);
     std::vector<EncryptTask> scheduling = eng.minimizeTime(30, 500000, 5);
 
     for ( const EncryptTask &t : scheduling )
@@ -38,11 +45,14 @@ TEST_F(EngineFixture, MinTime)
         << t.device_name << ' '
         << std::endl;
     }
+
+    ASSERT_FALSE(scheduling.empty());
 }
 
 TEST_F(EngineFixture, MaxSec)
 {
-    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(30, 500000, 10000000);
+    Engine eng = Engine::loadEngine(system_profile_file_name, cipher_seed_file_name);
+    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(30, 500000, 50000000);
 
     for ( const EncryptTask &t : scheduling )
     {
@@ -53,4 +63,6 @@ TEST_F(EngineFixture, MaxSec)
                 << t.device_name << ' '
                 << std::endl;
     }
+
+    ASSERT_FALSE(scheduling.empty());
 }

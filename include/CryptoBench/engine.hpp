@@ -24,17 +24,29 @@ typedef struct {
 class Engine
 {
 public:
-    Engine();
+
+    static Engine loadEngine(std::string system_profile_file_name, std::string cipher_seed_file_name);
+
     std::vector<EncryptTask> minimizeTime(double eval_time_sec, int64_t file_size, int sec_level);
     std::vector<EncryptTask> maximizeSecurity(double eval_time_sec, int64_t file_size, int64_t time_available_us);
 
 private:
+
+    static void loadSystemProfile(const std::string &system_profile_file_name, Engine &instance);
+    static void loadCipherData(const std::string &cipher_seed_file_name, Engine &instance);
+
+    Engine() = default;
+
+private:
+
+    int64 int_scale;
     std::vector<int64_t> blocks;
     std::vector<int> devices;
     std::vector<std::string> device_names;
     std::vector<std::vector<int64_t>> processors;
     std::vector<std::string> cipher_names;
     std::vector<int> sec_levels;
+
 
 };
 
