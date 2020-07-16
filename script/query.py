@@ -46,7 +46,7 @@ with open('query.txt', 'w') as f:
     pace_per_block = []
     for index, row in ciphers.iterrows():
         line = []
-        line.append(row['LIB'] + "_" + row['ALG'] + "_" + str(row['KEY_LEN']) + "_" + row['BLOCK_MODE'])
+        line.append(row['LIB'] + "-" + row['ALG'] + "-" + str(row['KEY_LEN']) + "-" + row['BLOCK_MODE'])
         line.append(row['SEC_LEVEL'])
         for size in blocks:
             pace = df[(df['LIB'] == row['LIB']) & (df['ALG'] == row['ALG']) & (df['KEY_LEN'] == row['KEY_LEN']) & (df['BLOCK_MODE'] == row['BLOCK_MODE']) & (df['FILE_BYTES'] == size)]['PACE']
