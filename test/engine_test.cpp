@@ -26,7 +26,7 @@ protected:
 
 TEST_F(EngineFixture, MinTime)
 {
-    std::vector<EncryptTask> scheduling = eng.minimizeTime(26, 4);
+    std::vector<EncryptTask> scheduling = eng.minimizeTime(30, 500000, 5);
 
     for ( const EncryptTask &t : scheduling )
     {
@@ -41,7 +41,7 @@ TEST_F(EngineFixture, MinTime)
 
 TEST_F(EngineFixture, MaxSec)
 {
-    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(500000, 10000000000);
+    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(30, 500000, 10000000);
 
     for ( const EncryptTask &t : scheduling )
     {
