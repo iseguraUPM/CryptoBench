@@ -4,6 +4,8 @@
 
 #include "CryptoBench/cipher_definitions.hpp"
 
+#include <map>
+
 static std::map<std::string, Cipher> loadCipherNames() noexcept
 {
     std::map<std::string, Cipher> names;
