@@ -7,7 +7,8 @@
 #include <vector>
 #include <array>
 #include <iostream>
-#include "../engine/engine.hpp"
+
+#include <CryptoBench/engine.hpp>
 
 class EngineFixture : public ::testing::Test
 {

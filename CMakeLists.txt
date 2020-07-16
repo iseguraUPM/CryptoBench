@@ -20,8 +20,6 @@ add_subdirectory(lib)
 
 add_subdirectory(test)
 
-add_subdirectory(cryptoengine)
-
 add_subdirectory(BenchmarkRunner)
 
 add_subdirectory(src)
