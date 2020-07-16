@@ -67,7 +67,6 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
 
     std::vector<sat::BoolVar> all_chosen;
     std::vector<int64_t> all_block_sizes;
-    std::vector<int64_t> all_sec_levels;
 
     sat::CpModelBuilder cp_model;
     Domain domain(0, horizon);
@@ -87,7 +86,6 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
                 sat::BoolVar chosen = cp_model.NewBoolVar();
                 all_chosen.push_back(chosen);
                 all_block_sizes.push_back(blocks[block_id]);
-                all_sec_levels.push_back(sec_levels[proc_id]);
 
                 sat::IntVar p_time = cp_model.NewConstant(blocks[block_id] * processors[proc_id][block_id]);
                 sat::IntVar p_start = cp_model.NewIntVar(domain);
@@ -203,7 +201,6 @@ std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t tim
 
     std::vector<sat::BoolVar> all_chosen;
     std::vector<int64_t> all_block_sizes;
-    std::vector<int64_t> all_sec_levels;
     std::vector<int64_t> all_weighted_sec_levels;
 
     sat::CpModelBuilder cp_model;
@@ -221,7 +218,6 @@ std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t tim
                 sat::BoolVar chosen = cp_model.NewBoolVar();
                 all_chosen.push_back(chosen);
                 all_block_sizes.push_back(blocks[block_id]);
-                all_sec_levels.push_back(sec_levels[proc_id]);
 
                 // This assumes descending block order
                 ulong block_rank = blocks.size() - block_id;
