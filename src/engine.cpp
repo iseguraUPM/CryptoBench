@@ -4,6 +4,13 @@
 
 #include "CryptoBench/engine.hpp"
 
+struct OptimizeTask
+{
+    operations_research::sat::IntervalVar p_interval;
+    operations_research::sat::IntervalVar io_interval;
+    int64_t block_len;
+};
+
 Engine Engine::loadEngine(std::string system_profile_file_name, std::string cipher_seed_file_name)
 {
     Engine instance;
@@ -81,18 +88,12 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
     // TODO: performance of INF horizon
     int64_t horizon = INT64_MAX - 1;
 
-    struct Task {
-        sat::IntervalVar p_interval;
-        sat::IntervalVar io_interval;
-        int64_t block_len;
-    };
-
     std::vector<sat::IntervalVar> all_p_intervals;
     std::vector<sat::IntVar> all_io_ends;
 
     std::vector<std::vector<sat::IntervalVar>> per_device_intervals(devices.size());
 
-    std::vector<std::vector<std::vector<Task>>> all_tasks(processors.size());
+    std::vector<std::vector<std::vector<OptimizeTask>>> all_tasks(processors.size());
     long task_count = 0;
 
     std::vector<sat::BoolVar> all_chosen;
@@ -105,12 +106,12 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
         if (sec_levels[proc_id] != sec_level)
             continue;
 
-        all_tasks[proc_id] = std::vector<std::vector<Task>>(blocks.size());
+        all_tasks[proc_id] = std::vector<std::vector<OptimizeTask>>(blocks.size());
         for (int block_id = 0; block_id < blocks.size(); block_id++)
         {
             if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
                 continue;
-            all_tasks[proc_id][block_id] = std::vector<Task>(devices.size());
+            all_tasks[proc_id][block_id] = std::vector<OptimizeTask>(devices.size());
             for (int device_id = 0; device_id < devices.size(); device_id++)
             {
                 sat::BoolVar chosen = cp_model.NewBoolVar();
@@ -131,7 +132,7 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
 
-                all_tasks[proc_id][block_id][device_id] = Task{p_interval, io_interval, blocks[block_id]};
+                all_tasks[proc_id][block_id][device_id] = OptimizeTask{p_interval, io_interval, blocks[block_id]};
                 task_count++;
             }
         }
@@ -187,12 +188,8 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
                     {
                         continue;
                     }
-                    // start_p, bytes, encryption, device
-                    int64 begin = sat::SolutionIntegerValue(response, task.p_interval.StartVar());
-                    int64 block_len = task.block_len;
-                    std::string cipher_name = cipher_names[proc_id];
-                    std::string device_name = device_names[device_id];
-                    result.push_back({begin, block_len, cipher_name, device_name});
+
+                    saveResult(response, result, proc_id, device_id, task);
                 }
             }
         }
@@ -213,18 +210,12 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
     // TODO: performance of INF horizon
     int64_t horizon = INT64_MAX - 1;
 
-    struct Task {
-        sat::IntervalVar p_interval;
-        sat::IntervalVar io_interval;
-        int64_t block_len;
-    };
-
     std::vector<sat::IntervalVar> all_p_intervals;
     std::vector<sat::IntVar> all_io_ends;
 
     std::vector<std::vector<sat::IntervalVar>> per_device_intervals(devices.size());
 
-    std::vector<std::vector<std::vector<Task>>> all_tasks(processors.size());
+    std::vector<std::vector<std::vector<OptimizeTask>>> all_tasks(processors.size());
     long task_count = 0;
 
     std::vector<sat::BoolVar> all_chosen;
@@ -235,12 +226,12 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
     Domain domain(0, horizon);
     for (int proc_id = 0; proc_id < processors.size(); proc_id++)
     {
-        all_tasks[proc_id] = std::vector<std::vector<Task>>(blocks.size());
+        all_tasks[proc_id] = std::vector<std::vector<OptimizeTask>>(blocks.size());
         for (int block_id = 0; block_id < blocks.size(); block_id++)
         {
             if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
                 continue;
-            all_tasks[proc_id][block_id] = std::vector<Task>(devices.size());
+            all_tasks[proc_id][block_id] = std::vector<OptimizeTask>(devices.size());
             for (int device_id = 0; device_id < devices.size(); device_id++)
             {
                 sat::BoolVar chosen = cp_model.NewBoolVar();
@@ -265,7 +256,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
 
-                all_tasks[proc_id][block_id][device_id] = Task{p_interval, io_interval, blocks[block_id]};
+                all_tasks[proc_id][block_id][device_id] = OptimizeTask{p_interval, io_interval, blocks[block_id]};
                 task_count++;
             }
         }
@@ -325,12 +316,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
                         continue;
                     }
 
-                    // start_p, bytes, encryption, device
-                    int64 begin = sat::SolutionIntegerValue(response, task.p_interval.StartVar());
-                    int64 block_len = task.block_len;
-                    std::string cipher_name = cipher_names[proc_id];
-                    std::string device_name = device_names[device_id];
-                    result.push_back({begin, block_len, cipher_name, device_name});
+                    saveResult(response, result, proc_id, device_id, task);
                 }
             }
         }
@@ -341,4 +327,30 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 
     }
     return result;
+}
+
+void Engine::saveResult(const operations_research::sat::CpSolverResponse &response, std::vector<EncryptTask> &result
+                        , int proc_id, int device_id, const OptimizeTask &task) const
+{
+    // start_p, bytes, encryption, device
+    int64 begin = operations_research::sat::SolutionIntegerValue(response, task.p_interval.StartVar());
+    int64 block_len = task.block_len;
+
+    std::stringstream ss(cipher_names[proc_id]);
+
+    std::string lib_name;
+    std::getline(ss, lib_name, '-');
+
+    std::string alg_name;
+    std::getline(ss, alg_name, '-');
+
+    std::string keylen_str;
+    std::getline(ss, keylen_str, '-');
+    int key_len = std::stoi(keylen_str);
+
+    std::string mode_name;
+    std::getline(ss, mode_name, '-');
+
+    std::string device_name = device_names[device_id];
+    result.push_back({begin, block_len, lib_name, alg_name, key_len, mode_name, device_name});
 }

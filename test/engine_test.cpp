@@ -24,12 +24,27 @@ protected:
     {
     }
 
+    void printTask(const EncryptTask &t) const;
+
 protected:
 
     std::string system_profile_file_name;
     std::string cipher_seed_file_name;
 
 };
+
+void EngineFixture::printTask(const EncryptTask &t) const
+{
+    std::cout
+            << t.begin_at_ns << ' '
+            << t.block_len << ' '
+            << t.lib_name << '-'
+            << t.alg_name << '-'
+            << t.key_len << '-'
+            << t.mode_name << ' '
+            << t.device_name << '\n'
+            << std::endl;
+}
 
 TEST_F(EngineFixture, MinTime)
 {
@@ -38,12 +53,7 @@ TEST_F(EngineFixture, MinTime)
 
     for ( const EncryptTask &t : scheduling )
     {
-        std::cout
-        << t.begin_at_ns << ' '
-        << t.block_len << ' '
-        << t.cipher_name << ' '
-        << t.device_name << ' '
-        << std::endl;
+        printTask(t);
     }
 
     ASSERT_FALSE(scheduling.empty());
@@ -56,12 +66,7 @@ TEST_F(EngineFixture, MaxSec)
 
     for ( const EncryptTask &t : scheduling )
     {
-        std::cout
-                << t.begin_at_ns << ' '
-                << t.block_len << ' '
-                << t.cipher_name << ' '
-                << t.device_name << ' '
-                << std::endl;
+        printTask(t);
     }
 
     ASSERT_FALSE(scheduling.empty());

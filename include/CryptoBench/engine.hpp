@@ -14,12 +14,18 @@
 #include <ortools/sat/cp_model.h>
 #include <ortools/sat/integer_expr.h>
 
-typedef struct {
+typedef struct
+{
     int64 begin_at_ns;
     int64 block_len;
-    std::string cipher_name;
+    std::string lib_name;
+    std::string alg_name;
+    int key_len;
+    std::string mode_name;
     std::string device_name;
 } EncryptTask;
+
+struct OptimizeTask;
 
 class Engine
 {
@@ -48,6 +54,8 @@ private:
     std::vector<int> sec_levels;
 
 
+    void saveResult(const operations_research::sat::CpSolverResponse &response, std::vector<EncryptTask> &result, int proc_id
+               , int device_id, const OptimizeTask &task) const;
 };
 
 
