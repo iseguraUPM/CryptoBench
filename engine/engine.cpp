@@ -95,18 +95,14 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
                 all_p_intervals.push_back(p_interval);
 
                 sat::IntVar io_time = cp_model.NewConstant(blocks[block_id] * devices[device_id]);
-                sat::IntVar io_start = cp_model.NewIntVar(domain);
                 sat::IntVar io_end = cp_model.NewIntVar(domain);
-                sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(io_start, io_time, io_end, chosen);
+                sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(p_end, io_time, io_end, chosen);
 
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
 
                 all_tasks[proc_id][block_id][device_id] = Task{p_interval, io_interval, blocks[block_id]};
                 task_count++;
-
-                /// Precedence constraint
-                cp_model.AddGreaterOrEqual(io_start, p_end).OnlyEnforceIf(chosen);
             }
         }
     }
@@ -231,18 +227,14 @@ std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t tim
                 all_p_intervals.push_back(p_interval);
 
                 sat::IntVar io_time = cp_model.NewConstant(blocks[block_id] * devices[device_id]);
-                sat::IntVar io_start = cp_model.NewIntVar(domain);
                 sat::IntVar io_end = cp_model.NewIntVar(domain);
-                sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(io_start, io_time, io_end, chosen);
+                sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(p_end, io_time, io_end, chosen);
 
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
 
                 all_tasks[proc_id][block_id][device_id] = Task{p_interval, io_interval, blocks[block_id]};
                 task_count++;
-
-                /// Precedence constraint
-                cp_model.AddGreaterOrEqual(io_start, p_end).OnlyEnforceIf(chosen);
             }
         }
     }
