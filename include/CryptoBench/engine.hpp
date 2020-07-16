@@ -45,7 +45,6 @@ private:
 
 private:
 
-    int64 int_scale;
     std::vector<int64_t> blocks;
     std::vector<int> devices;
     std::vector<std::string> device_names;

@@ -60,10 +60,6 @@ void Engine::loadCipherData(const std::string &cipher_seed_file_name, Engine &in
         instance.blocks.push_back(word);
     }
 
-    std::getline(f, line);
-    std::istringstream iss_scale(line);
-    iss_scale >> instance.int_scale;
-
     while(std::getline(f,line)) {
         std::istringstream iss_cipher(line);
         std::string cipher;
@@ -118,7 +114,7 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
                 all_chosen.push_back(chosen);
                 all_block_sizes.push_back(blocks[block_id]);
 
-                sat::IntVar p_time = cp_model.NewConstant(blocks[block_id] * processors[proc_id][block_id]);
+                sat::IntVar p_time = cp_model.NewConstant(processors[proc_id][block_id]);
                 sat::IntVar p_start = cp_model.NewIntVar(domain);
                 sat::IntVar p_end = cp_model.NewIntVar(domain);
                 sat::IntervalVar p_interval = cp_model.NewOptionalIntervalVar(p_start, p_time, p_end, chosen);
@@ -242,7 +238,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
                 ulong block_rank = blocks.size() - block_id;
                 all_weighted_sec_levels.push_back((int64_t) std::pow(block_rank, sec_levels[proc_id]));
 
-                sat::IntVar p_time = cp_model.NewConstant(blocks[block_id] * processors[proc_id][block_id]);
+                sat::IntVar p_time = cp_model.NewConstant(processors[proc_id][block_id]);
                 sat::IntVar p_start = cp_model.NewIntVar(domain);
                 sat::IntVar p_end = cp_model.NewIntVar(domain);
                 sat::IntervalVar p_interval = cp_model.NewOptionalIntervalVar(p_start, p_time, p_end, chosen);
@@ -275,7 +271,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 
     sat::IntVar makespan = cp_model.NewIntVar(domain);
     cp_model.AddMaxEquality(makespan, all_io_ends);
-    cp_model.AddLessOrEqual(makespan, time_available_us * int_scale);
+    cp_model.AddLessOrEqual(makespan, time_available_us);
 
     /// Objective
     cp_model.Minimize(block_sum);

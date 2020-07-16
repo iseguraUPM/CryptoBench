@@ -31,16 +31,11 @@ df = df[df['RANK'] >= 0.75].reset_index()
 cols = ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'SEC_LEVEL']
 ciphers = df.groupby(cols).size().reset_index()
 
-int_scale = 1000000
-
 with open('query.txt', 'w') as f:
     # Print list of file sizes in order
     blocks = df['FILE_BYTES'].sort_values(ascending=False).unique()
     f.write(" ".join(list(map(str, blocks))))
     f.write("\n")
-    
-    # Print int scale for pace data
-    f.write(str(int_scale) + "\n")
 
     # Print pace per block size in cipher order
     pace_per_block = []
@@ -49,11 +44,11 @@ with open('query.txt', 'w') as f:
         line.append(row['LIB'] + "-" + row['ALG'] + "-" + str(row['KEY_LEN']) + "-" + row['BLOCK_MODE'])
         line.append(row['SEC_LEVEL'])
         for size in blocks:
-            pace = df[(df['LIB'] == row['LIB']) & (df['ALG'] == row['ALG']) & (df['KEY_LEN'] == row['KEY_LEN']) & (df['BLOCK_MODE'] == row['BLOCK_MODE']) & (df['FILE_BYTES'] == size)]['PACE']
-            if len(pace) == 0:
+            enc_t = df[(df['LIB'] == row['LIB']) & (df['ALG'] == row['ALG']) & (df['KEY_LEN'] == row['KEY_LEN']) & (df['BLOCK_MODE'] == row['BLOCK_MODE']) & (df['FILE_BYTES'] == size)]['ENCRYPT_T']
+            if len(enc_t) == 0:
                 line.append(0)
             else:
-                line.append(int(pace.iloc[0] * int_scale))
+                line.append(int(enc_t.iloc[0]))
         pace_per_block.append(line)
 
     for paces in pace_per_block:

@@ -17,7 +17,7 @@ protected:
     void SetUp() override
     {
         system_profile_file_name = "system_profile.dat";
-        cipher_seed_file_name = "cipher_seed.dat";
+        cipher_seed_file_name = "cipher_seed_time.dat";
     }
 
     void TearDown() override
@@ -49,7 +49,7 @@ void EngineFixture::printTask(const EncryptTask &t) const
 TEST_F(EngineFixture, MinTime)
 {
     Engine eng = Engine::loadEngine(system_profile_file_name, cipher_seed_file_name);
-    std::vector<EncryptTask> scheduling = eng.minimizeTime(30, 500000, 5);
+    std::vector<EncryptTask> scheduling = eng.minimizeTime(30, 250, 3);
 
     for ( const EncryptTask &t : scheduling )
     {
@@ -62,7 +62,7 @@ TEST_F(EngineFixture, MinTime)
 TEST_F(EngineFixture, MaxSec)
 {
     Engine eng = Engine::loadEngine(system_profile_file_name, cipher_seed_file_name);
-    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(30, 500000, 50000000);
+    std::vector<EncryptTask> scheduling = eng.maximizeSecurity(30, 250, 50000000);
 
     for ( const EncryptTask &t : scheduling )
     {
