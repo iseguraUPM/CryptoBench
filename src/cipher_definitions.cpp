@@ -4,18 +4,32 @@
 
 #include "CryptoBench/cipher_definitions.hpp"
 
-Cipher toCipher(std::string alg, int key_len, std::string block_mode)
+static std::map<std::string, Cipher> loadCipherNames() noexcept
 {
+    std::map<std::string, Cipher> names;
+
     for (Cipher cipher : CIPHER_LIST)
     {
         auto desc = getCipherDescription(cipher);
-        if (std::get<0>(desc) == alg && std::get<1>(desc) == key_len && std::get<2>(desc) == block_mode)
-        {
-            return cipher;
-        }
+        names.emplace(cipherDescriptionToString(desc), cipher);
     }
 
-    throw std::runtime_error("Unknown cipher: " + alg + "_" + std::to_string(key_len) + "_" + block_mode);
+    return names;
+}
+
+const static std::map<std::string, Cipher> cipher_names = loadCipherNames();
+
+Cipher toCipher(std::string alg, int key_len, std::string block_mode)
+{
+    CipherDescription desc = std::make_tuple(alg, key_len, block_mode);
+    auto cipher_str = cipherDescriptionToString(desc);
+    auto found_cipher = cipher_names.find(cipher_str);
+    if (found_cipher == cipher_names.end())
+    {
+        throw std::runtime_error("Unknown cipher: " + alg + "_" + std::to_string(key_len) + "_" + block_mode);
+    }
+
+    return found_cipher->second;
 }
 
 std::string cipherDescriptionToString(CipherDescription desc)
