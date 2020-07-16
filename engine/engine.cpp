@@ -114,17 +114,16 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
         cp_model.AddNoOverlap(per_device_intervals[device_id]);
     }
 
-    cp_model.AddEquality(sat::LinearExpr::BooleanScalProd(all_chosen, all_block_sizes), file_size);
+    sat::IntVar block_sum = cp_model.NewIntVar(domain);
+    cp_model.AddEquality(sat::LinearExpr::BooleanScalProd(all_chosen, all_block_sizes), block_sum);
+    cp_model.AddGreaterOrEqual(block_sum, file_size);
 
     /// Objective
+    cp_model.Minimize(block_sum);
+
     sat::IntVar obj_var = cp_model.NewIntVar(domain);
     cp_model.AddMaxEquality(obj_var, all_io_ends);
     cp_model.Minimize(obj_var);
-
-    sat::IntVar choices = cp_model.NewIntVar({0, task_count});
-    cp_model.AddEquality(choices, sat::LinearExpr::BooleanSum(all_chosen));
-    cp_model.Minimize(choices);
-
 
     /// Add time limit constraint in order to find feasible solutions
     sat::Model model;
@@ -246,22 +245,22 @@ std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t tim
         cp_model.AddNoOverlap(per_device_intervals[device_id]);
     }
 
-    cp_model.AddEquality(sat::LinearExpr::BooleanScalProd(all_chosen, all_block_sizes), file_size);
+    sat::IntVar block_sum = cp_model.NewIntVar(domain);
+    cp_model.AddEquality(sat::LinearExpr::BooleanScalProd(all_chosen, all_block_sizes), block_sum);
+    cp_model.AddGreaterOrEqual(block_sum, file_size);
 
     sat::IntVar makespan = cp_model.NewIntVar(domain);
     cp_model.AddMaxEquality(makespan, all_io_ends);
     cp_model.AddLessOrEqual(makespan, time_available * 1000000);
 
     /// Objective
+    cp_model.Minimize(block_sum);
+
     cp_model.Maximize(makespan);
 
     sat::IntVar weighted_security = cp_model.NewIntVar(domain);
     cp_model.AddEquality(sat::LinearExpr::BooleanScalProd(all_chosen, all_weighted_sec_levels), weighted_security);
     cp_model.Maximize(weighted_security);
-
-    sat::IntVar choices = cp_model.NewIntVar({0, task_count});
-    cp_model.AddEquality(choices, sat::LinearExpr::BooleanSum(all_chosen));
-    cp_model.Minimize(choices);
 
     /// Add time limit constraint in order to find feasible solutions
     sat::Model model;
