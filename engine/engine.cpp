@@ -125,6 +125,8 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
     cp_model.AddMaxEquality(obj_var, all_io_ends);
     cp_model.Minimize(obj_var);
 
+    cp_model.Minimize(sat::LinearExpr::BooleanSum(all_chosen));
+
     /// Add time limit constraint in order to find feasible solutions
     sat::Model model;
     sat::SatParameters parameters;
@@ -262,6 +264,8 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
     sat::IntVar weighted_security = cp_model.NewIntVar(domain);
     cp_model.AddEquality(sat::LinearExpr::BooleanScalProd(all_chosen, all_weighted_sec_levels), weighted_security);
     cp_model.Maximize(weighted_security);
+
+    cp_model.Minimize(sat::LinearExpr::BooleanSum(all_chosen));
 
     /// Add time limit constraint in order to find feasible solutions
     sat::Model model;
