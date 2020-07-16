@@ -16,7 +16,6 @@ df = df[df['LOG'] == df['LOG'].astype(int)]
 
 # Compute pace
 df['PACE'] = df['ENCRYPT_T'] / df['FILE_BYTES']
-df['PACE'] = df['PACE'] + df['DECRYPT_T'] / df['FILE_BYTES']
 
 # Average pace repetitions
 cols = ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'SEC_LEVEL', 'FILE_BYTES']
@@ -41,16 +40,16 @@ with open('query.txt', 'w') as f:
     # Print pace per block size in cipher order
     pace_per_block = []
     for index, row in ciphers.iterrows():
-        paces = []
-        paces.append(row['LIB'] + "-" + row['ALG'] + "-" + str(row['KEY_LEN']) + "-" + row['BLOCK_MODE'])
-        paces.append(row['SEC_LEVEL'])
+        line = []
+        line.append(row['LIB'] + "-" + row['ALG'] + "-" + str(row['KEY_LEN']) + "-" + row['BLOCK_MODE'])
+        line.append(row['SEC_LEVEL'])
         for size in blocks:
             pace = df[(df['LIB'] == row['LIB']) & (df['ALG'] == row['ALG']) & (df['KEY_LEN'] == row['KEY_LEN']) & (df['BLOCK_MODE'] == row['BLOCK_MODE']) & (df['FILE_BYTES'] == size)]['PACE']
             if len(pace) == 0:
-                paces.append(0)
+                line.append(0)
             else:
-                paces.append(int(pace.iloc[0] * 1000000.0))
-        pace_per_block.append(paces)
+                line.append(int(pace.iloc[0] * 1000000.0))
+        pace_per_block.append(line)
 
     for paces in pace_per_block:
         f.write(" ".join(map(str, paces)))
