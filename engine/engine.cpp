@@ -44,7 +44,7 @@ Engine::Engine()
     }
 }
 
-std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
+std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file_size, int sec_level)
 {
     using namespace operations_research;
 
@@ -128,7 +128,7 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
     /// Add time limit constraint in order to find feasible solutions
     sat::Model model;
     sat::SatParameters parameters;
-    parameters.set_max_time_in_seconds(10.0);
+    parameters.set_max_time_in_seconds(eval_time_sec);
     model.Add(NewSatParameters(parameters));
 
     /// Solver
@@ -173,9 +173,10 @@ std::vector<EncryptTask> Engine::minimizeTime(int64_t file_size, int sec_level)
     return result;
 }
 
-std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t time_available)
+std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t file_size, int64_t time_available_us)
 {
     using namespace operations_research;
+    time_available_us *= 1000; // to ns
 
     // TODO: performance of INF horizon
     int64_t horizon = INT64_MAX - 1;
@@ -251,7 +252,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t tim
 
     sat::IntVar makespan = cp_model.NewIntVar(domain);
     cp_model.AddMaxEquality(makespan, all_io_ends);
-    cp_model.AddLessOrEqual(makespan, time_available * 1000000);
+    cp_model.AddLessOrEqual(makespan, time_available_us * 1000000);
 
     /// Objective
     cp_model.Minimize(block_sum);
@@ -265,7 +266,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(int64_t file_size, int64_t tim
     /// Add time limit constraint in order to find feasible solutions
     sat::Model model;
     sat::SatParameters parameters;
-    parameters.set_max_time_in_seconds(20.0);
+    parameters.set_max_time_in_seconds(eval_time_sec);
     model.Add(NewSatParameters(parameters));
 
     /// Solver
