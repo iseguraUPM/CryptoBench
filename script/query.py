@@ -1,8 +1,5 @@
-import sys
-import math
 import pandas as pd
 import numpy as np
-from queue import Queue
 
 from pre_generator import add_sec_level
 
@@ -37,27 +34,16 @@ ciphers = df.groupby(cols).size().reset_index()
 
 with open('query.txt', 'w') as f:
     # Print list of file sizes in order
-    f.write('Blocks: \n')
     blocks = df['FILE_BYTES'].sort_values(ascending=False).unique()
-    f.write('{%s }\n' % ', '.join(map(str, blocks)))
-    f.write("Length: %s\n\n" % str(len(blocks)))
-
-    # Print cipher names
-    f.write('Ciphers: \n')
-    names = ciphers.apply(lambda row: '\"' + row['LIB'] + '-' + row['ALG'] + '-' + str(row['KEY_LEN']) + '-' + row['BLOCK_MODE'] + '\"', axis=1)
-    f.write('{%s }\n' % ', '.join(names))
-    f.write("Length: %s\n\n" % str(len(ciphers)))
-
-    # Print security level in cipher order
-    f.write('Sec: \n')
-    sec_levels = ciphers['SEC_LEVEL']
-    f.write('{%s }\n' % ', '.join(map(str, sec_levels)))
-    f.write("Length: %s\n\n" % str(len(ciphers)))
+    f.write(" ".join(list(map(str, blocks))))
+    f.write("\n")
 
     # Print pace per block size in cipher order
     pace_per_block = []
     for index, row in ciphers.iterrows():
         paces = []
+        paces.append(row['LIB'] + "-" + row['ALG'] + "-" + str(row['KEY_LEN']) + "-" + row['BLOCK_MODE'])
+        paces.append(row['SEC_LEVEL'])
         for size in blocks:
             pace = df[(df['LIB'] == row['LIB']) & (df['ALG'] == row['ALG']) & (df['KEY_LEN'] == row['KEY_LEN']) & (df['BLOCK_MODE'] == row['BLOCK_MODE']) & (df['FILE_BYTES'] == size)]['PACE']
             if len(pace) == 0:
@@ -66,8 +52,6 @@ with open('query.txt', 'w') as f:
                 paces.append(int(pace.iloc[0] * 1000000.0))
         pace_per_block.append(paces)
 
-    f.write('Paces: \n{\n')
-    for paces in pace_per_block[:-1]:
-        f.write('{%s }, \n' % ', '.join(map(str, paces)))
-    f.write('{%s }\n' % ', '.join(map(str, pace_per_block[-1])))
-    f.write('}\n')
+    for paces in pace_per_block:
+        f.write(" ".join(map(str, paces)))
+        f.write("\n")
