@@ -7,6 +7,8 @@
 
 #include <vector>
 #include <array>
+#include <fstream>
+#include <iterator>
 
 #include <ortools/constraint_solver/constraint_solver.h>
 #include <ortools/sat/cp_model.h>
