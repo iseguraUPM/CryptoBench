@@ -408,7 +408,7 @@ OpenSSLCipherFactory::OpenSSLCipherFactory()
     ERR_load_OBJ_strings();*/
 }
 
-CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher)
+CipherPtr OpenSSLCipherFactory::getCipher(Cipher cipher) const
 {
     switch (cipher)
     {

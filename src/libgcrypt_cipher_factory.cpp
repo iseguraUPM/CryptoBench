@@ -406,7 +406,7 @@ LibgcryptCipherFactory::LibgcryptCipherFactory()
 #endif
 }
 
-CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher)
+CipherPtr LibgcryptCipherFactory::getCipher(Cipher cipher) const
 {
     switch (cipher)
     {

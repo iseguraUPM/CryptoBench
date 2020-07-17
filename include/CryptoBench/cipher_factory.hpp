@@ -21,7 +21,7 @@ public:
      * @return The requested cipher
      * @throws UnsupportedCipherException if the cipher is not supported
      */
-    virtual CipherPtr getCipher(Cipher cipher) noexcept(false) = 0;
+    virtual CipherPtr getCipher(Cipher cipher) const noexcept(false) = 0;
 };
 
 

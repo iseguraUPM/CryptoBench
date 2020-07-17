@@ -10,7 +10,7 @@
 
 class WolfCryptCipherFactory : public CipherFactory
 {
-    CipherPtr getCipher(Cipher cipher) override;
+    CipherPtr getCipher(Cipher cipher) const override;
 };
 
 class WolfCryptException : public GenericCipherException

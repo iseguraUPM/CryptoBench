@@ -339,7 +339,7 @@ void CryptoppCipherCCM<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE, T>::encrypt(cons
 }
 */
 
-CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher)
+CipherPtr CryptoppCipherFactory::getCipher(Cipher cipher) const
 {
 
     switch (cipher)

@@ -13,7 +13,7 @@ class BotanCipherFactory : public CipherFactory
 
 public:
 
-    CipherPtr getCipher(Cipher cipher) override;
+    CipherPtr getCipher(Cipher cipher) const override;
 
 };
 

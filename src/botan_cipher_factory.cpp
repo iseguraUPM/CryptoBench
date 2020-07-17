@@ -217,7 +217,7 @@ void BotanCipherAuth<KEY_SIZE, BLOCK_SIZE, IV_SIZE, TAG_SIZE>::encrypt(const byt
 
 
 
-CipherPtr BotanCipherFactory::getCipher(Cipher cipher)
+CipherPtr BotanCipherFactory::getCipher(Cipher cipher) const
 {
     switch(cipher)
     {

@@ -14,7 +14,7 @@ public:
 
     explicit OpenSSLCipherFactory();
 
-    CipherPtr getCipher(Cipher cipher) override;
+    CipherPtr getCipher(Cipher cipher) const override;
 
 };
 

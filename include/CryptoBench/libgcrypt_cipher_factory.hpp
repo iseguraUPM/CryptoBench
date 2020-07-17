@@ -15,7 +15,7 @@ public:
 
     explicit LibgcryptCipherFactory();
 
-    CipherPtr getCipher(Cipher cipher) override;
+    CipherPtr getCipher(Cipher cipher) const override;
 
 private:
 

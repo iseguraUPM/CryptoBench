@@ -76,7 +76,7 @@ private:
 
 };
 
-CipherPtr LibsodiumCipherFactory::getCipher(Cipher cipher)
+CipherPtr LibsodiumCipherFactory::getCipher(Cipher cipher) const
 {
 #ifndef LIBSODIUM_DISABLE
     if (cipher != Cipher::AES_256_GCM) {

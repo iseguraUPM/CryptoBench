@@ -201,7 +201,7 @@ void WolfcryptCipher<KEY_SIZE, BLOCK_SIZE, IV_SIZE, ALGO>::decrypt(const byte ke
     recovered_text_len = cipher_text_len;
 }
 
-CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher)
+CipherPtr WolfCryptCipherFactory::getCipher(Cipher cipher) const
 {
     switch (cipher) {
         case Cipher::AES_256_ECB:
