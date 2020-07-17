@@ -100,6 +100,20 @@ void LibraryFixture::obtainFileSize(std::ifstream &t)
     plaintext_size = t.tellg();
 }
 
+
+void LibraryFixture::writeOutputFile(std::string filename, byte *output_text, byte_len output_size){
+    std::ofstream output_file;
+    output_file.open(filename, std::ios::binary);
+
+    if (!output_file.write(reinterpret_cast<const char *>(output_text), output_size))
+    {
+        throw std::runtime_error("Error writing " + std::to_string(output_size) + "B file");
+    }
+
+    output_file.flush();
+    output_file.close();
+}
+
 void LibraryFixture::toFactory(std::string lib_name)
 {
 
@@ -132,18 +146,6 @@ void LibraryFixture::toFactory(std::string lib_name)
     }
 }
 
-void LibraryFixture::writeOutputFile(std::string filename, byte *output_text, byte_len output_size){
-    std::ofstream output_file;
-    output_file.open(filename, std::ios::binary);
-
-    if (!output_file.write(reinterpret_cast<const char *>(output_text), output_size))
-    {
-        throw std::runtime_error("Error writing " + std::to_string(output_size) + "B file");
-    }
-
-    output_file.flush();
-    output_file.close();
-}
 
 void LibraryFixture::initializeKeys(KeyChain &key_chain)
 {
@@ -208,7 +210,7 @@ TEST_F(LibraryFixture, MinTime)
         byte_ptr output_buffer = byte_ptr(new byte[t.block_len + 1024], std::default_delete<byte[]>());
 
         cipher = toCipher(t.alg_name, t.key_len, t.mode_name);
-        toFactory(t.lib_name); //Feo, muy feo, pero me estaba rayando con los fucking punteros y quería avanzar
+        toFactory(t.lib_name); //me estaba rayando con los punteros y quería avanzar
 
         byte_len block_len = remainingFileLen(position, t.block_len);
         readInputFile(plaintext_file, input_buffer.get(), position, block_len);
