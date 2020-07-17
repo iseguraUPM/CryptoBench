@@ -1,6 +1,9 @@
 //
 // Created by Juan Pablo Melgarejo on 7/17/20.
 //
+
+#include <gtest/gtest.h>
+
 #include <CryptoBench/hencrypt.hpp>
 
 class HencryptFixture : public ::testing::Test
@@ -17,7 +20,7 @@ protected:
 
 protected:
 
-}
+};
 
 
 TEST_F(HencryptFixture, MinTime)
