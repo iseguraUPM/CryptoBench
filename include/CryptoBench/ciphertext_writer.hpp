@@ -34,7 +34,7 @@ public:
 
 private:
 
-    void encode_fragment(const TextFragment &fragment, std::ofstream &file);
+    void write_encoded_fragment(const TextFragment &fragment, std::ofstream &file) const;
 
 private:
 
