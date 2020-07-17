@@ -8,9 +8,6 @@
 #include <fstream>
 #include <CryptoBench/file_utilities.hpp>
 
-typedef unsigned char byte;
-typedef unsigned long long int byte_len;
-
 struct KeyChain
 {
     byte key512[64];
@@ -25,12 +22,14 @@ struct KeyChain
 class KeyManager
 {
 public:
+    KeyManager() = default;
     explicit KeyManager(std::string key_filename);
     const byte *getKeyBySize(int key_len);
 
 private:
     KeyChain key_chain;
     std::string key_filename;
+
 
     void initializeKeys();
 
