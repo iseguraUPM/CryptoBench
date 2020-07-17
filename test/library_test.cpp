@@ -50,11 +50,16 @@ protected:
     }
 
     void initializeKeys(KeyChain &key_chain);
-    byte_len remainingFileLen(const byte_len start_pos, const byte_len input_size);
-    void readInputFile(std::ifstream &t, byte *input_text, const byte_len start_pos, const byte_len input_size);
-    void writeOutputFile(std::string filename, byte *output_text, byte_len output_size);
+
+    byte_len remainingFileLen(byte_len start_pos, byte_len input_size);
+
+    void readInputFile(std::ifstream &t, byte *input_text, byte_len start_pos, byte_len len);
+
+    void writeOutputFile(const std::string& filename, byte *output_text, byte_len output_size);
+
     void obtainFileSize(std::ifstream &t);
-    void toFactory(std::string lib_name);
+
+    const CipherFactory* toFactory(const std::string &lib_name);
 
 
 protected:
@@ -76,7 +81,6 @@ protected:
     WolfCryptCipherFactory wolf_crypt_cipher_factory;
 
     Cipher cipher;
-    CipherFactory * factory;
 };
 
 byte_len LibraryFixture::remainingFileLen(const byte_len start_pos, const byte_len input_size)
@@ -101,7 +105,8 @@ void LibraryFixture::obtainFileSize(std::ifstream &t)
 }
 
 
-void LibraryFixture::writeOutputFile(std::string filename, byte *output_text, byte_len output_size){
+void LibraryFixture::writeOutputFile(const std::string& filename, byte *output_text, byte_len output_size)
+{
     std::ofstream output_file;
     output_file.open(filename, std::ios::binary);
 
@@ -114,35 +119,30 @@ void LibraryFixture::writeOutputFile(std::string filename, byte *output_text, by
     output_file.close();
 }
 
-void LibraryFixture::toFactory(std::string lib_name)
+const CipherFactory* LibraryFixture::toFactory(const std::string &lib_name)
 {
 
     if (lib_name == "openssl")
     {
-        factory = &open_ssl_cipher_factory;
-    }
-    else if (lib_name == "libsodium")
+        return &open_ssl_cipher_factory;
+    } else if (lib_name == "libsodium")
     {
-        factory = &libsodium_cipher_factory;
-    }
-    else if (lib_name == "gcrypt")
+        return &libsodium_cipher_factory;
+    } else if (lib_name == "gcrypt")
     {
-        factory = &libgcrypt_cipher_factory;
-    }
-    else if (lib_name == "cryptopp")
+        return &libgcrypt_cipher_factory;
+    } else if (lib_name == "cryptopp")
     {
-        factory = &cryptopp_cipher_factory;
-    }
-    else if (lib_name == "botan")
+        return &cryptopp_cipher_factory;
+    } else if (lib_name == "botan")
     {
-        factory = &botan_cipher_factory;
-    }
-    else if (lib_name == "wolfcrypt")
+        return &botan_cipher_factory;
+    } else if (lib_name == "wolfcrypt")
     {
-        factory = &wolf_crypt_cipher_factory;
-    }
-    else {
-        return;
+        return &wolf_crypt_cipher_factory;
+    } else
+    {
+        throw std::runtime_error("Unknown library: " + lib_name);
     }
 }
 
@@ -193,7 +193,6 @@ const byte *getKeyBySize(const KeyChain &key_chain, CipherPtr &cipher_ptr)
 }
 
 
-
 TEST_F(LibraryFixture, MinTime)
 {
     std::ifstream plaintext_file;
@@ -204,13 +203,13 @@ TEST_F(LibraryFixture, MinTime)
     std::vector<EncryptTask> scheduling = eng.minimizeTime(30, plaintext_size, sec_level);
 
     int64_t position = 0;
-    for ( const EncryptTask &t : scheduling )
+    for (const EncryptTask &t : scheduling)
     {
         byte_ptr input_buffer = byte_ptr(new byte[t.block_len + 1024], std::default_delete<byte[]>());
         byte_ptr output_buffer = byte_ptr(new byte[t.block_len + 1024], std::default_delete<byte[]>());
 
         cipher = toCipher(t.alg_name, t.key_len, t.mode_name);
-        toFactory(t.lib_name); //me estaba rayando con los punteros y quería avanzar
+        const CipherFactory *factory = toFactory(t.lib_name);
 
         byte_len block_len = remainingFileLen(position, t.block_len);
         readInputFile(plaintext_file, input_buffer.get(), position, block_len);
@@ -230,7 +229,7 @@ TEST_F(LibraryFixture, MinTime)
 
         writeOutputFile(t.device_name + "/" + plaintext_filename, output_buffer.get(), output_size);
 
-        position+=t.block_len;
+        position += t.block_len;
     }
 
     plaintext_file.sync();
