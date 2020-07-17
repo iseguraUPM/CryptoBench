@@ -15,8 +15,6 @@
 #include <CryptoBench/key_manager.hpp>
 
 using byte_ptr = std::shared_ptr<byte>;
-typedef unsigned char byte;
-typedef unsigned long long int byte_len;
 
 class LibraryFixture : public ::testing::Test
 {
