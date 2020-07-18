@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <CryptoBench/cipher_factory.hpp>
+#include <CryptoBench/cipher/cipher_factory.hpp>
 
 #include <chrono>
 #include <cstring>

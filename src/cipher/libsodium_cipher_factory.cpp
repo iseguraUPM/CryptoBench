@@ -2,11 +2,11 @@
 // Created by ISU on 23/03/2020.
 //
 
-#include "CryptoBench/libsodium_cipher_factory.hpp"
+#include "CryptoBench/cipher/libsodium_cipher_factory.hpp"
 
 #include <cstring>
 
-#include "CryptoBench/symmetric_cipher.hpp"
+#include "CryptoBench/cipher/symmetric_cipher.hpp"
 
 #include <sodium.h>
 

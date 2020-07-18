@@ -9,11 +9,11 @@
 
 #include <chrono>
 
-#include <CryptoBench/open_ssl_cipher_factory.hpp>
-#include <CryptoBench/libsodium_cipher_factory.hpp>
-#include <CryptoBench/cryptopp_cipher_factory.hpp>
-#include <CryptoBench/libgcrypt_cipher_factory.hpp>
-#include <CryptoBench/botan_cipher_factory.hpp>
+#include <CryptoBench/cipher/open_ssl_cipher_factory.hpp>
+#include <CryptoBench/cipher/libsodium_cipher_factory.hpp>
+#include <CryptoBench/cipher/cryptopp_cipher_factory.hpp>
+#include <CryptoBench/cipher/libgcrypt_cipher_factory.hpp>
+#include <CryptoBench/cipher/botan_cipher_factory.hpp>
 
 #include <CryptoBench/secure_string.hpp>
 

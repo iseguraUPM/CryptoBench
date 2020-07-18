@@ -2,13 +2,13 @@
 // Created by ISU on 29/03/2020.
 //
 
-#include "CryptoBench/libgcrypt_cipher_factory.hpp"
+#include "CryptoBench/cipher/libgcrypt_cipher_factory.hpp"
 
 #include <gcrypt.h>
 #include <atomic>
 #include <cstring>
 
-#include "CryptoBench/cipher_exception.hpp"
+#include "CryptoBench/cipher/cipher_exception.hpp"
 #include "CryptoBench/random_bytes.hpp"
 
 #define CIPHER(key_len, block_len, iv_len, alg, mode) (CipherPtr(new LibgcryptCipher<key_len, block_len, iv_len>(alg, mode, true)))

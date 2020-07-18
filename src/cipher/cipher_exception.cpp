@@ -2,7 +2,7 @@
 // Created by ISU on 30/03/2020.
 //
 
-#include "CryptoBench/cipher_exception.hpp"
+#include "CryptoBench/cipher/cipher_exception.hpp"
 
 #include <string>
 #include <cstring>

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "symmetric_cipher.hpp"
-#include "cipher_definitions.hpp"
+#include "CryptoBench/cipher_definitions.hpp"
 
 using CipherPtr = std::shared_ptr<SymmetricCipher>;
 

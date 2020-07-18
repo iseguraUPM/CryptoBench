@@ -197,7 +197,7 @@ enum class Cipher
     BLOWFISH_256_SIV,
 };
 
-const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
+static const Cipher CIPHER_LIST[] = {Cipher::AES_256_ECB,
                               Cipher::AES_256_CBC,
                               Cipher::AES_256_CFB,
                               Cipher::AES_256_OFB,

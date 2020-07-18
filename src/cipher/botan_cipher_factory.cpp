@@ -1,7 +1,7 @@
 //
 // Created by Juan Pablo Melgarejo on 3/30/20.
 //
-#include "CryptoBench/botan_cipher_factory.hpp"
+#include "CryptoBench/cipher/botan_cipher_factory.hpp"
 
 #include <botan/cipher_mode.h>
 

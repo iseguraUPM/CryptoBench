@@ -2,7 +2,7 @@
 // Created by ISU on 08/03/2020.
 //
 
-#include "CryptoBench/wolfcrypt_cipher_factory.hpp"
+#include "CryptoBench/cipher/wolfcrypt_cipher_factory.hpp"
 
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/aes.h>
@@ -10,7 +10,7 @@
 #include <wolfssl/wolfcrypt/des3.h>
 
 #include <CryptoBench/random_bytes.hpp>
-#include <CryptoBench/cipher_exception.hpp>
+#include <CryptoBench/cipher/cipher_exception.hpp>
 
 
 #define KEY_512 64

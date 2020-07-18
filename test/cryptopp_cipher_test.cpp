@@ -6,8 +6,8 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/default.h>
 #include <cryptopp/aria.h>
-#include <CryptoBench/cipher_factory.hpp>
-#include <CryptoBench/cryptopp_cipher_factory.hpp>
+#include <CryptoBench/cipher/cipher_factory.hpp>
+#include <CryptoBench/cipher/cryptopp_cipher_factory.hpp>
 
 #include <gtest/gtest.h>
 

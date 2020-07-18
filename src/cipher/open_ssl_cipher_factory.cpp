@@ -2,14 +2,14 @@
 // Created by ISU on 09/02/2020.
 //
 
-#include "CryptoBench/open_ssl_cipher_factory.hpp"
+#include "CryptoBench/cipher/open_ssl_cipher_factory.hpp"
 
 #include <cstring>
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/camellia.h>
-#include <CryptoBench/cipher_exception.hpp>
+#include <CryptoBench/cipher/cipher_exception.hpp>
 
 #include "CryptoBench/random_bytes.hpp"
 

@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 3/24/20.
 //
 
-#include "CryptoBench/cryptopp_cipher_factory.hpp"
-#include "CryptoBench/symmetric_cipher.hpp"
+#include "CryptoBench/cipher/cryptopp_cipher_factory.hpp"
+#include "CryptoBench/cipher/symmetric_cipher.hpp"
 
 #include <cryptopp/modes.h>
 #include <cryptopp/hex.h>
@@ -19,8 +19,8 @@
 #include <cryptopp/authenc.h>
 
 #include <cryptopp/blowfish.h>
-#include <CryptoBench/cipher_exception.hpp>
-#include <CryptoBench/botan_cipher_factory.hpp>
+#include <CryptoBench/cipher/cipher_exception.hpp>
+#include <CryptoBench/cipher/botan_cipher_factory.hpp>
 
 #include "CryptoBench/random_bytes.hpp"
 
