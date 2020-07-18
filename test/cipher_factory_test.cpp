@@ -8,7 +8,6 @@
 
 #include <chrono>
 
-#include <CryptoBench/secure_string.hpp>
 #include <CryptoBench/cipher/wolfcrypt_cipher_factory.hpp>
 
 std::vector<CipherTestParam> openSSLParams();

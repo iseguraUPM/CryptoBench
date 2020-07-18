@@ -15,8 +15,6 @@
 #include <CryptoBench/cipher/libgcrypt_cipher_factory.hpp>
 #include <CryptoBench/cipher/botan_cipher_factory.hpp>
 
-#include <CryptoBench/secure_string.hpp>
-
 std::vector<CipherTestParam> openSSLParams();
 std::vector<CipherTestParam> libsodiumParams();
 std::vector<CipherTestParam> cryptoppParams();
