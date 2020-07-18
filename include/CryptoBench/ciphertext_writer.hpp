@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 
-#include "cipher_definitions.hpp"
+#include "CryptoBench/cipher/cipher_definitions.hpp"
 
 typedef struct
 {

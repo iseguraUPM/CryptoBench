@@ -2,7 +2,7 @@
 // Created by ISU on 16/07/2020.
 //
 
-#include "CryptoBench/cipher_definitions.hpp"
+#include "CryptoBench/cipher/cipher_definitions.hpp"
 
 #include <map>
 
