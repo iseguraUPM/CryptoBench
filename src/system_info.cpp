@@ -35,17 +35,17 @@ SystemInfo SystemInfo::getInstance(const std::string &system_profile_filename)
     return instance;
 }
 
-const std::vector<int> &SystemInfo::getDevicePaces()
+const std::vector<int> &SystemInfo::getDevicePaces() const
 {
     return devices_paces;
 }
 
-const std::vector<std::string> &SystemInfo::getDeviceNames()
+const std::vector<std::string> &SystemInfo::getDeviceNames() const
 {
     return device_names;
 }
 
-const std::vector<std::string> &SystemInfo::getDeviceStorePath()
+const std::vector<std::string> &SystemInfo::getDeviceStorePath() const
 {
     return device_paths;
 }

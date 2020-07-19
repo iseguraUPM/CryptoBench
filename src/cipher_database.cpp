@@ -99,22 +99,22 @@ void CipherDatabase::commit_changes()
     writeCipherSeed();
 }
 
-const std::vector<int64_t> &CipherDatabase::getBlockSizes()
+const std::vector<int64_t> &CipherDatabase::getBlockSizes() const
 {
     return block_sizes;
 }
 
-const std::vector<std::string> &CipherDatabase::getCipherNames()
+const std::vector<std::string> &CipherDatabase::getCipherNames() const
 {
     return cipher_names;
 }
 
-const std::vector<std::vector<int64_t>> &CipherDatabase::getCipherTimesPerBlock()
+const std::vector<std::vector<int64_t>> &CipherDatabase::getCipherTimesPerBlock() const
 {
     return cipher_times;
 }
 
-const std::vector<int> &CipherDatabase::getSecurityLevels()
+const std::vector<int> &CipherDatabase::getSecurityLevels() const
 {
     return sec_levels;
 }

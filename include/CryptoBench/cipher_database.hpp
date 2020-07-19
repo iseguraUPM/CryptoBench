@@ -16,13 +16,13 @@ public:
 
     void updateCipherTime(int cipher_idx, int block_idx, int64_t new_time_ns);
 
-    const std::vector<int64_t>& getBlockSizes();
+    const std::vector<int64_t>& getBlockSizes() const;
 
-    const std::vector<std::string>& getCipherNames();
+    const std::vector<std::string>& getCipherNames() const;
 
-    const std::vector<std::vector<int64_t>>& getCipherTimesPerBlock();
+    const std::vector<std::vector<int64_t>>& getCipherTimesPerBlock() const;
 
-    const std::vector<int>& getSecurityLevels();
+    const std::vector<int>& getSecurityLevels() const;
 
     void commit_changes();
 

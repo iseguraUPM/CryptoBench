@@ -14,11 +14,11 @@ public:
 
     static SystemInfo getInstance(const std::string &system_profile_filename);
 
-    const std::vector<int>& getDevicePaces();
+    const std::vector<int>& getDevicePaces() const;
 
-    const std::vector<std::string>& getDeviceNames();
+    const std::vector<std::string>& getDeviceNames() const;
 
-    const std::vector<std::string>& getDeviceStorePath();
+    const std::vector<std::string>& getDeviceStorePath() const;
 
 private:
 
