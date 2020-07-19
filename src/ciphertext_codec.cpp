@@ -39,11 +39,11 @@ void CiphertextCodec::encode(std::ostream &os, const CiphertextFragment &fragmen
     stringToByte(fragment.lib, buffer, pos);
     ulongToByte(fragment.len, buffer, pos);
 
-    ull header_len = 0;
-    ulongToByte(pos, buffer, header_len);
+    ull header_len = pos;
+    ulongToByte(pos, buffer, pos);
 
-    os.write(reinterpret_cast<char *>(buffer + pos), header_len);
-    os.write(reinterpret_cast<char *>(buffer), pos);
+    os.write(reinterpret_cast<char *>(buffer + header_len), sizeof(header_len));
+    os.write(reinterpret_cast<char *>(buffer), header_len);
     os.write(reinterpret_cast<char *>(fragment.bytes.get()), fragment.len);
 }
 
@@ -57,7 +57,7 @@ void CiphertextCodec::decode(std::istream &is, CiphertextFragment &fragment)
 
     pos = 0;
     byte buffer[header_len];
-    is.read(reinterpret_cast<char *>(pre_buffer), header_len);
+    is.read(reinterpret_cast<char *>(buffer), header_len);
 
     int cipher_index = byteToInt(buffer, pos);
     if (cipher_index >= sizeof(CIPHER_LIST) / sizeof(Cipher))
@@ -68,7 +68,6 @@ void CiphertextCodec::decode(std::istream &is, CiphertextFragment &fragment)
     ull fragment_len = byteToUlong(buffer, pos);
 
     std::shared_ptr<byte[]> bytes(new byte[fragment_len], std::default_delete<byte[]>());
-    pos = 0;
     is.read(reinterpret_cast<char *>(bytes.get()), fragment_len);
 
     fragment.cipher = CIPHER_LIST[cipher_index];
