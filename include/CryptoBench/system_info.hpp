@@ -12,6 +12,8 @@ class SystemInfo
 {
 public:
 
+    SystemInfo() = default;
+
     static SystemInfo getInstance(const std::string &system_profile_filename);
 
     const std::vector<int>& getDevicePaces() const;
@@ -19,10 +21,6 @@ public:
     const std::vector<std::string>& getDeviceNames() const;
 
     const std::vector<std::string>& getDeviceStorePath() const;
-
-private:
-
-    SystemInfo() = default;
 
 private:
 
