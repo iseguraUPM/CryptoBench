@@ -32,6 +32,8 @@ SystemInfo SystemInfo::getInstance(const std::string &system_profile_filename)
         instance.devices_paces.push_back(pace);
     }
 
+    f.close();
+
     return instance;
 }
 
