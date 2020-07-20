@@ -23,6 +23,7 @@ class KeyManager
 {
 public:
     KeyManager() = default;
+
     explicit KeyManager(std::string key_filename);
     const byte *getKeyBySize(int key_len);
 
