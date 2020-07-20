@@ -14,6 +14,9 @@
 #include <ortools/sat/cp_model.h>
 #include <ortools/sat/integer_expr.h>
 
+#include "system_info.hpp"
+#include "cipher_database.hpp"
+
 typedef struct
 {
     int64 begin_at_ns;
@@ -22,7 +25,7 @@ typedef struct
     std::string alg_name;
     int key_len;
     std::string mode_name;
-    std::string device_name;
+    std::string device_path;
 } EncryptTask;
 
 struct OptimizeTask;
@@ -31,30 +34,21 @@ class Engine
 {
 public:
 
-    static Engine loadEngine(std::string system_profile_file_name, std::string cipher_seed_file_name);
+    explicit Engine(const SystemInfo &sys_info, CipherDatabase &cipher_database);
 
     std::vector<EncryptTask> minimizeTime(double eval_time_sec, int64_t file_size, int sec_level);
     std::vector<EncryptTask> maximizeSecurity(double eval_time_sec, int64_t file_size, int64_t time_available_us);
 
 private:
 
-    static void loadSystemProfile(const std::string &system_profile_file_name, Engine &instance);
-    static void loadCipherData(const std::string &cipher_seed_file_name, Engine &instance);
-
-    Engine() = default;
+    void saveResult(const operations_research::sat::CpSolverResponse &response, std::vector<EncryptTask> &result, int proc_id
+                    , int device_id, const OptimizeTask &task) const;
 
 private:
 
-    std::vector<int64_t> blocks;
-    std::vector<int> devices;
-    std::vector<std::string> device_names;
-    std::vector<std::vector<int64_t>> processors;
-    std::vector<std::string> cipher_names;
-    std::vector<int> sec_levels;
+    const SystemInfo &sys_info;
+    CipherDatabase &cipher_database;
 
-
-    void saveResult(const operations_research::sat::CpSolverResponse &response, std::vector<EncryptTask> &result, int proc_id
-               , int device_id, const OptimizeTask &task) const;
 };
 
 

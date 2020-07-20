@@ -5,42 +5,40 @@
 #ifndef CRYPTOBENCH_HENCRYPT_HPP
 #define CRYPTOBENCH_HENCRYPT_HPP
 
-#include <CryptoBench/engine.hpp>
-#include <CryptoBench/cipher/open_ssl_cipher_factory.hpp>
-#include <CryptoBench/cipher/libsodium_cipher_factory.hpp>
-#include <CryptoBench/cipher/cryptopp_cipher_factory.hpp>
-#include <CryptoBench/cipher/cipher_exception.hpp>
-#include <CryptoBench/cipher/libgcrypt_cipher_factory.hpp>
-#include <CryptoBench/cipher/botan_cipher_factory.hpp>
-#include <CryptoBench/cipher/wolfcrypt_cipher_factory.hpp>
-#include <CryptoBench/file_utilities.hpp>
-#include <CryptoBench/key_manager.hpp>
+#include "engine.hpp"
+#include "key_manager.hpp"
+#include "ciphertext_codec.hpp"
+#include "cipher/open_ssl_cipher_factory.hpp"
+#include "cipher/libsodium_cipher_factory.hpp"
+#include "cipher/cryptopp_cipher_factory.hpp"
+#include "cipher/cipher_exception.hpp"
+#include "cipher/libgcrypt_cipher_factory.hpp"
+#include "cipher/botan_cipher_factory.hpp"
+#include "cipher/wolfcrypt_cipher_factory.hpp"
 
 using byte_ptr = std::shared_ptr<byte>;
 
 class Hencrypt
 {
 public:
-    explicit Hencrypt(std::string plaintext_filename, std::string key_filename);
+    explicit Hencrypt(Engine &engine, KeyManager &key_manager, CiphertextCodec &codec);
 
-    void set_system_profile(std::string system_profile_file_name);
-    void set_cipher_seed(std::string cipher_seed_file_name);
-    void set_eval_time(double eval_time);
+    std::string encryptMinTime(int sec_level, double eval_time, const std::string &plaintext_filename);
+    std::string encryptMaxSec(int64_t max_time, double eval_time, const std::string &plaintext_filename);
 
-    int encrypt_min_time(int sec_level);
-    bool encrypt_max_sec(int64_t max_time);
-
+    void decrypt(const std::string &ciphertext_filename, const std::string &plaintext_filename);
 
 private:
-    std::string plaintext_filename;
-    byte_len plaintext_size;
-    std::string key_filename;
-    byte key;
-    KeyManager key_manager;
 
-    std::string system_profile_file_name;
-    std::string cipher_seed_file_name;
-    double eval_time;
+    void writeFragment(CiphertextFragment &fragment, const std::string &path);
+
+    bool readFragment(CiphertextFragment &fragment, const std::string &path);
+
+private:
+
+    KeyManager &key_manager;
+    Engine &engine;
+    CiphertextCodec &codec;
 
     OpenSSLCipherFactory open_ssl_cipher_factory;
     LibsodiumCipherFactory libsodium_cipher_factory;
@@ -49,7 +47,7 @@ private:
     BotanCipherFactory botan_cipher_factory;
     WolfCryptCipherFactory wolf_crypt_cipher_factory;
 
-    const CipherFactory* toFactory(const std::string &lib_name);
+    const CipherFactory & toFactory(const std::string &lib_name);
 
 };
 

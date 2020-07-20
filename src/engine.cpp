@@ -11,71 +11,8 @@ struct OptimizeTask
     int64_t block_len;
 };
 
-Engine Engine::loadEngine(std::string system_profile_file_name, std::string cipher_seed_file_name)
-{
-    Engine instance;
-
-    loadSystemProfile(system_profile_file_name, instance);
-    loadCipherData(cipher_seed_file_name, instance);
-
-    return instance;
-}
-
-void Engine::loadSystemProfile(const std::string &system_profile_file_name, Engine &instance)
-{
-    std::ifstream f(system_profile_file_name);
-
-    if(!f)
-    {
-        throw std::runtime_error("Error opening system profile: " + system_profile_file_name);
-    }
-
-    std::string line;
-    while(std::getline(f,line)) {
-        std::istringstream iss_device(line);
-        std::string device;
-        int64 pace;
-        iss_device >> device;
-        instance.device_names.push_back(device);
-        iss_device >> pace;
-        instance.devices.push_back(pace);
-    }
-}
-
-void Engine::loadCipherData(const std::string &cipher_seed_file_name, Engine &instance)
-{
-    std::ifstream f(cipher_seed_file_name);
-
-    if(!f)
-    {
-        throw std::runtime_error("Error opening cipher seed: " + cipher_seed_file_name);
-    }
-
-    std::string line;
-    int64_t word;
-    std::getline(f,line);
-    std::istringstream iss_block(line);
-
-    while (iss_block >> word) {
-        instance.blocks.push_back(word);
-    }
-
-    while(std::getline(f,line)) {
-        std::istringstream iss_cipher(line);
-        std::string cipher;
-        int64 security_level;
-        iss_cipher >> cipher;
-        instance.cipher_names.push_back(cipher);
-        iss_cipher >> security_level;
-        instance.sec_levels.push_back(security_level);
-
-        std::vector<int64> cipher_paces;
-        while (iss_cipher >> word) {
-            cipher_paces.push_back(word);
-        }
-        instance.processors.push_back(cipher_paces);
-    }
-}
+Engine::Engine(const SystemInfo &sys_info, CipherDatabase &cipher_database) : sys_info(sys_info), cipher_database(cipher_database)
+{}
 
 std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file_size, int sec_level)
 {
@@ -84,12 +21,17 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
     // TODO: performance of INF horizon
     int64_t horizon = INT64_MAX - 1;
 
+    auto &device_paces = sys_info.getDevicePaces();
+    auto &cipher_times = cipher_database.getCipherTimesPerBlock();
+    auto &sec_levels = cipher_database.getSecurityLevels();
+    auto &block_sizes = cipher_database.getBlockSizes();
+
     std::vector<sat::IntervalVar> all_p_intervals;
     std::vector<sat::IntVar> all_io_ends;
 
-    std::vector<std::vector<sat::IntervalVar>> per_device_intervals(devices.size());
+    std::vector<std::vector<sat::IntervalVar>> per_device_intervals(device_paces.size());
 
-    std::vector<std::vector<std::vector<OptimizeTask>>> all_tasks(processors.size());
+    std::vector<std::vector<std::vector<OptimizeTask>>> all_tasks(cipher_times.size());
     long task_count = 0;
 
     std::vector<sat::BoolVar> all_chosen;
@@ -97,38 +39,38 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
 
     sat::CpModelBuilder cp_model;
     Domain domain(0, horizon);
-    for (int proc_id = 0; proc_id < processors.size(); proc_id++)
+    for (int proc_id = 0; proc_id < cipher_times.size(); proc_id++)
     {
         if (sec_levels[proc_id] != sec_level)
             continue;
 
-        all_tasks[proc_id] = std::vector<std::vector<OptimizeTask>>(blocks.size());
-        for (int block_id = 0; block_id < blocks.size(); block_id++)
+        all_tasks[proc_id] = std::vector<std::vector<OptimizeTask>>(block_sizes.size());
+        for (int block_id = 0; block_id < block_sizes.size(); block_id++)
         {
-            if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
+            if (cipher_times[proc_id][block_id] == 0 || block_sizes[block_id] > file_size)
                 continue;
-            all_tasks[proc_id][block_id] = std::vector<OptimizeTask>(devices.size());
-            for (int device_id = 0; device_id < devices.size(); device_id++)
+            all_tasks[proc_id][block_id] = std::vector<OptimizeTask>(device_paces.size());
+            for (int device_id = 0; device_id < device_paces.size(); device_id++)
             {
                 sat::BoolVar chosen = cp_model.NewBoolVar();
                 all_chosen.push_back(chosen);
-                all_block_sizes.push_back(blocks[block_id]);
+                all_block_sizes.push_back(block_sizes[block_id]);
 
-                sat::IntVar p_time = cp_model.NewConstant(processors[proc_id][block_id]);
+                sat::IntVar p_time = cp_model.NewConstant(cipher_times[proc_id][block_id]);
                 sat::IntVar p_start = cp_model.NewIntVar(domain);
                 sat::IntVar p_end = cp_model.NewIntVar(domain);
                 sat::IntervalVar p_interval = cp_model.NewOptionalIntervalVar(p_start, p_time, p_end, chosen);
 
                 all_p_intervals.push_back(p_interval);
 
-                sat::IntVar io_time = cp_model.NewConstant(blocks[block_id] * devices[device_id]);
+                sat::IntVar io_time = cp_model.NewConstant(block_sizes[block_id] * device_paces[device_id]);
                 sat::IntVar io_end = cp_model.NewIntVar(domain);
                 sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(p_end, io_time, io_end, chosen);
 
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
 
-                all_tasks[proc_id][block_id][device_id] = OptimizeTask{p_interval, io_interval, blocks[block_id]};
+                all_tasks[proc_id][block_id][device_id] = OptimizeTask{p_interval, io_interval, block_sizes[block_id]};
                 task_count++;
             }
         }
@@ -136,7 +78,7 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
 
     /// Constraints
     cp_model.AddNoOverlap(all_p_intervals);
-    for (int device_id = 0; device_id < devices.size(); device_id++)
+    for (int device_id = 0; device_id < device_paces.size(); device_id++)
     {
         cp_model.AddNoOverlap(per_device_intervals[device_id]);
     }
@@ -167,16 +109,16 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
     std::vector<EncryptTask> result;
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
-        for (int proc_id = 0; proc_id < processors.size(); proc_id++)
+        for (int proc_id = 0; proc_id < cipher_times.size(); proc_id++)
         {
             if (sec_levels[proc_id] != sec_level)
                 continue;
 
-            for (int device_id = 0; device_id < devices.size(); device_id++)
+            for (int device_id = 0; device_id < device_paces.size(); device_id++)
             {
-                for (int block_id = 0; block_id < blocks.size(); block_id++)
+                for (int block_id = 0; block_id < block_sizes.size(); block_id++)
                 {
-                    if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
+                    if (cipher_times[proc_id][block_id] == 0 || block_sizes[block_id] > file_size)
                         continue;
 
                     auto &task = all_tasks[proc_id][block_id][device_id];
@@ -206,12 +148,17 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
     // TODO: performance of INF horizon
     int64_t horizon = INT64_MAX - 1;
 
+    auto &device_paces = sys_info.getDevicePaces();
+    auto &cipher_times = cipher_database.getCipherTimesPerBlock();
+    auto &sec_levels = cipher_database.getSecurityLevels();
+    auto &block_sizes = cipher_database.getBlockSizes();
+
     std::vector<sat::IntervalVar> all_p_intervals;
     std::vector<sat::IntVar> all_io_ends;
 
-    std::vector<std::vector<sat::IntervalVar>> per_device_intervals(devices.size());
+    std::vector<std::vector<sat::IntervalVar>> per_device_intervals(device_paces.size());
 
-    std::vector<std::vector<std::vector<OptimizeTask>>> all_tasks(processors.size());
+    std::vector<std::vector<std::vector<OptimizeTask>>> all_tasks(cipher_times.size());
     long task_count = 0;
 
     std::vector<sat::BoolVar> all_chosen;
@@ -220,39 +167,39 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 
     sat::CpModelBuilder cp_model;
     Domain domain(0, horizon);
-    for (int proc_id = 0; proc_id < processors.size(); proc_id++)
+    for (int proc_id = 0; proc_id < cipher_times.size(); proc_id++)
     {
-        all_tasks[proc_id] = std::vector<std::vector<OptimizeTask>>(blocks.size());
-        for (int block_id = 0; block_id < blocks.size(); block_id++)
+        all_tasks[proc_id] = std::vector<std::vector<OptimizeTask>>(block_sizes.size());
+        for (int block_id = 0; block_id < block_sizes.size(); block_id++)
         {
-            if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
+            if (cipher_times[proc_id][block_id] == 0 || block_sizes[block_id] > file_size)
                 continue;
-            all_tasks[proc_id][block_id] = std::vector<OptimizeTask>(devices.size());
-            for (int device_id = 0; device_id < devices.size(); device_id++)
+            all_tasks[proc_id][block_id] = std::vector<OptimizeTask>(device_paces.size());
+            for (int device_id = 0; device_id < device_paces.size(); device_id++)
             {
                 sat::BoolVar chosen = cp_model.NewBoolVar();
                 all_chosen.push_back(chosen);
-                all_block_sizes.push_back(blocks[block_id]);
+                all_block_sizes.push_back(block_sizes[block_id]);
 
                 // This assumes descending block order
-                ulong block_rank = blocks.size() - block_id;
+                ulong block_rank = block_sizes.size() - block_id;
                 all_weighted_sec_levels.push_back((int64_t) std::pow(block_rank, sec_levels[proc_id]));
 
-                sat::IntVar p_time = cp_model.NewConstant(processors[proc_id][block_id]);
+                sat::IntVar p_time = cp_model.NewConstant(cipher_times[proc_id][block_id]);
                 sat::IntVar p_start = cp_model.NewIntVar(domain);
                 sat::IntVar p_end = cp_model.NewIntVar(domain);
                 sat::IntervalVar p_interval = cp_model.NewOptionalIntervalVar(p_start, p_time, p_end, chosen);
 
                 all_p_intervals.push_back(p_interval);
 
-                sat::IntVar io_time = cp_model.NewConstant(blocks[block_id] * devices[device_id]);
+                sat::IntVar io_time = cp_model.NewConstant(block_sizes[block_id] * device_paces[device_id]);
                 sat::IntVar io_end = cp_model.NewIntVar(domain);
                 sat::IntervalVar io_interval = cp_model.NewOptionalIntervalVar(p_end, io_time, io_end, chosen);
 
                 all_io_ends.push_back(io_end);
                 per_device_intervals[device_id].push_back(io_interval);
 
-                all_tasks[proc_id][block_id][device_id] = OptimizeTask{p_interval, io_interval, blocks[block_id]};
+                all_tasks[proc_id][block_id][device_id] = OptimizeTask{p_interval, io_interval, block_sizes[block_id]};
                 task_count++;
             }
         }
@@ -260,7 +207,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 
     /// Constraints
     cp_model.AddNoOverlap(all_p_intervals);
-    for (int device_id = 0; device_id < devices.size(); device_id++)
+    for (int device_id = 0; device_id < device_paces.size(); device_id++)
     {
         cp_model.AddNoOverlap(per_device_intervals[device_id]);
     }
@@ -297,13 +244,13 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
     std::vector<EncryptTask> result;
     if (response.status() == sat::CpSolverStatus::OPTIMAL || response.status() == sat::CpSolverStatus::FEASIBLE)
     {
-        for (int proc_id = 0; proc_id < processors.size(); proc_id++)
+        for (int proc_id = 0; proc_id < cipher_times.size(); proc_id++)
         {
-            for (int device_id = 0; device_id < devices.size(); device_id++)
+            for (int device_id = 0; device_id < device_paces.size(); device_id++)
             {
-                for (int block_id = 0; block_id < blocks.size(); block_id++)
+                for (int block_id = 0; block_id < block_sizes.size(); block_id++)
                 {
-                    if (processors[proc_id][block_id] == 0 || blocks[block_id] > file_size)
+                    if (cipher_times[proc_id][block_id] == 0 || block_sizes[block_id] > file_size)
                         continue;
 
                     auto &task = all_tasks[proc_id][block_id][device_id];
@@ -328,6 +275,9 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 void Engine::saveResult(const operations_research::sat::CpSolverResponse &response, std::vector<EncryptTask> &result
                         , int proc_id, int device_id, const OptimizeTask &task) const
 {
+    auto &cipher_names = cipher_database.getCipherNames();
+    auto &device_paths = sys_info.getDeviceStorePath();
+
     // start_p, bytes, encryption, device
     int64 begin = operations_research::sat::SolutionIntegerValue(response, task.p_interval.StartVar());
     int64 block_len = task.block_len;
@@ -347,6 +297,6 @@ void Engine::saveResult(const operations_research::sat::CpSolverResponse &respon
     std::string mode_name;
     std::getline(ss, mode_name, '-');
 
-    std::string device_name = device_names[device_id];
-    result.push_back({begin, block_len, lib_name, alg_name, key_len, mode_name, device_name});
+    std::string device_path = device_paths[device_id];
+    result.push_back({begin, block_len, lib_name, alg_name, key_len, mode_name, device_path});
 }

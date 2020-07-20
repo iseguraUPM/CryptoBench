@@ -16,8 +16,10 @@ protected:
 
     void SetUp() override
     {
-        system_profile_file_name = "system_profile.dat";
-        cipher_seed_file_name = "cipher_seed_time.dat";
+        std::string system_profile_file_name = "test_system_profile.dat";
+        std::string cipher_seed_file_name = "test_cipher_seed.dat";
+        system_info = SystemInfo::getInstance(system_profile_file_name);
+        cipher_database = CipherDatabase::getInstance(cipher_seed_file_name);
     }
 
     void TearDown() override
@@ -28,8 +30,8 @@ protected:
 
 protected:
 
-    std::string system_profile_file_name;
-    std::string cipher_seed_file_name;
+    SystemInfo system_info;
+    CipherDatabase cipher_database;
 
 };
 
@@ -42,13 +44,13 @@ void EngineFixture::printTask(const EncryptTask &t) const
             << t.alg_name << '-'
             << t.key_len << '-'
             << t.mode_name << ' '
-            << t.device_name << '\n'
+            << t.device_path << '\n'
             << std::endl;
 }
 
 TEST_F(EngineFixture, MinTime)
 {
-    Engine eng = Engine::loadEngine(system_profile_file_name, cipher_seed_file_name);
+    Engine eng = Engine(system_info, cipher_database);
     std::vector<EncryptTask> scheduling = eng.minimizeTime(30, 250, 3);
 
     for ( const EncryptTask &t : scheduling )
@@ -61,7 +63,7 @@ TEST_F(EngineFixture, MinTime)
 
 TEST_F(EngineFixture, MaxSec)
 {
-    Engine eng = Engine::loadEngine(system_profile_file_name, cipher_seed_file_name);
+    Engine eng = Engine(system_info, cipher_database);
     std::vector<EncryptTask> scheduling = eng.maximizeSecurity(30, 250, 50000000);
 
     for ( const EncryptTask &t : scheduling )
