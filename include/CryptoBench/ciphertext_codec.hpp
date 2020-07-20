@@ -18,7 +18,7 @@ public:
 
     void encode(std::ostream &os, const CiphertextFragment &fragment);
 
-    void decode(std::istream &is, CiphertextFragment &fragment);
+    bool decode(std::istream &is, CiphertextFragment &fragment);
 
 };
 
