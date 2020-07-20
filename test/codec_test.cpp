@@ -18,7 +18,7 @@ protected:
     void SetUp() override
     {
         RandomBytes random;
-        data = std::shared_ptr<byte[]>(new byte[1024], std::default_delete<byte[]>());
+        data = std::shared_ptr<byte>(new byte[1024], std::default_delete<byte[]>());
         random.generateRandomBytes(data.get(), 1024);
 
         test_filename = "codec_test_file.bin";
@@ -45,9 +45,16 @@ protected:
 
         int_uniform_dist = std::uniform_int_distribution<int>(0, 4096);
         fragment.len = int_uniform_dist(random_engine);
-        fragment.bytes = std::shared_ptr<byte[]>(new byte[fragment.len], std::default_delete<byte[]>());
+        fragment.bytes = std::shared_ptr<byte>(new byte[fragment.len], std::default_delete<byte[]>());
         RandomBytes random_bytes;
         random_bytes.generateRandomBytes(fragment.bytes.get(), fragment.len);
+
+        char cstr[128];
+        random_bytes.generateRandomBytes(reinterpret_cast<unsigned char *>(cstr), 128);
+        for (int i = 0; i < sizeof(cstr); i++)
+        {
+            fragment.next_fragment_path.push_back(cstr[i]);
+        }
 
         return fragment;
     }
@@ -55,7 +62,7 @@ protected:
 protected:
 
     CiphertextCodec codec;
-    std::shared_ptr<byte[]> data;
+    std::shared_ptr<byte> data;
     std::string test_filename;
 
     std::default_random_engine random_engine;
@@ -71,6 +78,10 @@ TEST_F(CodecFixture, EncodeDecodeMultipleTest)
     for (int i = 0; i < num_fragments; i++)
     {
         fragments[i] = generateRandomFragment();
+        if (i == num_fragments - 1)
+        {
+            fragments[i].next_fragment_path = "";
+        }
     }
 
     std::ofstream ofs;
@@ -89,6 +100,9 @@ TEST_F(CodecFixture, EncodeDecodeMultipleTest)
     {
         codec.decode(ifs,  decoded[i]);
     }
+
+    EXPECT_FALSE(codec.decode(ifs, decoded[num_fragments - 1]));
+
     ofs.close();
 
     for (int i = 0; i < num_fragments; i++)
@@ -98,8 +112,9 @@ TEST_F(CodecFixture, EncodeDecodeMultipleTest)
         EXPECT_EQ(fragments[i].len, decoded[i].len);
         for (int j = 0; j < fragments[j].len; j++)
         {
-            EXPECT_EQ(fragments[i].bytes[j], decoded[i].bytes[j]);
+            EXPECT_EQ(fragments[i].bytes.get()[j], decoded[i].bytes.get()[j]);
         }
+        EXPECT_EQ(fragments[i].next_fragment_path, decoded[i].next_fragment_path);
     }
 }
 
@@ -127,6 +142,7 @@ TEST_F(CodecFixture, EncodeDecodeTest)
     EXPECT_EQ(fragment.len, decoded.len);
     for (int i = 0; i < fragment.len; i++)
     {
-        EXPECT_EQ(fragment.bytes[i], decoded.bytes[i]);
+        EXPECT_EQ(fragment.bytes.get()[i], decoded.bytes.get()[i]);
     }
+    EXPECT_EQ(fragment.next_fragment_path, decoded.next_fragment_path);
 }

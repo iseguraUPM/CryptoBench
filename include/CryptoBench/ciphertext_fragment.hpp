@@ -17,8 +17,9 @@ typedef struct
 {
     std::string lib;
     Cipher cipher;
-    std::shared_ptr<byte[]> bytes;
+    std::shared_ptr<byte> bytes;
     byte_len len;
+    std::string next_fragment_path;
 } CiphertextFragment;
 
 #endif //CRYPTOBENCH_CIPHERTEXT_FRAGMENT_HPP
