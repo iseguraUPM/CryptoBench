@@ -12,6 +12,8 @@ class CipherDatabase
 {
 public:
 
+    CipherDatabase() = default;
+
     static CipherDatabase getInstance(const std::string &cipher_seed_filename);
 
     void updateCipherTime(int cipher_idx, int block_idx, int64_t new_time_ns);
@@ -27,8 +29,6 @@ public:
     void commit_changes();
 
 private:
-
-    CipherDatabase() = default;
 
     void loadCipherSeed();
 
