@@ -16,12 +16,29 @@
 #include "cipher/botan_cipher_factory.hpp"
 #include "cipher/wolfcrypt_cipher_factory.hpp"
 
+struct PerfListener
+{
+    std::vector<std::string> cipher_list;
+    unsigned long decision_time_nano{};
+    unsigned long enc_processing_time_nano{};
+    unsigned long enc_io_time_nano{};
+    unsigned long dec_processing_time_nano{};
+    unsigned long dec_io_time_nano{};
+    std::mutex io_lock;
+};
+
+struct Chrono;
+struct OutputFile;
+enum class Strategy;
+
 using byte_ptr = std::shared_ptr<byte>;
 
 class Hencrypt
 {
 public:
     explicit Hencrypt(Engine &engine, KeyManager &key_manager, CiphertextCodec &codec);
+
+    void setPerformanceListener(PerfListener *listener);
 
     std::string encryptMinTime(int sec_level, double eval_time, const std::string &plaintext_filename);
     std::string encryptMaxSec(int64_t max_time, double eval_time, const std::string &plaintext_filename);
@@ -30,9 +47,17 @@ public:
 
 private:
 
-    void writeFragment(CiphertextFragment &fragment, const std::string &path);
+    std::string encrypt(Strategy strategy, double max_time_available, int sec_level, double eval_time, const std::string &plaintext_filename);
 
-    bool readFragment(CiphertextFragment &fragment, const std::string &path);
+    void writeFragment(CiphertextFragment fragment, std::string path, const OutputFile &outputFile);
+
+    bool readFragment(CiphertextFragment &fragment, const std::string &path, byte_len &position);
+
+    const CipherFactory & toFactory(const std::string &lib_name);
+
+    void recordProcessingMeasurement(Chrono &chrono, bool is_encrypt);
+    void recordIOMeasurement(Chrono &chrono, bool is_encrypt);
+    void recordDecisionMeasurement(Chrono &chrono);
 
 private:
 
@@ -47,8 +72,7 @@ private:
     BotanCipherFactory botan_cipher_factory;
     WolfCryptCipherFactory wolf_crypt_cipher_factory;
 
-    const CipherFactory & toFactory(const std::string &lib_name);
-
+    PerfListener *listener;
 };
 
 

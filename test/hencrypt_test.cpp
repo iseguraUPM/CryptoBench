@@ -93,6 +93,9 @@ static void compareFiles(std::string filename_a, std::string filename_b)
 
         read_bytes += read;
     }
+
+    file_a.close();
+    file_b.close();
 }
 
 TEST_F(HencryptFixture, EncryptTest)
@@ -100,7 +103,7 @@ TEST_F(HencryptFixture, EncryptTest)
     Engine engine(system_info, cipher_database);
     Hencrypt hencrypt(engine, key_manager, codec);
 
-    std::string ciphertext_filename = hencrypt.encryptMinTime(2, 2.5, test_plaintext_filename);
+    std::string ciphertext_filename = hencrypt.encryptMinTime(2, 7, test_plaintext_filename);
     EXPECT_FALSE(ciphertext_filename.empty());
 }
 
@@ -109,7 +112,8 @@ TEST_F(HencryptFixture, EncryptDecryptTest)
     Engine engine(system_info, cipher_database);
     Hencrypt hencrypt(engine, key_manager, codec);
 
-    std::string ciphertext_filename = hencrypt.encryptMinTime(2, 2.5, test_plaintext_filename);
+    std::string ciphertext_filename = hencrypt.encryptMinTime(2, 7, test_plaintext_filename);
+    ASSERT_FALSE(ciphertext_filename.empty());
 
     std::string decrypted_filename = "dec_" + test_plaintext_filename;
     hencrypt.decrypt(ciphertext_filename, decrypted_filename);
