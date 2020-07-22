@@ -84,6 +84,7 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
                 << result.encrypt_time_nano << ","
                 << result.decrypt_time_nano << ","
                 << result.encrypt_io_time_nano << ","
+                // TODO: join cipher list
                 << result.decrypt_io_time_nano << "\n";
 
     file_stream << result_line.str();
@@ -121,6 +122,7 @@ void runEngineBenchmark(Hencrypt &hencrypt, int sec_level, double &eval_time, st
     result.encrypt_io_time_nano = listener.enc_io_time_nano;
     result.decrypt_time_nano = listener.dec_processing_time_nano;
     result.decrypt_io_time_nano = listener.dec_io_time_nano;
+    result.cipher_list = listener.cipher_list;
 
     recordResult(result, output_set.perf_result);
 }
