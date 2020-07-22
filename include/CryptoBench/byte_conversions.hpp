@@ -51,10 +51,10 @@ static unsigned long byteToUlong(unsigned char* byte,  unsigned long long &posit
 
 static void stringToByte(const std::string &s, unsigned char* byte, unsigned long long &position)
 {
-    intToByte(s.size(), byte, position);
-    for (char c : s)
+    intToByte(s.length(), byte, position);
+    for (int i = 0; i < s.length(); i++)
     {
-        byte[position++] = c;
+        byte[position++] = s[i];
     }
 }
 
