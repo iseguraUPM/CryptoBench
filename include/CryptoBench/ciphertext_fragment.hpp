@@ -13,13 +13,13 @@
 using byte = unsigned char;
 using byte_len = unsigned long long;
 
-typedef struct
+struct CiphertextFragment
 {
     std::string lib;
     Cipher cipher;
     std::shared_ptr<byte> bytes;
     byte_len len;
     std::string next_fragment_path;
-} CiphertextFragment;
+};
 
 #endif //CRYPTOBENCH_CIPHERTEXT_FRAGMENT_HPP
