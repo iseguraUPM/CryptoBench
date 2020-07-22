@@ -17,7 +17,7 @@
 #include "system_info.hpp"
 #include "cipher_database.hpp"
 
-typedef struct
+struct EncryptTask
 {
     int64 begin_at_ns;
     int64 block_len;
@@ -25,8 +25,9 @@ typedef struct
     std::string alg_name;
     int key_len;
     std::string mode_name;
+    std::string device_name;
     std::string device_path;
-} EncryptTask;
+};
 
 struct OptimizeTask;
 

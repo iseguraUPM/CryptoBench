@@ -143,7 +143,7 @@ std::vector<EncryptTask> Engine::minimizeTime(double eval_time_sec, int64_t file
 std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t file_size, int64_t time_available_us)
 {
     using namespace operations_research;
-    time_available_us *= 1000; // to ns
+    int64_t time_available_ns = time_available_us * 1000; // to ns
 
     // TODO: performance of INF horizon
     int64_t horizon = INT64_MAX - 1;
@@ -218,7 +218,7 @@ std::vector<EncryptTask> Engine::maximizeSecurity(double eval_time_sec, int64_t 
 
     sat::IntVar makespan = cp_model.NewIntVar(domain);
     cp_model.AddMaxEquality(makespan, all_io_ends);
-    cp_model.AddLessOrEqual(makespan, time_available_us);
+    cp_model.AddLessOrEqual(makespan, time_available_ns);
 
     /// Objective
     cp_model.Minimize(block_sum);
@@ -276,6 +276,7 @@ void Engine::saveResult(const operations_research::sat::CpSolverResponse &respon
                         , int proc_id, int device_id, const OptimizeTask &task) const
 {
     auto &cipher_names = cipher_database.getCipherNames();
+    auto &device_names = sys_info.getDeviceNames();
     auto &device_paths = sys_info.getDeviceStorePath();
 
     // start_p, bytes, encryption, device
@@ -297,6 +298,7 @@ void Engine::saveResult(const operations_research::sat::CpSolverResponse &respon
     std::string mode_name;
     std::getline(ss, mode_name, '-');
 
+    std::string device_name = device_names[device_id];
     std::string device_path = device_paths[device_id];
-    result.push_back({begin, block_len, lib_name, alg_name, key_len, mode_name, device_path});
+    result.push_back({begin, block_len, lib_name, alg_name, key_len, mode_name, device_name, device_path});
 }
