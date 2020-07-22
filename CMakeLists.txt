@@ -22,6 +22,8 @@ add_subdirectory(test)
 
 add_subdirectory(BenchmarkRunner)
 
+add_subdirectory(EngineBenchmarkRunner)
+
 add_subdirectory(src)
 
 
