@@ -148,7 +148,8 @@ std::string Hencrypt::encrypt(Strategy strategy, double max_time_available, int 
             ciphertext_filename = fragment_filename;
         }
         position += block_len;
-        listener->fragments_info += std::to_string(block_len) + "-" + task.lib_name + "-" + task.alg_name + "-" + std::to_string(task.key_len) + "-" + task.mode_name + ":";
+        if (listener != nullptr)
+            listener->fragments_info += std::to_string(block_len) + "-" + task.lib_name + "-" + task.alg_name + "-" + std::to_string(task.key_len) + "-" + task.mode_name + ":";
     }
 
     for (auto &worker : io_threads)
