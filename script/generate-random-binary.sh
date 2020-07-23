@@ -49,7 +49,8 @@ fi
 count=0
 size=$(($1))
 while [ $((size)) -le $(($2)) ]; do
-  dd if=/dev/urandom of="${3}${size}_${4}" bs=$size count=1 > /dev/null 2>&1
+  #dd if=/dev/urandom of="${3}${size}_${4}" bs=$size count=1 > /dev/null 2>&1
+  head -c $size </dev/urandom > "${3}${size}_${4}"
   size=$((size*2))
   count=$((count+1))
 done
