@@ -1,17 +1,24 @@
 import pandas as pd
 import numpy as np
+import sys
 
 from pre_generator import add_sec_level
 
-df = pd.read_csv('benchmark_x86_64.csv')
-modes_df = pd.read_csv('block_cipher_modes_w.csv')
-rounds_df = pd.read_csv('block_cipher_rounds.csv')
+if len(sys.argv) != 5:
+    print("Invalid usage.")
+    print("Usage: python " + sys.argv[0] + " <benchmark file> <cipher mode weights> <cipher rounds> <output file>")
+    exit()
+
+df = pd.read_csv(sys.argv[1])
+modes_df = pd.read_csv(sys.argv[2])
+rounds_df = pd.read_csv(sys.argv[3])
+output_file = sys.argv[4]
 
 # Add security level
 df = add_sec_level(df, modes_df, rounds_df, 5)
 
 # Select file sizes to reduce search space
-df['LOG'] = np.log(df['FILE_BYTES']) / np.log(2)
+df['LOG'] = np.log(df['FILE_BYTES']) / np.log(4)
 df = df[df['LOG'] == df['LOG'].astype(int)]
 
 # Compute pace
@@ -25,13 +32,13 @@ df = df.groupby(cols, as_index=False).mean()
 df['RANK'] = df.sort_values(by='PACE').groupby(['SEC_LEVEL', 'FILE_BYTES'])['PACE'].rank(method='min', ascending=False, pct=True)
 
 # Filter 10% best in pace per file size
-df = df[df['RANK'] >= 0.75].reset_index()
+df = df[df['RANK'] >= 0.90].reset_index()
 
 # Recover new list of ciphers
 cols = ['LIB', 'ALG', 'KEY_LEN', 'BLOCK_MODE', 'SEC_LEVEL']
 ciphers = df.groupby(cols).size().reset_index()
 
-with open('query.txt', 'w') as f:
+with open(output_file, 'w') as f:
     # Print list of file sizes in order
     blocks = df['FILE_BYTES'].sort_values(ascending=False).unique()
     f.write(" ".join(list(map(str, blocks))))
