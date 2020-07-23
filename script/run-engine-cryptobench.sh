@@ -30,9 +30,8 @@ cipher_seed=$5
 minsize=$6
 maxsize=$7
 repeat=1
-enc_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S)_enc.csv"
-final_result_file="benchmark_$(date +%Y-%m-%d-%H-%M-%S).csv"
-error_file="err_benchmark_$(date +%Y-%m-%d-%H-%M-%S).log"
+enc_result_file="engine_benchmark_$(date +%Y-%m-%d-%H-%M-%S)_enc.csv"
+error_file="err_engine_benchmark_$(date +%Y-%m-%d-%H-%M-%S).log"
 
 plaintextdir="${prefix}plaintext/"
 if ! [ -d $plaintextdir ]; then
@@ -50,12 +49,10 @@ echo "Running benchmark..."
 for i in $(seq 1 $repeat); do
   echo "Iteration: $i"
   now=$(currentMillis)
-  while IFS="" read -r cipher; do
-    for plaintext in "$plaintextdir"*bytes.bin; do
-      "$program" "$plaintext" "$key_file" "$system_profile" "$cipher_seed" "$enc_result_file" "$error_file"
-      dropCaches
-    done
-  done < algorithm-list.txt
+  for plaintext in "$plaintextdir"*bytes.bin; do
+    "$program" "$plaintext" "$key_file" "$system_profile" "$cipher_seed" "$enc_result_file" "$error_file"
+    dropCaches
+  done
   then=$(currentMillis)
   echo "Finished iteration $i .. Elapsed: $(($then-$now)) ms"
   
