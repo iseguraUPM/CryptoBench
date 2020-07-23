@@ -25,6 +25,7 @@ struct PerfListener
     unsigned long dec_processing_time_nano{};
     unsigned long dec_io_time_nano{};
     std::mutex io_lock;
+    std::string fragments_info;
 };
 
 struct Chrono;

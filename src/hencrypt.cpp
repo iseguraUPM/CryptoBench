@@ -64,7 +64,6 @@ void Hencrypt::recordDecisionMeasurement(Chrono &chrono)
 
 std::string Hencrypt::encrypt(Strategy strategy, double max_time_available, int sec_level, double eval_time, const std::string &plaintext_filename)
 {
-    std::string DELETE_ENG_BENCHMARK = "";
     std::ifstream plaintext_file;
     plaintext_file.open(plaintext_filename, std::ios::binary);
 
@@ -149,7 +148,7 @@ std::string Hencrypt::encrypt(Strategy strategy, double max_time_available, int 
             ciphertext_filename = fragment_filename;
         }
         position += block_len;
-        DELETE_ENG_BENCHMARK += std::to_string(block_len) + "-" + task.lib_name + "-" + task.alg_name + "-" + std::to_string(task.key_len) + "-" + task.mode_name + ":";
+        listener->fragments_info += std::to_string(block_len) + "-" + task.lib_name + "-" + task.alg_name + "-" + std::to_string(task.key_len) + "-" + task.mode_name + ":";
     }
 
     for (auto &worker : io_threads)
@@ -162,7 +161,7 @@ std::string Hencrypt::encrypt(Strategy strategy, double max_time_available, int 
 
     plaintext_file.sync();
     plaintext_file.close();
-    return DELETE_ENG_BENCHMARK;
+    return ciphertext_filename;
 }
 
 std::string Hencrypt::encryptMinTime(int sec_level, double eval_time, const std::string &plaintext_filename)
