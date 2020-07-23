@@ -78,7 +78,7 @@ for i in $(seq 1 $repeat); do
       dropCaches
       rm "${prefix}output.enc"
     done
-  done < algorithm-list.txt
+  done < algorithm-list-noauth-noecb.txt
   then=$(currentMillis)
   echo "Finished iteration $i .. Elapsed: $(($then-$now)) ms"
   
