@@ -9,7 +9,7 @@
 
 #include <CryptoBench/hencrypt.hpp>
 
-#define MAX_ENGINE_TIME_SEC 8
+#define MAX_ENGINE_TIME_SEC 10
 
 struct OutputSet
 {
@@ -109,7 +109,7 @@ void runEngineBenchmark(Hencrypt &hencrypt, int sec_level, double &eval_time, st
     if (listener.cipher_list.empty() && eval_time < MAX_ENGINE_TIME_SEC)
     {
         repeat = true;
-        eval_time += 1;
+        eval_time += 0.5;
         return;
     } else
     {
