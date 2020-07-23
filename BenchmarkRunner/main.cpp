@@ -424,7 +424,7 @@ int main(int argc, char **argv)
     }
 
     std::cerr << "Invalid arguments" << std::endl;
-    std::cout << "Usage: " << argv[0] << " <mode> <cipher> <input file> <results file> <error log file> <storage device>" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <mode> <cipher> <input file> <output file> <key file> <results file> <error log file> <storage device>" << std::endl;
     std::cout << "   mode: /E (encrypt) or /D (decrypt)" << std::endl;
     return 1;
 }
