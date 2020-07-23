@@ -1,8 +1,9 @@
 #!/bin/sh
 
-if [ "$(id -u)" != "0" ]; then
-  echo "This script must be run as root" >&2
-  exit 1
+clean_caches=0
+
+if [ "$(id -u)" == "0" ]; then
+  clean_caches=1
 fi
 
 currentMillis() {
@@ -11,11 +12,13 @@ currentMillis() {
 }
 
 dropCaches() {
-  sync; echo 3 > /proc/sys/vm/drop_caches
+  if [ "$clean_caches" -eq 1 ]; then
+    sync; echo 3 > /proc/sys/vm/drop_caches
+  fi
 }
 
 if [ "$#" -ne 6 ]; then
-  echo "Usage: $0 <benchmark program> <prefix> <storage device> <min test size> <max test size> <no iterations>" >&2
+  echo "Usage: $0 <benchmark program> <prefix> <storage device> <min test size> <max test size> <no. iterations>" >&2
   exit 1
 fi
 
@@ -31,6 +34,11 @@ fi
 
 if ! [ -f algorithm-list.txt ]; then
     echo "Missing algorithm list file: algorithm-list.txt" >&2
+    exit 1
+fi
+
+if ! [ -f key.bin ]; then
+    echo "Missing cryptographic key file: key.bin" >&2
     exit 1
 fi
 
