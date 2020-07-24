@@ -210,7 +210,7 @@ void recordResult(BenchmarkResult &result, std::ostream &file_stream)
                 << result.decrypt_io_time_nano << "\n";
 
     file_stream << result_line.str();
-#ifdef CRYPTOBENCH_DEBUG
+#ifdef HENCRYPT_DEBUG
     std::cout << result_line.str();
 #endif
 }

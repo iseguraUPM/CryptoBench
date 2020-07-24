@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 3/24/20.
 //
 
-#ifndef CRYPTOBENCH_CRYPTOPP_CIPHER_FACTORY_HPP
-#define CRYPTOBENCH_CRYPTOPP_CIPHER_FACTORY_HPP
+#ifndef HENCRYPT_CRYPTOPP_CIPHER_FACTORY_HPP
+#define HENCRYPT_CRYPTOPP_CIPHER_FACTORY_HPP
 
 #include "cipher_factory.hpp"
 #include "cipher_exception.hpp"
@@ -34,4 +34,4 @@ public:
     explicit inline CryptoppException(const std::basic_string<char> msg) : GenericCipherException("Cryptopp error: ", msg.c_str()) {}
 };
 
-#endif //CRYPTOBENCH_CRYPTOPP_CIPHER_FACTORY_HPP
+#endif //HENCRYPT_CRYPTOPP_CIPHER_FACTORY_HPP

@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 7/17/20.
 //
 
-#ifndef CRYPTOBENCH_HENCRYPT_HPP
-#define CRYPTOBENCH_HENCRYPT_HPP
+#ifndef HENCRYPT_HENCRYPT_HPP
+#define HENCRYPT_HENCRYPT_HPP
 
 #include "engine.hpp"
 #include "key_manager.hpp"
@@ -77,4 +77,4 @@ private:
 };
 
 
-#endif //CRYPTOBENCH_HENCRYPT_HPP
+#endif //HENCRYPT_HENCRYPT_HPP

@@ -2,8 +2,8 @@
 // Created by ISU on 19/07/2020.
 //
 
-#ifndef CRYPTOBENCH_SYSTEM_INFO_HPP
-#define CRYPTOBENCH_SYSTEM_INFO_HPP
+#ifndef HENCRYPT_SYSTEM_INFO_HPP
+#define HENCRYPT_SYSTEM_INFO_HPP
 
 #include <string>
 #include <vector>
@@ -30,4 +30,4 @@ private:
 
 };
 
-#endif //CRYPTOBENCH_SYSTEM_INFO_HPP
+#endif //HENCRYPT_SYSTEM_INFO_HPP

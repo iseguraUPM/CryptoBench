@@ -2,8 +2,8 @@
 // Created by ISU on 17/07/2020.
 //
 
-#ifndef CRYPTOBENCH_CIPHERTEXT_CODEC_HPP
-#define CRYPTOBENCH_CIPHERTEXT_CODEC_HPP
+#ifndef HENCRYPT_CIPHERTEXT_CODEC_HPP
+#define HENCRYPT_CIPHERTEXT_CODEC_HPP
 
 #include <string>
 #include <memory>
@@ -22,4 +22,4 @@ public:
 
 };
 
-#endif //CRYPTOBENCH_CIPHERTEXT_CODEC_HPP
+#endif //HENCRYPT_CIPHERTEXT_CODEC_HPP

@@ -2,8 +2,8 @@
 // Created by ISU on 09/02/2020.
 //
 
-#ifndef CRYPTOBENCH_OPEN_SSL_CIPHER_FACTORY_HPP
-#define CRYPTOBENCH_OPEN_SSL_CIPHER_FACTORY_HPP
+#ifndef HENCRYPT_OPEN_SSL_CIPHER_FACTORY_HPP
+#define HENCRYPT_OPEN_SSL_CIPHER_FACTORY_HPP
 
 #include "cipher_factory.hpp"
 #include "cipher_exception.hpp"
@@ -25,4 +25,4 @@ public:
     explicit inline OpenSSLException(const std::basic_string<char> msg) : GenericCipherException("OpenSSL error: ", msg.c_str()) {}
 };
 
-#endif //CRYPTOBENCH_OPEN_SSL_CIPHER_FACTORY_HPP
+#endif //HENCRYPT_OPEN_SSL_CIPHER_FACTORY_HPP

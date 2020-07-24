@@ -9,8 +9,8 @@
 #include <thread>
 #include <algorithm>
 
-#ifndef CRYPTOBENCH_NO_RANDOM
-static_assert(false, "CRYPTOBENCH_NO_RANDOM must be defined");
+#ifndef HENCRYPT_NO_RANDOM
+static_assert(false, "HENCRYPT_NO_RANDOM must be defined");
 #endif
 
 std::vector<CipherTestParam> openSSLParams();

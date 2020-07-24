@@ -2,8 +2,8 @@
 // Created by ISU on 18/07/2020.
 //
 
-#ifndef CRYPTOBENCH_CIPHERTEXT_FRAGMENT_HPP
-#define CRYPTOBENCH_CIPHERTEXT_FRAGMENT_HPP
+#ifndef HENCRYPT_CIPHERTEXT_FRAGMENT_HPP
+#define HENCRYPT_CIPHERTEXT_FRAGMENT_HPP
 
 #include <string>
 #include <memory>
@@ -22,4 +22,4 @@ struct CiphertextFragment
     std::string next_fragment_path;
 };
 
-#endif //CRYPTOBENCH_CIPHERTEXT_FRAGMENT_HPP
+#endif //HENCRYPT_CIPHERTEXT_FRAGMENT_HPP

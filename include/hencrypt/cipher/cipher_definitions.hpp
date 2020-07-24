@@ -2,8 +2,8 @@
 // Created by ISU on 16/07/2020.
 //
 
-#ifndef CRYPTOBENCH_CIPHER_DEFINITIONS_HPP
-#define CRYPTOBENCH_CIPHER_DEFINITIONS_HPP
+#ifndef HENCRYPT_CIPHER_DEFINITIONS_HPP
+#define HENCRYPT_CIPHER_DEFINITIONS_HPP
 
 #define STR_AES "AES"
 #define STR_ARIA "ARIA"
@@ -374,4 +374,4 @@ Cipher toCipher(std::string alg, int key_len, std::string block_mode);
 std::string cipherDescriptionToString(CipherDescription desc);
 
 
-#endif //CRYPTOBENCH_CIPHER_DEFINITIONS_HPP
+#endif //HENCRYPT_CIPHER_DEFINITIONS_HPP

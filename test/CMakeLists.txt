@@ -1,6 +1,6 @@
 project(cryptobench-test)
 
-add_definitions(-DCRYPTOBENCH_NO_RANDOM)
+add_definitions(-DHENCRYPT_NO_RANDOM)
 
 enable_testing()
 

@@ -2,8 +2,8 @@
 // Created by ISU on 19/07/2020.
 //
 
-#ifndef CRYPTOBENCH_CIPHER_DATABASE_HPP
-#define CRYPTOBENCH_CIPHER_DATABASE_HPP
+#ifndef HENCRYPT_CIPHER_DATABASE_HPP
+#define HENCRYPT_CIPHER_DATABASE_HPP
 
 #include <string>
 #include <vector>
@@ -45,4 +45,4 @@ private:
 
 };
 
-#endif //CRYPTOBENCH_CIPHER_DATABASE_HPP
+#endif //HENCRYPT_CIPHER_DATABASE_HPP

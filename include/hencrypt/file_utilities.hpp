@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 7/17/20.
 //
 
-#ifndef CRYPTOBENCH_FILE_UTILITIES_HPP
-#define CRYPTOBENCH_FILE_UTILITIES_HPP
+#ifndef HENCRYPT_FILE_UTILITIES_HPP
+#define HENCRYPT_FILE_UTILITIES_HPP
 
 #include <fstream>
 #include <set>
@@ -24,4 +24,4 @@ byte_len min(byte_len x, byte_len y);
 
 std::vector<std::string> splitPath(const std::string& str, const std::set<char> &delimiters);
 
-#endif //CRYPTOBENCH_FILE_UTILITIES_HPP
+#endif //HENCRYPT_FILE_UTILITIES_HPP

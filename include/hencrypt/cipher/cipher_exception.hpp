@@ -2,8 +2,8 @@
 // Created by ISU on 30/03/2020.
 //
 
-#ifndef CRYPTOBENCH_CIPHER_EXCEPTION_HPP
-#define CRYPTOBENCH_CIPHER_EXCEPTION_HPP
+#ifndef HENCRYPT_CIPHER_EXCEPTION_HPP
+#define HENCRYPT_CIPHER_EXCEPTION_HPP
 
 #include <exception>
 
@@ -33,4 +33,4 @@ public:
     explicit UnsupportedCipherException(const char * msg = "Unsupported Cipher");
 };
 
-#endif //CRYPTOBENCH_CIPHER_EXCEPTION_HPP
+#endif //HENCRYPT_CIPHER_EXCEPTION_HPP

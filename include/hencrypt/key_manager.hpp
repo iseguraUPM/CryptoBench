@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 7/17/20.
 //
 
-#ifndef CRYPTOBENCH_KEY_MANAGER_HPP
-#define CRYPTOBENCH_KEY_MANAGER_HPP
+#ifndef HENCRYPT_KEY_MANAGER_HPP
+#define HENCRYPT_KEY_MANAGER_HPP
 
 #include <fstream>
 
@@ -38,4 +38,4 @@ private:
 };
 
 
-#endif //CRYPTOBENCH_KEY_MANAGER_HPP
+#endif //HENCRYPT_KEY_MANAGER_HPP

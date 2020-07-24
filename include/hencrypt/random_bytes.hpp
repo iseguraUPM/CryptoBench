@@ -2,8 +2,8 @@
 // Created by ISU on 23/03/2020.
 //
 
-#ifndef CRYPTOBENCH_RANDOM_BYTES_HPP
-#define CRYPTOBENCH_RANDOM_BYTES_HPP
+#ifndef HENCRYPT_RANDOM_BYTES_HPP
+#define HENCRYPT_RANDOM_BYTES_HPP
 
 #include <random>
 #include <chrono>
@@ -14,7 +14,7 @@ public:
 
     explicit inline RandomBytes()
     {
-#ifndef CRYPTOBENCH_NO_RANDOM
+#ifndef HENCRYPT_NO_RANDOM
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         random_engine = std::default_random_engine(seed);
         byte_uniform_dist = std::uniform_int_distribution<unsigned char>(0, 0xFF);
@@ -23,7 +23,7 @@ public:
 
     inline void generateRandomBytes(unsigned char *arr, int len) noexcept(false)
     {
-#ifdef CRYPTOBENCH_NO_RANDOM
+#ifdef HENCRYPT_NO_RANDOM
         for (int i = 0; i < len; i++)
             arr[i] = i % 0xFF;
 #else
@@ -44,4 +44,4 @@ private:
 
 };
 
-#endif //CRYPTOBENCH_RANDOM_BYTES_HPP
+#endif //HENCRYPT_RANDOM_BYTES_HPP

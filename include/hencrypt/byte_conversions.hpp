@@ -2,8 +2,8 @@
 // Created by ISU on 18/07/2020.
 //
 
-#ifndef CRYPTOBENCH_BYTE_CONVERSIONS_HPP
-#define CRYPTOBENCH_BYTE_CONVERSIONS_HPP
+#ifndef HENCRYPT_BYTE_CONVERSIONS_HPP
+#define HENCRYPT_BYTE_CONVERSIONS_HPP
 
 #include <string>
 #include <cstring>
@@ -69,4 +69,4 @@ static std::string byteToString(unsigned char* byte, unsigned long long &positio
     return str;
 }
 
-#endif //CRYPTOBENCH_BYTE_CONVERSIONS_HPP
+#endif //HENCRYPT_BYTE_CONVERSIONS_HPP

@@ -2,8 +2,8 @@
 // Created by ISU on 08/06/2020.
 //
 
-#ifndef CRYPTOBENCH_BYTE_TOOLS_HPP
-#define CRYPTOBENCH_BYTE_TOOLS_HPP
+#ifndef HENCRYPT_BYTE_TOOLS_HPP
+#define HENCRYPT_BYTE_TOOLS_HPP
 
 #include <fstream>
 #include <random>
@@ -96,4 +96,4 @@ int readInputFile(std::ifstream &t, std::string &input_text)
     return len;
 }
 
-#endif //CRYPTOBENCH_BYTE_TOOLS_HPP
+#endif //HENCRYPT_BYTE_TOOLS_HPP

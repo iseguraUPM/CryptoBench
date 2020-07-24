@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 7/14/20.
 //
 
-#ifndef CRYPTOBENCH_ENGINE_HPP
-#define CRYPTOBENCH_ENGINE_HPP
+#ifndef HENCRYPT_ENGINE_HPP
+#define HENCRYPT_ENGINE_HPP
 
 #include <vector>
 #include <array>
@@ -53,4 +53,4 @@ private:
 };
 
 
-#endif //CRYPTOBENCH_ENGINE_HPP
+#endif //HENCRYPT_ENGINE_HPP
