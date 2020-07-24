@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-set(TARGET_NAME cryptobench)
+set(TARGET_NAME hencrypt)
 
 project(${TARGET_NAME})
 
