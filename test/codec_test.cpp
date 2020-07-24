@@ -6,8 +6,8 @@
 
 #include <fstream>
 
-#include <CryptoBench/ciphertext_codec.hpp>
-#include <CryptoBench/random_bytes.hpp>
+#include <hencrypt/ciphertext_codec.hpp>
+#include <hencrypt/random_bytes.hpp>
 
 
 

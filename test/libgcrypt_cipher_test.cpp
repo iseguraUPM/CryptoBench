@@ -6,7 +6,7 @@
 
 #include <gcrypt.h>
 
-#include <CryptoBench/random_bytes.hpp>
+#include <hencrypt/random_bytes.hpp>
 
 class LibgcryptFixture : public ::testing::Test
 {

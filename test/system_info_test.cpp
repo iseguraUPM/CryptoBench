@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include <CryptoBench/system_info.hpp>
+#include <hencrypt/system_info.hpp>
 
 class SystemInfoFixture : public ::testing::Test
 {

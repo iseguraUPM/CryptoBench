@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-#include <CryptoBench/hencrypt.hpp>
+#include <hencrypt/hencrypt.hpp>
 
 class HencryptFixture : public ::testing::Test
 {

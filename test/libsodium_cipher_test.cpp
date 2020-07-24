@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <sodium.h>
-#include <CryptoBench/random_bytes.hpp>
+#include <hencrypt/random_bytes.hpp>
 
 class LibsodiumFixture : public ::testing::Test
 {

@@ -7,7 +7,7 @@
 #include <random>
 #include <chrono>
 
-#include <CryptoBench/cipher_database.hpp>
+#include <hencrypt/cipher_database.hpp>
 
 class CipherDatabaseFixture : public ::testing::Test
 {

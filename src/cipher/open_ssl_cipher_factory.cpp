@@ -2,16 +2,16 @@
 // Created by ISU on 09/02/2020.
 //
 
-#include "CryptoBench/cipher/open_ssl_cipher_factory.hpp"
+#include "hencrypt/cipher/open_ssl_cipher_factory.hpp"
 
 #include <cstring>
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/camellia.h>
-#include <CryptoBench/cipher/cipher_exception.hpp>
 
-#include "CryptoBench/random_bytes.hpp"
+#include <hencrypt/cipher/cipher_exception.hpp>
+#include "hencrypt/random_bytes.hpp"
 
 #define CIPHER(key_len, block_len, iv_len, cipher) (CipherPtr(new OpenSSLCipher<key_len, block_len, iv_len>(cipher)))
 #define CIPHER_AUTH(key_len, block_len, iv_len, tag_len, cipher) (CipherPtr(new OpenSSLAuthCipher<key_len, block_len, iv_len, tag_len>(cipher)))

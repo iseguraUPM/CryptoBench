@@ -3,16 +3,16 @@
 //
 #include <gtest/gtest.h>
 
-#include <CryptoBench/engine.hpp>
-#include <CryptoBench/cipher/open_ssl_cipher_factory.hpp>
-#include <CryptoBench/cipher/libsodium_cipher_factory.hpp>
-#include <CryptoBench/cipher/cryptopp_cipher_factory.hpp>
-#include <CryptoBench/cipher/cipher_exception.hpp>
-#include <CryptoBench/cipher/libgcrypt_cipher_factory.hpp>
-#include <CryptoBench/cipher/botan_cipher_factory.hpp>
-#include <CryptoBench/cipher/wolfcrypt_cipher_factory.hpp>
-#include <CryptoBench/file_utilities.hpp>
-#include <CryptoBench/key_manager.hpp>
+#include <hencrypt/engine.hpp>
+#include <hencrypt/cipher/open_ssl_cipher_factory.hpp>
+#include <hencrypt/cipher/libsodium_cipher_factory.hpp>
+#include <hencrypt/cipher/cryptopp_cipher_factory.hpp>
+#include <hencrypt/cipher/cipher_exception.hpp>
+#include <hencrypt/cipher/libgcrypt_cipher_factory.hpp>
+#include <hencrypt/cipher/botan_cipher_factory.hpp>
+#include <hencrypt/cipher/wolfcrypt_cipher_factory.hpp>
+#include <hencrypt/file_utilities.hpp>
+#include <hencrypt/key_manager.hpp>
 
 using byte_ptr = std::shared_ptr<byte>;
 

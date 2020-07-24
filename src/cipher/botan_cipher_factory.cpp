@@ -1,11 +1,11 @@
 //
 // Created by Juan Pablo Melgarejo on 3/30/20.
 //
-#include "CryptoBench/cipher/botan_cipher_factory.hpp"
+#include "hencrypt/cipher/botan_cipher_factory.hpp"
 
 #include <botan/cipher_mode.h>
 
-#include "CryptoBench/random_bytes.hpp"
+#include "hencrypt/random_bytes.hpp"
 
 #define KEY_128 16
 #define KEY_192 24

@@ -2,15 +2,15 @@
 // Created by ISU on 08/03/2020.
 //
 
-#include "CryptoBench/cipher/wolfcrypt_cipher_factory.hpp"
+#include "hencrypt/cipher/wolfcrypt_cipher_factory.hpp"
 
 #include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/aes.h>
 #include <wolfssl/wolfcrypt/camellia.h>
 #include <wolfssl/wolfcrypt/des3.h>
 
-#include <CryptoBench/random_bytes.hpp>
-#include <CryptoBench/cipher/cipher_exception.hpp>
+#include <hencrypt/random_bytes.hpp>
+#include <hencrypt/cipher/cipher_exception.hpp>
 
 
 #define KEY_512 64

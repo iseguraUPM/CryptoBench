@@ -16,7 +16,7 @@
 #include <cryptopp/aria.h>
 
 
-#include "CryptoBench/random_bytes.hpp"
+#include "hencrypt/random_bytes.hpp"
 
 class CryptoppCipherFactory : public CipherFactory
 {

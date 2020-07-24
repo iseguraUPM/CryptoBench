@@ -8,7 +8,7 @@
 #include <array>
 #include <iostream>
 
-#include <CryptoBench/engine.hpp>
+#include <hencrypt/engine.hpp>
 
 class EngineFixture : public ::testing::Test
 {

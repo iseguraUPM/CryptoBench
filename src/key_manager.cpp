@@ -3,7 +3,7 @@
 //
 
 
-#include "CryptoBench/key_manager.hpp"
+#include "hencrypt/key_manager.hpp"
 
 
 KeyManager::KeyManager(std::string key_filename)

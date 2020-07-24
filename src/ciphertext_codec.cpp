@@ -2,12 +2,12 @@
 // Created by ISU on 18/07/2020.
 //
 
-#include <CryptoBench/ciphertext_codec.hpp>
+#include <hencrypt/ciphertext_codec.hpp>
 
 #include <ostream>
 #include <istream>
 
-#include "CryptoBench/byte_conversions.hpp"
+#include "hencrypt/byte_conversions.hpp"
 
 using ull = unsigned long long;
 

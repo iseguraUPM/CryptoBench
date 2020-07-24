@@ -2,7 +2,7 @@
 // Created by ISU on 19/07/2020.
 //
 
-#include <CryptoBench/system_info.hpp>
+#include "hencrypt/system_info.hpp"
 
 #include <fstream>
 #include <sstream>

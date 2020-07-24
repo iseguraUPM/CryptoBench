@@ -2,8 +2,8 @@
 // Created by Juan Pablo Melgarejo on 3/24/20.
 //
 
-#include "CryptoBench/cipher/cryptopp_cipher_factory.hpp"
-#include "CryptoBench/cipher/symmetric_cipher.hpp"
+#include "hencrypt/cipher/cryptopp_cipher_factory.hpp"
+#include "hencrypt/cipher/symmetric_cipher.hpp"
 
 #include <cryptopp/modes.h>
 #include <cryptopp/hex.h>
@@ -17,12 +17,11 @@
 #include <cryptopp/gcm.h>
 #include <cryptopp/seed.h>
 #include <cryptopp/authenc.h>
-
 #include <cryptopp/blowfish.h>
-#include <CryptoBench/cipher/cipher_exception.hpp>
-#include <CryptoBench/cipher/botan_cipher_factory.hpp>
 
-#include "CryptoBench/random_bytes.hpp"
+#include "hencrypt/cipher/cipher_exception.hpp"
+#include "hencrypt/cipher/botan_cipher_factory.hpp"
+#include "hencrypt/random_bytes.hpp"
 
 #define CRYPTOPP_CIPHER(key_len, block_len, iv_len, cipher) (CipherPtr(new CryptoppCipher<key_len, block_len, iv_len, cipher>()))
 #define CRYPTOPP_CIPHER_AUTH(key_len, block_len, iv_len, tag_len, cipher) (CipherPtr(new CryptoppCipherAuth<key_len, block_len, iv_len, tag_len, cipher>()))

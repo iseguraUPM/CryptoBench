@@ -9,11 +9,11 @@
 
 #include <chrono>
 
-#include <CryptoBench/cipher/open_ssl_cipher_factory.hpp>
-#include <CryptoBench/cipher/libsodium_cipher_factory.hpp>
-#include <CryptoBench/cipher/cryptopp_cipher_factory.hpp>
-#include <CryptoBench/cipher/libgcrypt_cipher_factory.hpp>
-#include <CryptoBench/cipher/botan_cipher_factory.hpp>
+#include <hencrypt/cipher/open_ssl_cipher_factory.hpp>
+#include <hencrypt/cipher/libsodium_cipher_factory.hpp>
+#include <hencrypt/cipher/cryptopp_cipher_factory.hpp>
+#include <hencrypt/cipher/libgcrypt_cipher_factory.hpp>
+#include <hencrypt/cipher/botan_cipher_factory.hpp>
 
 std::vector<CipherTestParam> openSSLParams();
 std::vector<CipherTestParam> libsodiumParams();

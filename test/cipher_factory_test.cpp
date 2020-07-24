@@ -8,7 +8,7 @@
 
 #include <chrono>
 
-#include <CryptoBench/cipher/wolfcrypt_cipher_factory.hpp>
+#include <hencrypt/cipher/wolfcrypt_cipher_factory.hpp>
 
 std::vector<CipherTestParam> openSSLParams();
 std::vector<CipherTestParam> libsodiumParams();

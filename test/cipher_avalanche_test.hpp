@@ -7,12 +7,12 @@
 
 #include <gtest/gtest.h>
 
-#include <CryptoBench/cipher/cipher_factory.hpp>
+#include <hencrypt/cipher/cipher_factory.hpp>
 
 #include <chrono>
 #include <cstring>
 
-#include <CryptoBench/random_bytes.hpp>
+#include <hencrypt/random_bytes.hpp>
 
 class CipherAvalancheFixture : public testing::TestWithParam<CipherTestParam>
 {

@@ -6,7 +6,8 @@
 #define CRYPTOBENCH_KEY_MANAGER_HPP
 
 #include <fstream>
-#include <CryptoBench/file_utilities.hpp>
+
+#include "file_utilities.hpp"
 
 struct KeyChain
 {

@@ -2,7 +2,7 @@
 // Created by ISU on 19/07/2020.
 //
 
-#include <CryptoBench/cipher_database.hpp>
+#include <hencrypt/cipher_database.hpp>
 
 #include <fstream>
 #include <sstream>

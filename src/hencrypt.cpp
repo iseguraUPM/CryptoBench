@@ -2,13 +2,13 @@
 // Created by Juan Pablo Melgarejo on 7/17/20.
 //
 
-#include "CryptoBench/hencrypt.hpp"
+#include "hencrypt/hencrypt.hpp"
 
 #include <chrono>
 #include <thread>
 
-#include "CryptoBench/byte_conversions.hpp"
-#include "CryptoBench/file_utilities.hpp"
+#include "hencrypt/byte_conversions.hpp"
+#include "hencrypt/file_utilities.hpp"
 
 struct Chrono
 {

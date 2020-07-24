@@ -2,7 +2,7 @@
 // Created by Juan Pablo Melgarejo on 7/17/20.
 //
 
-#include "CryptoBench/file_utilities.hpp"
+#include "hencrypt/file_utilities.hpp"
 
 #include <vector>
 

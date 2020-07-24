@@ -2,7 +2,7 @@
 // Created by Juan Pablo Melgarejo on 7/14/20.
 //
 
-#include "CryptoBench/engine.hpp"
+#include "hencrypt/engine.hpp"
 
 struct OptimizeTask
 {

@@ -2,15 +2,15 @@
 // Created by ISU on 23/03/2020.
 //
 
-#include "CryptoBench/cipher/libsodium_cipher_factory.hpp"
+#include "hencrypt/cipher/libsodium_cipher_factory.hpp"
 
 #include <cstring>
 
-#include "CryptoBench/cipher/symmetric_cipher.hpp"
+#include "hencrypt/cipher/symmetric_cipher.hpp"
 
 #include <sodium.h>
 
-#include "CryptoBench/random_bytes.hpp"
+#include "hencrypt/random_bytes.hpp"
 
 class AesGCMCipher : public SymmetricCipher
 {

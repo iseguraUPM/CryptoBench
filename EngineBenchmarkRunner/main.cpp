@@ -7,7 +7,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <CryptoBench/hencrypt.hpp>
+#include <hencrypt/hencrypt.hpp>
 
 #define MAX_ENGINE_TIME_SEC 10
 
