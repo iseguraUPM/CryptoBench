@@ -18,7 +18,7 @@ public:
 
     /**
      *
-     * @return device pace (seconds per Byte) performance data following getDeviceNames() order
+     * @return device pace (nanosec. per Byte) performance data following getDeviceNames() order
      */
     const std::vector<int>& getDevicePaces() const;
 
