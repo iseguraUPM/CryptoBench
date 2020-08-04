@@ -23,6 +23,11 @@ class CryptoppCipherFactory : public CipherFactory
 
 public:
 
+    /**
+     *
+     * @param cipher descriptor
+     * @return a pointer to the symmetric cipher implementation
+     */
     CipherPtr getCipher(Cipher cipher) const override;
 
 };

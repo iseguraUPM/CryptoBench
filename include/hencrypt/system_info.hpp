@@ -16,10 +16,22 @@ public:
 
     static SystemInfo getInstance(const std::string &system_profile_filename);
 
+    /**
+     *
+     * @return device pace (seconds per Byte) performance data following getDeviceNames() order
+     */
     const std::vector<int>& getDevicePaces() const;
 
+    /**
+     *
+     * @return device names in order
+     */
     const std::vector<std::string>& getDeviceNames() const;
 
+    /**
+     *
+     * @return fragment store paths in order
+     */
     const std::vector<std::string>& getDeviceStorePath() const;
 
 private:

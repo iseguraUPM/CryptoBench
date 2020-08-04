@@ -8,6 +8,12 @@
 #include <string>
 #include <cstring>
 
+/**
+ *
+ * @param n
+ * @param byte array
+ * @param position to write in the byte array. Increases as it writes.
+ */
 static void intToByte(int n, unsigned char * byte, unsigned long long &position)
 {
     for (int i = 0; i < sizeof(int); i++)
@@ -16,6 +22,12 @@ static void intToByte(int n, unsigned char * byte, unsigned long long &position)
     }
 }
 
+/**
+ *
+ * @param byte array
+ * @param position to read from the byte array. Increases as it reads.
+ * @return the integer number
+ */
 static int byteToInt(unsigned char* byte, unsigned long long &position)
 {
     int n = 0;
@@ -29,6 +41,12 @@ static int byteToInt(unsigned char* byte, unsigned long long &position)
     return n;
 }
 
+/**
+ *
+ * @param n
+ * @param byte array
+ * @param position to write in the byte array. Increases as it writes.
+ */
 static void ulongToByte(unsigned long n, unsigned char* byte, unsigned long long &position)
 {
     for (int i = 0; i < sizeof(unsigned long); i++)
@@ -37,6 +55,12 @@ static void ulongToByte(unsigned long n, unsigned char* byte, unsigned long long
     }
 }
 
+/**
+ *
+ * @param byte
+ * @param position to read from the byte array. Increases as it reads.
+ * @return the unsigned long integer number
+ */
 static unsigned long byteToUlong(unsigned char* byte,  unsigned long long &position)
 {
     long n = 0;
@@ -49,6 +73,12 @@ static unsigned long byteToUlong(unsigned char* byte,  unsigned long long &posit
     return n;
 }
 
+/**
+ * Encode a string to a byte array. Includes length data.
+ * @param s
+ * @param byte array
+ * @param position to read from the byte array. Increases as it reads.
+ */
 static void stringToByte(const std::string &s, unsigned char* byte, unsigned long long &position)
 {
     intToByte(s.length(), byte, position);
@@ -58,6 +88,12 @@ static void stringToByte(const std::string &s, unsigned char* byte, unsigned lon
     }
 }
 
+/**
+ *
+ * @param byte
+ * @param position to read from the byte array. Increases as it reads.
+ * @return the string
+ */
 static std::string byteToString(unsigned char* byte, unsigned long long &position)
 {
     int len = byteToInt(byte, position);

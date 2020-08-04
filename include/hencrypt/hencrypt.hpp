@@ -39,11 +39,35 @@ class Hencrypt
 public:
     explicit Hencrypt(Engine &engine, KeyManager &key_manager, CiphertextCodec &codec);
 
+    /**
+     * Set listener allowing to record HEncrypt performance data.
+     * @param listener
+     */
     void setPerformanceListener(PerfListener *listener);
 
+    /**
+     * Encrypt and store a plaintext following the Min-Time strategy (see engine class).
+     * @param sec_level (1 to 5)
+     * @param eval_time in seconds
+     * @param plaintext_filename
+     * @return the first encrypted fragment absolute filename
+     */
     std::string encryptMinTime(int sec_level, double eval_time, const std::string &plaintext_filename);
-    std::string encryptMaxSec(int64_t max_time, double eval_time, const std::string &plaintext_filename);
 
+    /**
+     * Encrypt and store a plaintext following the Max-Sec strategy (see engine class).
+     * @param max_time in seconds
+     * @param eval_time in seconds
+     * @param plaintext_filename
+     * @return the first encrypted fragment absolute filename
+     */
+    std::string encryptMaxSec(double max_time, double eval_time, const std::string &plaintext_filename);
+
+    /**
+     *
+     * @param ciphertext_filename first encrypted fragment filename
+     * @param plaintext_filename destination filename
+     */
     void decrypt(const std::string &ciphertext_filename, const std::string &plaintext_filename);
 
 private:

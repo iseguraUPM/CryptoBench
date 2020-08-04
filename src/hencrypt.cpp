@@ -170,7 +170,7 @@ std::string Hencrypt::encryptMinTime(int sec_level, double eval_time, const std:
     return encrypt(Strategy::min_time, -1, sec_level, eval_time, plaintext_filename);
 }
 
-std::string Hencrypt::encryptMaxSec(int64_t max_time, double eval_time, const std::string &plaintext_filename)
+std::string Hencrypt::encryptMaxSec(double max_time, double eval_time, const std::string &plaintext_filename)
 {
     return encrypt(Strategy::max_sec, max_time, -1, eval_time, plaintext_filename);
 }

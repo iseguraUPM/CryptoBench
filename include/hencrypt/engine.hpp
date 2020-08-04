@@ -37,7 +37,24 @@ public:
 
     explicit Engine(const SystemInfo &sys_info, CipherDatabase &cipher_database);
 
+    /**
+     * Compute the encryption tasks necessary to minimize the encryption time of a file in keeping within the desired encryption
+     * level.
+     * @param eval_time_sec time to compute the algorithm in seconds
+     * @param file_size input file size
+     * @param sec_level desired security level
+     * @return the encryption tasks in order of execution
+     */
     std::vector<EncryptTask> minimizeTime(double eval_time_sec, int64_t file_size, int sec_level);
+
+    /**
+     * Compute the encryption tasks necessary to maximize the security level of an encryption in keeping within the desired
+     * available time.
+     * @param eval_time_sec time to compute the algorithm
+     * @param file_size input file size
+     * @param time_available_us available time in microseconds
+     * @return the encryption tasks in order of execution
+     */
     std::vector<EncryptTask> maximizeSecurity(double eval_time_sec, int64_t file_size, int64_t time_available_us);
 
 private:
