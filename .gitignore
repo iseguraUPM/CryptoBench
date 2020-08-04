@@ -81,3 +81,6 @@ fabric.properties
 
 # Python
 __pycache__
+
+# Data files
+*.csv

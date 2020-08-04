@@ -1,0 +1,2 @@
+# Allowed csv inside data directory
+!*.csv
